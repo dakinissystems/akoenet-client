@@ -1,0 +1,1165 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import api from '../services/api'
+import { useAuth } from '../context/AuthContext'
+import { resolveImageUrl } from '../lib/resolveImageUrl'
+import {
+  buildMicTestMonitorGraph,
+  getMicMonitorPlaybackGain,
+  getMicTestAudioConstraints,
+} from '../lib/voiceConstraints'
+import { getSavedVoiceSettings } from './VoiceSettingsModal'
+import {
+  DARK_THEME,
+  LIGHT_THEME,
+  applyTheme,
+  loadTheme,
+  sanitizeFull,
+  saveTheme,
+} from '../lib/themePreferences'
+import { isTauri } from '../lib/isTauri'
+import LanguageSwitcher from './LanguageSwitcher'
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; i += 1) outputArray[i] = rawData.charCodeAt(i)
+  return outputArray
+}
+
+function toNullable(value) {
+  const trimmed = value.trim()
+  return trimmed ? trimmed : null
+}
+
+function getVoiceStorageKey(userId) {
+  return `akoenet_voice_settings_${userId || 'anon'}`
+}
+
+export default function UserSettingsModal({ open, onClose, initialSection = 'profile' }) {
+  const { t } = useTranslation()
+  const { user, refreshUser, logout, logoutAllDevices } = useAuth()
+  const [activeSection, setActiveSection] = useState('profile')
+  const [username, setUsername] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [bannerUrl, setBannerUrl] = useState('')
+  const [accentColor, setAccentColor] = useState('#7c3aed')
+  const [bio, setBio] = useState('')
+  const [presenceStatus, setPresenceStatus] = useState('online')
+  const [customStatus, setCustomStatus] = useState('')
+  const [schedulerStreamerUsername, setSchedulerStreamerUsername] = useState('')
+  const [avatarPreviewFailed, setAvatarPreviewFailed] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+  const [testing, setTesting] = useState(false)
+  const [eraseConfirm, setEraseConfirm] = useState('')
+  const [exportBusy, setExportBusy] = useState(false)
+  const [eraseBusy, setEraseBusy] = useState(false)
+  const [logoutAllBusy, setLogoutAllBusy] = useState(false)
+  const [totpSetupSecret, setTotpSetupSecret] = useState('')
+  const [totpEnableCode, setTotpEnableCode] = useState('')
+  const [disable2faPassword, setDisable2faPassword] = useState('')
+  const [disable2faCode, setDisable2faCode] = useState('')
+  const [micLevel, setMicLevel] = useState(0)
+  const [micGain, setMicGain] = useState(100)
+  const [monitorMic, setMonitorMic] = useState(false)
+  const [startWithCamera, setStartWithCamera] = useState(false)
+  const [startMuted, setStartMuted] = useState(false)
+  const [startDeafened, setStartDeafened] = useState(false)
+  const [shareGameActivity, setShareGameActivity] = useState(true)
+  const [desktopGameDetect, setDesktopGameDetect] = useState(false)
+  const [manualGame, setManualGame] = useState('')
+  const [manualPlatform, setManualPlatform] = useState('')
+  const [activitySaving, setActivitySaving] = useState(false)
+  const [steamBusy, setSteamBusy] = useState(false)
+  const [twitchBusy, setTwitchBusy] = useState(false)
+  const [twitchGate, setTwitchGate] = useState(/** @type {'loading' | 'ready' | 'disabled' | 'unreachable'} */ ('loading'))
+  const [twitchStatusRetryToken, setTwitchStatusRetryToken] = useState(0)
+  const [uiTheme, setUiTheme] = useState(() => sanitizeFull({}))
+  const [themeReady, setThemeReady] = useState(false)
+  const streamRef = useRef(null)
+  const audioCtxRef = useRef(null)
+  const analyserRef = useRef(null)
+  const dataRef = useRef(null)
+  const gainNodeRef = useRef(null)
+  const monitorGainRef = useRef(null)
+  const loopRef = useRef(null)
+
+  useEffect(() => {
+    if (!open) return
+    setActiveSection(initialSection || 'profile')
+    setUsername(user?.username || '')
+    setAvatarUrl(user?.avatar_url || '')
+    setAvatarPreviewFailed(false)
+    setBannerUrl(user?.banner_url || '')
+    setAccentColor(user?.accent_color || '#7c3aed')
+    setBio(user?.bio || '')
+    setPresenceStatus(user?.presence_status || 'online')
+    setCustomStatus(user?.custom_status || '')
+    setSchedulerStreamerUsername(user?.scheduler_streamer_username || '')
+    setCurrentPassword('')
+    setNewPassword('')
+    setEraseConfirm('')
+    setError('')
+    setInfo('')
+    const voice = getSavedVoiceSettings(user?.id)
+    setMicGain(voice.micGain)
+    setMonitorMic(voice.monitorMic)
+    setStartWithCamera(voice.startWithCamera)
+    setStartMuted(voice.startMuted)
+    setStartDeafened(voice.startDeafened)
+  }, [open, user, initialSection])
+
+  useEffect(() => {
+    if (!open) {
+      setThemeReady(false)
+      return
+    }
+    setUiTheme(loadTheme(user?.id))
+    setThemeReady(true)
+  }, [open, user?.id])
+
+  useEffect(() => {
+    if (!open || !themeReady) return
+    if (activeSection === 'appearance') {
+      const appliedTheme = saveTheme(user?.id, uiTheme)
+      applyTheme(appliedTheme, { accentColor: accentColor || user?.accent_color })
+    } else {
+      applyTheme(loadTheme(user?.id), { accentColor: accentColor || user?.accent_color })
+    }
+  }, [open, themeReady, activeSection, uiTheme, accentColor, user?.accent_color, user?.id])
+
+  useEffect(() => {
+    setAvatarPreviewFailed(false)
+  }, [avatarUrl])
+
+  useEffect(() => {
+    if (!open) stopMicTest()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    let cancelled = false
+    const ac = new AbortController()
+    setTwitchGate('loading')
+    api
+      .get('/auth/twitch/status', { signal: ac.signal })
+      .then((r) => {
+        if (!cancelled) setTwitchGate(r.data?.configured ? 'ready' : 'disabled')
+      })
+      .catch(() => {
+        if (!cancelled) setTwitchGate('unreachable')
+      })
+    return () => {
+      cancelled = true
+      ac.abort()
+    }
+  }, [open, twitchStatusRetryToken])
+
+  useEffect(() => {
+    if (!open) return
+    try {
+      localStorage.setItem(
+        getVoiceStorageKey(user?.id),
+        JSON.stringify({
+          micGain,
+          monitorMic,
+          startWithCamera,
+          cameraEnabled: startWithCamera,
+          startMuted,
+          startDeafened,
+        }),
+      )
+    } catch {
+      /* ignore storage errors */
+    }
+    if (gainNodeRef.current) gainNodeRef.current.gain.value = micGain / 100
+    if (monitorGainRef.current)
+      monitorGainRef.current.gain.value = monitorMic ? getMicMonitorPlaybackGain(micGain) : 0
+  }, [open, user?.id, micGain, monitorMic, startWithCamera, startMuted, startDeafened])
+
+  const previewStyle = useMemo(
+    () => ({
+      border: `1px solid ${accentColor || '#7c3aed'}`,
+      borderRadius: '10px',
+      overflow: 'hidden',
+      background: '#111827',
+      marginBottom: '0.7rem',
+    }),
+    [accentColor],
+  )
+
+  async function downloadMyData() {
+    setExportBusy(true)
+    setError('')
+    setInfo('')
+    try {
+      const { data } = await api.get('/auth/me/export', { responseType: 'blob' })
+      const blob = data instanceof Blob ? data : new Blob([data], { type: 'application/json' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `akoenet-user-${user?.id}-export.json`
+      a.click()
+      window.URL.revokeObjectURL(url)
+      setInfo(t('userSettings.account.exportDone'))
+    } catch {
+      setError(t('userSettings.account.exportFail'))
+    } finally {
+      setExportBusy(false)
+    }
+  }
+
+  async function eraseMyAccount() {
+    if (eraseConfirm.trim().toUpperCase() !== 'DELETE') {
+      setError(t('userSettings.account.eraseConfirmError'))
+      return
+    }
+    setEraseBusy(true)
+    setError('')
+    setInfo('')
+    try {
+      await api.delete('/auth/me', { data: { reason: 'User requested self-service account erasure (Settings).' } })
+      onClose()
+      logout()
+    } catch {
+      setError(t('userSettings.account.eraseFail'))
+    } finally {
+      setEraseBusy(false)
+    }
+  }
+
+  async function saveActivitySettings() {
+    setActivitySaving(true)
+    setError('')
+    setInfo('')
+    try {
+      await api.patch('/auth/me', {
+        share_game_activity: shareGameActivity,
+        desktop_game_detect_opt_in: desktopGameDetect,
+        manual_activity_game: toNullable(manualGame),
+        manual_activity_platform: toNullable(manualPlatform),
+      })
+      await refreshUser()
+      setInfo(t('userSettings.activity.savedInfo'))
+    } catch (err) {
+      const code = err.response?.data?.error
+      setError(
+        code === 'blocked_content'
+          ? err.response?.data?.message || t('userSettings.activity.errorBlocked')
+          : err.response?.data?.error || t('userSettings.activity.errorSave')
+      )
+    } finally {
+      setActivitySaving(false)
+    }
+  }
+
+  async function connectTwitch() {
+    if (twitchGate !== 'ready') {
+      setError(
+        twitchGate === 'unreachable'
+          ? t('userSettings.activity.errorTwitchApiUnreachable')
+          : t('userSettings.activity.errorTwitchUnavailable')
+      )
+      return
+    }
+    setTwitchBusy(true)
+    setError('')
+    try {
+      const { data } = await api.post('/auth/twitch/link/begin')
+      if (data?.url) window.location.href = data.url
+    } catch {
+      setError(t('userSettings.activity.errorTwitchStart'))
+    } finally {
+      setTwitchBusy(false)
+    }
+  }
+
+  async function unlinkTwitch() {
+    setActivitySaving(true)
+    setError('')
+    setInfo('')
+    try {
+      await api.patch('/auth/me', { twitch_unlink: true })
+      await refreshUser()
+      setInfo(t('userSettings.activity.twitchUnlinkedInfo'))
+    } catch {
+      setError(t('userSettings.activity.errorTwitchUnlink'))
+    } finally {
+      setActivitySaving(false)
+    }
+  }
+
+  async function connectSteam() {
+    if (!user?.steam_status?.web_api_configured) {
+      setError(t('userSettings.activity.errorUnavailable'))
+      return
+    }
+    setSteamBusy(true)
+    setError('')
+    try {
+      const { data } = await api.post('/auth/steam/link/begin')
+      if (data?.url) window.location.href = data.url
+    } catch {
+      setError(t('userSettings.activity.errorSteamStart'))
+    } finally {
+      setSteamBusy(false)
+    }
+  }
+
+  async function unlinkSteam() {
+    setActivitySaving(true)
+    setError('')
+    setInfo('')
+    try {
+      await api.patch('/auth/me', { steam_unlink: true })
+      await refreshUser()
+      setInfo(t('userSettings.activity.unlinkedInfo'))
+    } catch {
+      setError(t('userSettings.activity.errorUnlink'))
+    } finally {
+      setActivitySaving(false)
+    }
+  }
+
+  async function saveUserSettings() {
+    if (!username.trim()) {
+      setError(t('userSettings.errors.usernameRequired'))
+      return
+    }
+    if (newPassword && !currentPassword) {
+      setError(t('userSettings.errors.passwordRequired'))
+      return
+    }
+    setSaving(true)
+    setError('')
+    setInfo('')
+    try {
+      await api.patch('/auth/me', {
+        username: username.trim(),
+        avatar_url: toNullable(avatarUrl),
+        banner_url: toNullable(bannerUrl),
+        accent_color: toNullable(accentColor),
+        bio: toNullable(bio),
+        presence_status: presenceStatus,
+        custom_status: toNullable(customStatus),
+        scheduler_streamer_username: toNullable(schedulerStreamerUsername),
+        current_password: newPassword ? currentPassword : undefined,
+        new_password: newPassword || undefined,
+      })
+      await refreshUser()
+      setCurrentPassword('')
+      setNewPassword('')
+      setInfo(t('userSettings.errors.settingsSaved'))
+    } catch (err) {
+      const code = err.response?.data?.error
+      setError(
+        code === 'blocked_content'
+          ? err.response?.data?.message || t('userSettings.errors.notAllowed')
+          : err.response?.data?.error || t('userSettings.errors.saveFailed')
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function computeLevel() {
+    const analyser = analyserRef.current
+    const data = dataRef.current
+    if (!analyser || !data) return 0
+    analyser.getByteTimeDomainData(data)
+    let sum = 0
+    for (let i = 0; i < data.length; i += 1) {
+      const centered = (data[i] - 128) / 128
+      sum += centered * centered
+    }
+    return Math.sqrt(sum / data.length)
+  }
+
+  function startLoop() {
+    if (loopRef.current) return
+    loopRef.current = window.setInterval(() => {
+      const level = computeLevel()
+      setMicLevel(Math.min(1, level * 4))
+    }, 120)
+  }
+
+  function stopLoop() {
+    if (!loopRef.current) return
+    window.clearInterval(loopRef.current)
+    loopRef.current = null
+  }
+
+  async function startMicTest() {
+    if (testing) return
+    setError('')
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: getMicTestAudioConstraints() })
+      streamRef.current = stream
+      const Ctx = window.AudioContext || window.webkitAudioContext
+      if (!Ctx) {
+        setError(t('voiceSettings.errAudioContext'))
+        stopMicTest()
+        return
+      }
+      const ctx = new Ctx()
+      audioCtxRef.current = ctx
+      const source = ctx.createMediaStreamSource(stream)
+      await ctx.resume()
+      const { gain, monitorGain, analyser } = buildMicTestMonitorGraph(ctx, source, {
+        micGain,
+        monitorMic,
+      })
+      gainNodeRef.current = gain
+      monitorGainRef.current = monitorGain
+      analyserRef.current = analyser
+      dataRef.current = new Uint8Array(analyser.fftSize)
+      startLoop()
+      setTesting(true)
+    } catch {
+      setError(t('voiceSettings.errMicAccess'))
+    }
+  }
+
+  function stopMicTest() {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+      audioCtxRef.current.close().catch(() => {})
+    }
+    audioCtxRef.current = null
+    analyserRef.current = null
+    dataRef.current = null
+    gainNodeRef.current = null
+    monitorGainRef.current = null
+    stopLoop()
+    setMicLevel(0)
+    setTesting(false)
+  }
+
+  if (!open) return null
+
+  return (
+    <div className="modal-backdrop" role="presentation" onClick={onClose}>
+      <div className="modal-card user-settings-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+        <header className="modal-header">
+          <h3>{t('userSettings.modalTitle')}</h3>
+          <button type="button" className="btn ghost small" onClick={onClose}>
+            {t('userSettings.close')}
+          </button>
+        </header>
+
+        {error && <div className="error-banner inline">{error}</div>}
+        {info && <div className="info-banner">{info}</div>}
+
+        <div className="settings-split-layout">
+          <aside className="settings-split-nav">
+            <button type="button" className={`settings-split-nav-btn ${activeSection === 'profile' ? 'active' : ''}`} onClick={() => setActiveSection('profile')}>{t('userSettings.navProfile')}</button>
+            <button type="button" className={`settings-split-nav-btn ${activeSection === 'language' ? 'active' : ''}`} onClick={() => setActiveSection('language')}>{t('userSettings.navLanguage')}</button>
+            <button type="button" className={`settings-split-nav-btn ${activeSection === 'appearance' ? 'active' : ''}`} onClick={() => setActiveSection('appearance')}>{t('userSettings.navAppearance')}</button>
+            <button type="button" className={`settings-split-nav-btn ${activeSection === 'activity' ? 'active' : ''}`} onClick={() => setActiveSection('activity')}>{t('userSettings.activity.navTab')}</button>
+            <button type="button" className={`settings-split-nav-btn ${activeSection === 'account' ? 'active' : ''}`} onClick={() => setActiveSection('account')}>{t('userSettings.navAccount')}</button>
+            <button type="button" className={`settings-split-nav-btn ${activeSection === 'voice' ? 'active' : ''}`} onClick={() => setActiveSection('voice')}>{t('userSettings.navVoice')}</button>
+          </aside>
+
+          <section className="settings-split-content">
+            {activeSection === 'language' && (
+              <div className="form-stack">
+                <h4 style={{ margin: '0 0 0.35rem', fontSize: '1rem' }}>{t('userSettings.languageTitle')}</h4>
+                <p className="muted small">{t('userSettings.languageHint')}</p>
+                <LanguageSwitcher />
+              </div>
+            )}
+            {activeSection === 'profile' && (
+              <form onSubmit={(e) => { e.preventDefault(); saveUserSettings() }} className="form-stack">
+                <div style={previewStyle}>
+                  <div style={{ height: 86, backgroundImage: bannerUrl ? `url("${resolveImageUrl(bannerUrl).replace(/"/g, '\\"')}")` : 'linear-gradient(120deg, #1f2937, #0f172a)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.65rem 0.75rem' }}>
+                    {avatarUrl && !avatarPreviewFailed ? (
+                      <img
+                        src={resolveImageUrl(avatarUrl)}
+                        alt={t('userSettings.profile.avatarPreviewAlt')}
+                        style={{ width: 42, height: 42, borderRadius: '999px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.2)' }}
+                        onError={() => setAvatarPreviewFailed(true)}
+                      />
+                    ) : (
+                      <span
+                        className="user-avatar-fallback"
+                        aria-hidden="true"
+                        style={{ width: 42, height: 42, borderRadius: '999px', border: '1px solid rgba(255,255,255,0.2)' }}
+                      >
+                        {String(username || user?.username || 'U').trim().charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    )}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '999px', display: 'inline-block', background: presenceStatus === 'online' ? '#22c55e' : presenceStatus === 'idle' ? '#f59e0b' : presenceStatus === 'dnd' ? '#ef4444' : '#6b7280' }} />
+                        {username || t('channelList.userFallback')}
+                      </div>
+                      <div className="muted small" style={{ margin: 0 }}>
+                        {customStatus || bio || t('userSettings.profile.noBio')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <label>
+                  {t('userSettings.profile.username')}
+                  <input id="settings-username" name="username" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={40} />
+                </label>
+                <label>
+                  {t('userSettings.profile.avatarUrl')}
+                  <input id="settings-avatar-url" name="avatar_url" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder={t('userSettings.profile.urlPlaceholder')} />
+                </label>
+                <label>
+                  {t('userSettings.profile.bannerUrl')}
+                  <input id="settings-banner-url" name="banner_url" value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} placeholder={t('userSettings.profile.urlPlaceholder')} />
+                </label>
+                <label>
+                  {t('userSettings.profile.accentColor')}
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input id="settings-accent-color-picker" name="accent_color_picker" type="color" value={/^#([0-9a-fA-F]{6})$/.test(accentColor || '') ? accentColor : '#7c3aed'} onChange={(e) => setAccentColor(e.target.value)} style={{ width: 48, height: 34, padding: 2 }} />
+                    <input id="settings-accent-color-text" name="accent_color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} placeholder={t('userSettings.profile.accentHexPlaceholder')} maxLength={7} />
+                  </div>
+                </label>
+                <label>
+                  {t('userSettings.profile.presence')}
+                  <select id="settings-presence-status" name="presence_status" value={presenceStatus} onChange={(e) => setPresenceStatus(e.target.value)} className="select-inline">
+                    <option value="online">{t('userSettings.profile.presenceOnline')}</option>
+                    <option value="idle">{t('userSettings.profile.presenceIdle')}</option>
+                    <option value="dnd">{t('userSettings.profile.presenceDnd')}</option>
+                    <option value="invisible">{t('userSettings.profile.presenceInvisible')}</option>
+                  </select>
+                </label>
+                <label>
+                  {t('userSettings.profile.customStatus')}
+                  <input id="settings-custom-status" name="custom_status" value={customStatus} onChange={(e) => setCustomStatus(e.target.value)} maxLength={120} placeholder={t('userSettings.profile.customStatusPh')} />
+                </label>
+                <label>
+                  {t('userSettings.profile.bio')}
+                  <input id="settings-bio" name="bio" value={bio} onChange={(e) => setBio(e.target.value)} maxLength={240} placeholder={t('userSettings.profile.bioPh')} />
+                </label>
+                <label>
+                  {t('userSettings.profile.schedulerSlug')}
+                  <input id="settings-scheduler-slug" name="scheduler_streamer_username" value={schedulerStreamerUsername} onChange={(e) => setSchedulerStreamerUsername(e.target.value)} maxLength={80} placeholder={t('userSettings.profile.schedulerSlugPh')} autoComplete="off" />
+                  <span className="muted small" style={{ display: 'block', marginTop: 4 }}>{t('userSettings.profile.schedulerSlugHint')}</span>
+                </label>
+                <button type="submit" className="btn primary" disabled={saving}>
+                  {saving ? t('userSettings.profile.saving') : t('userSettings.profile.saveProfile')}
+                </button>
+              </form>
+            )}
+
+            {activeSection === 'appearance' && (
+              <div className="form-stack appearance-theme-panel">
+                <p className="muted small" style={{ margin: '0 0 0.5rem' }}>
+                  {t('userSettings.appearance.panelIntro')}
+                </p>
+                <div className="theme-mode-row" role="group" aria-label={t('userSettings.appearance.modeAria')}>
+                  {[
+                    { id: 'system', label: t('userSettings.appearance.modeSystem') },
+                    { id: 'light', label: t('userSettings.appearance.modeLight') },
+                    { id: 'dark', label: t('userSettings.appearance.modeDark') },
+                  ].map(({ id, label }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className={`theme-mode-btn ${uiTheme.colorMode === id ? 'is-active' : ''}`}
+                      onClick={() => {
+                        if (id === 'system') {
+                          setUiTheme((prev) => ({ ...prev, colorMode: 'system' }))
+                          return
+                        }
+                        if (id === 'light') {
+                          setUiTheme(sanitizeFull({ colorMode: 'light', ...LIGHT_THEME }))
+                          return
+                        }
+                        setUiTheme(sanitizeFull({ colorMode: 'dark', ...DARK_THEME }))
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {uiTheme.colorMode === 'system' && (
+                  <p className="info-banner inline" style={{ marginBottom: '0.65rem' }}>
+                    {t('userSettings.appearance.systemPickModeHint')}
+                  </p>
+                )}
+                {[
+                  { key: 'bg', labelKey: 'labelBg' },
+                  { key: 'panel', labelKey: 'labelPanel' },
+                  { key: 'rail', labelKey: 'labelRail' },
+                  { key: 'text', labelKey: 'labelText' },
+                  { key: 'muted', labelKey: 'labelMuted' },
+                  { key: 'echonet', labelKey: 'labelEchonet' },
+                  { key: 'danger', labelKey: 'labelDanger' },
+                ].map(({ key, labelKey }) => {
+                  const hex = uiTheme[key]
+                  const ok = /^#([0-9a-fA-F]{6})$/.test(hex || '')
+                  const label = t(`userSettings.appearance.${labelKey}`)
+                  return (
+                    <label key={key} className="theme-color-row">
+                      <span className="theme-color-label">{label}</span>
+                      <div className="theme-color-inputs">
+                        <input
+                          type="color"
+                          aria-label={t('userSettings.appearance.colorPickerAria', { label })}
+                          value={ok ? hex : '#000000'}
+                          disabled={uiTheme.colorMode === 'system'}
+                          onChange={(e) => setUiTheme((prev) => ({ ...prev, [key]: e.target.value }))}
+                          className="theme-color-swatch"
+                        />
+                        <input
+                          type="text"
+                          value={hex}
+                          disabled={uiTheme.colorMode === 'system'}
+                          onChange={(e) => setUiTheme((prev) => ({ ...prev, [key]: e.target.value }))}
+                          maxLength={7}
+                          placeholder={t('userSettings.appearance.hexPlaceholder')}
+                          className="theme-color-hex"
+                          spellCheck={false}
+                          autoComplete="off"
+                        />
+                      </div>
+                    </label>
+                  )
+                })}
+                <label className="theme-color-row">
+                  <span className="theme-color-label">{t('userSettings.appearance.labelBorder')}</span>
+                  <div className="theme-color-inputs">
+                    <input
+                      type="color"
+                      aria-label={t('userSettings.appearance.borderColorAria')}
+                      value={/^#([0-9a-fA-F]{6})$/.test(uiTheme.borderColor || '') ? uiTheme.borderColor : '#ffffff'}
+                      disabled={uiTheme.colorMode === 'system'}
+                      onChange={(e) => setUiTheme((prev) => ({ ...prev, borderColor: e.target.value }))}
+                      className="theme-color-swatch"
+                    />
+                    <input
+                      type="text"
+                      value={uiTheme.borderColor}
+                      disabled={uiTheme.colorMode === 'system'}
+                      onChange={(e) => setUiTheme((prev) => ({ ...prev, borderColor: e.target.value }))}
+                      maxLength={7}
+                      placeholder={t('userSettings.appearance.hexPlaceholder')}
+                      className="theme-color-hex"
+                      spellCheck={false}
+                      autoComplete="off"
+                    />
+                  </div>
+                </label>
+                <div className="theme-border-opacity-row">
+                  <label htmlFor="theme-border-opacity">
+                    {t('userSettings.appearance.borderVisibility', { pct: uiTheme.borderOpacity })}
+                  </label>
+                  <input
+                    id="theme-border-opacity"
+                    type="range"
+                    min={0}
+                    max={40}
+                    value={uiTheme.borderOpacity}
+                    disabled={uiTheme.colorMode === 'system'}
+                    onChange={(e) =>
+                      setUiTheme((prev) => ({ ...prev, borderOpacity: Number(e.target.value) }))
+                    }
+                  />
+                </div>
+                <div className="appearance-theme-actions">
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={() => {
+                      let next
+                      if (uiTheme.colorMode === 'system') {
+                        next = sanitizeFull({ colorMode: 'dark', ...DARK_THEME })
+                      } else if (uiTheme.colorMode === 'light') {
+                        next = sanitizeFull({ colorMode: 'light', ...LIGHT_THEME })
+                      } else {
+                        next = sanitizeFull({ colorMode: 'dark', ...DARK_THEME })
+                      }
+                      setUiTheme(next)
+                      saveTheme(user?.id, next)
+                      applyTheme(next, { accentColor: accentColor || user?.accent_color })
+                      setInfo(t('userSettings.appearance.themeResetToast'))
+                    }}
+                  >
+                    {t('userSettings.appearance.resetButton')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'account' && (
+              <div className="form-stack">
+                <form onSubmit={(e) => { e.preventDefault(); saveUserSettings() }} className="form-stack">
+                  <label>
+                    {t('userSettings.account.currentPasswordHint')}
+                    <input id="settings-current-password" name="current_password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                  </label>
+                  <label>
+                    {t('userSettings.account.newPassword')}
+                    <input id="settings-new-password" name="new_password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                  </label>
+                  <button type="submit" className="btn primary" disabled={saving}>
+                    {saving ? t('userSettings.profile.saving') : t('userSettings.account.saveAccountSettings')}
+                  </button>
+                </form>
+                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <h4 className="muted small" style={{ margin: '0 0 0.5rem' }}>{t('userSettings.account.sessions')}</h4>
+                  <p className="muted small" style={{ margin: '0 0 0.5rem' }}>
+                    {t('userSettings.account.sessionsDetail')}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn secondary small"
+                    disabled={logoutAllBusy}
+                    onClick={async () => {
+                      setError('')
+                      setInfo('')
+                      setLogoutAllBusy(true)
+                      try {
+                        await logoutAllDevices()
+                        onClose()
+                      } catch {
+                        setError(t('userSettings.account.logoutAllError'))
+                      } finally {
+                        setLogoutAllBusy(false)
+                      }
+                    }}
+                  >
+                    {logoutAllBusy ? t('userSettings.account.signingOutAll') : t('userSettings.account.signOutAllCta')}
+                  </button>
+                </div>
+                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <h4 className="muted small" style={{ margin: '0 0 0.5rem' }}>{t('userSettings.account.twofaHeading')}</h4>
+                  {user?.totp_enabled ? (
+                    <div className="form-stack">
+                      <p className="muted small">{t('userSettings.account.twofaEnabledLine')}</p>
+                      <label>
+                        {t('userSettings.account.currentPassword')}
+                        <input
+                          type="password"
+                          value={disable2faPassword}
+                          onChange={(e) => setDisable2faPassword(e.target.value)}
+                          autoComplete="current-password"
+                        />
+                      </label>
+                      <label>
+                        {t('userSettings.account.authenticatorCode')}
+                        <input value={disable2faCode} onChange={(e) => setDisable2faCode(e.target.value)} />
+                      </label>
+                      <button
+                        type="button"
+                        className="btn ghost small"
+                        onClick={async () => {
+                          setError('')
+                          try {
+                            await api.post('/auth/2fa/disable', {
+                              password: disable2faPassword,
+                              code: disable2faCode,
+                            })
+                            setDisable2faPassword('')
+                            setDisable2faCode('')
+                            await refreshUser()
+                            setInfo(t('userSettings.account.info2faDisabled'))
+                          } catch {
+                            setError(t('userSettings.account.errDisable2fa'))
+                          }
+                        }}
+                      >
+                        {t('userSettings.account.disable2fa')}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="form-stack">
+                      {!totpSetupSecret ? (
+                        <button
+                          type="button"
+                          className="btn secondary small"
+                          onClick={async () => {
+                            setError('')
+                            try {
+                              const { data } = await api.post('/auth/2fa/setup')
+                              setTotpSetupSecret(data.secret)
+                              setInfo(t('userSettings.account.info2faSetup'))
+                            } catch {
+                              setError(t('userSettings.account.err2faSetup'))
+                            }
+                          }}
+                        >
+                          {t('userSettings.account.setupAuthenticator')}
+                        </button>
+                      ) : (
+                        <>
+                          <p className="muted small" style={{ wordBreak: 'break-all' }}>
+                            {t('userSettings.account.secretPrefix')} {totpSetupSecret}
+                          </p>
+                          <label>
+                            {t('userSettings.account.code6')}
+                            <input value={totpEnableCode} onChange={(e) => setTotpEnableCode(e.target.value)} />
+                          </label>
+                          <button
+                            type="button"
+                            className="btn primary small"
+                            onClick={async () => {
+                              setError('')
+                              try {
+                                await api.post('/auth/2fa/enable', { code: totpEnableCode })
+                                setTotpSetupSecret('')
+                                setTotpEnableCode('')
+                                await refreshUser()
+                                setInfo(t('userSettings.account.info2faEnabled'))
+                              } catch {
+                                setError(t('userSettings.account.invalid2faCode'))
+                              }
+                            }}
+                          >
+                            {t('userSettings.account.enable2fa')}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <h4 className="muted small" style={{ margin: '1rem 0 0.5rem' }}>{t('userSettings.account.browserNotif')}</h4>
+                  <button
+                    type="button"
+                    className="btn secondary small"
+                    onClick={async () => {
+                      setError('')
+                      try {
+                        const { data } = await api.get('/auth/push/vapid-public-key')
+                        if (!data?.publicKey) {
+                          setError(t('userSettings.account.errPushNotConfigured'))
+                          return
+                        }
+                        const reg = await navigator.serviceWorker.register('/sw.js')
+                        const sub = await reg.pushManager.subscribe({
+                          userVisibleOnly: true,
+                          applicationServerKey: urlBase64ToUint8Array(data.publicKey),
+                        })
+                        const j = sub.toJSON()
+                        await api.post('/auth/push/subscribe', {
+                          endpoint: j.endpoint,
+                          keys: { p256dh: j.keys.p256dh, auth: j.keys.auth },
+                        })
+                        setInfo(t('userSettings.account.infoPushEnabled'))
+                      } catch {
+                        setError(t('userSettings.account.errPushEnable'))
+                      }
+                    }}
+                  >
+                    {t('userSettings.account.enablePush')}
+                  </button>
+                </div>
+                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <h4 className="muted small" style={{ margin: '0 0 0.5rem' }}>{t('userSettings.account.dataPrivacy')}</h4>
+                  <p className="muted small" style={{ margin: '0 0 0.75rem' }}>
+                    {t('userSettings.account.dataPrivacyDesc')}
+                  </p>
+                  <button type="button" className="btn secondary" disabled={exportBusy} onClick={downloadMyData}>
+                    {exportBusy ? t('userSettings.account.preparingExport') : t('userSettings.account.downloadMyData')}
+                  </button>
+                </div>
+                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(239,68,68,0.25)' }}>
+                  <h4 className="muted small" style={{ margin: '0 0 0.5rem', color: '#fca5a5' }}>{t('userSettings.account.deleteAccount')}</h4>
+                  <p className="muted small" style={{ margin: '0 0 0.75rem' }}>
+                    {t('userSettings.account.deleteWarnBefore')}
+                    <strong>DELETE</strong>
+                    {t('userSettings.account.deleteWarnAfter')}
+                  </p>
+                  <label>
+                    {t('userSettings.account.confirmationLabel')}
+                    <input
+                      id="settings-erase-confirm"
+                      name="erase_confirm"
+                      type="text"
+                      value={eraseConfirm}
+                      onChange={(e) => setEraseConfirm(e.target.value)}
+                      placeholder={t('userSettings.account.deletePlaceholder')}
+                      autoComplete="off"
+                    />
+                  </label>
+                  <button type="button" className="btn danger" disabled={eraseBusy} onClick={eraseMyAccount}>
+                    {eraseBusy ? t('userSettings.account.erasing') : t('userSettings.account.eraseMyAccount')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'activity' && (
+              <div className="form-stack">
+                <p className="muted small" style={{ margin: '0 0 0.75rem' }}>
+                  {t('userSettings.activity.intro')}
+                </p>
+                <label className="voice-setting-toggle-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    id="settings-share-game-activity"
+                    name="share_game_activity"
+                    type="checkbox"
+                    checked={shareGameActivity}
+                    onChange={(e) => setShareGameActivity(e.target.checked)}
+                  />
+                  <span>{t('userSettings.activity.shareLabel')}</span>
+                </label>
+                {twitchGate === 'loading' ? (
+                  <p className="muted small" style={{ marginTop: '0.75rem' }}>
+                    {t('userSettings.activity.twitchChecking')}
+                  </p>
+                ) : twitchGate === 'ready' ? (
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <strong className="muted small" style={{ display: 'block', marginBottom: 6 }}>
+                      {t('userSettings.activity.twitchHeading')}
+                    </strong>
+                    <p className="muted small" style={{ margin: '0 0 0.5rem' }}>
+                      {user?.twitch_username
+                        ? t('userSettings.activity.twitchLinkedAs', { username: user.twitch_username })
+                        : t('userSettings.activity.twitchNotLinked')}
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      <button
+                        type="button"
+                        className="btn twitch small"
+                        disabled={twitchBusy || !shareGameActivity}
+                        onClick={() => connectTwitch()}
+                      >
+                        {twitchBusy
+                          ? t('userSettings.activity.redirecting')
+                          : user?.twitch_username
+                            ? t('userSettings.activity.reconnectTwitch')
+                            : t('userSettings.activity.connectTwitch')}
+                      </button>
+                      {user?.twitch_username ? (
+                        <button
+                          type="button"
+                          className="btn ghost small"
+                          disabled={activitySaving}
+                          onClick={() => unlinkTwitch()}
+                        >
+                          {t('userSettings.activity.unlinkTwitch')}
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : twitchGate === 'disabled' ? (
+                  <p className="muted small" style={{ marginTop: '0.75rem' }}>
+                    {t('userSettings.activity.twitchUnavailableHint')}
+                  </p>
+                ) : (
+                  <div className="muted small" style={{ marginTop: '0.75rem' }}>
+                    <p style={{ margin: '0 0 0.5rem' }}>{t('userSettings.activity.twitchServerUnreachableHint')}</p>
+                    <button
+                      type="button"
+                      className="btn ghost small"
+                      onClick={() => setTwitchStatusRetryToken((n) => n + 1)}
+                    >
+                      {t('userSettings.activity.twitchRetryCheck')}
+                    </button>
+                  </div>
+                )}
+                {user?.steam_status?.web_api_configured ? (
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <strong className="muted small" style={{ display: 'block', marginBottom: 6 }}>
+                      {t('userSettings.activity.steamHeading')}
+                    </strong>
+                    <p className="muted small" style={{ margin: '0 0 0.5rem' }}>
+                      {user?.steam_linked
+                        ? t('userSettings.activity.steamLinked')
+                        : t('userSettings.activity.steamNotLinked')}
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      <button
+                        type="button"
+                        className="btn secondary small"
+                        disabled={steamBusy || !shareGameActivity}
+                        onClick={() => connectSteam()}
+                      >
+                        {steamBusy
+                          ? t('userSettings.activity.redirecting')
+                          : user?.steam_linked
+                            ? t('userSettings.activity.reconnectSteam')
+                            : t('userSettings.activity.connectSteam')}
+                      </button>
+                      {user?.steam_linked ? (
+                        <button
+                          type="button"
+                          className="btn ghost small"
+                          disabled={activitySaving}
+                          onClick={() => unlinkSteam()}
+                        >
+                          {t('userSettings.activity.unlinkSteam')}
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+                <label style={{ marginTop: '0.85rem', display: 'block' }}>
+                  {t('userSettings.activity.manualGame')}
+                  <input
+                    id="settings-manual-game"
+                    name="manual_activity_game"
+                    value={manualGame}
+                    onChange={(e) => setManualGame(e.target.value)}
+                    maxLength={120}
+                    placeholder={t('userSettings.activity.manualGamePh')}
+                    disabled={!shareGameActivity}
+                    autoComplete="off"
+                  />
+                </label>
+                <label>
+                  {t('userSettings.activity.manualPlatform')}
+                  <input
+                    id="settings-manual-platform"
+                    name="manual_activity_platform"
+                    value={manualPlatform}
+                    onChange={(e) => setManualPlatform(e.target.value)}
+                    maxLength={40}
+                    placeholder={t('userSettings.activity.manualPlatformPh')}
+                    disabled={!shareGameActivity}
+                    autoComplete="off"
+                  />
+                </label>
+                <label className="voice-setting-toggle-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    id="settings-desktop-detect"
+                    name="desktop_game_detect_opt_in"
+                    type="checkbox"
+                    checked={desktopGameDetect}
+                    disabled={!shareGameActivity || !isTauri()}
+                    onChange={(e) => setDesktopGameDetect(e.target.checked)}
+                  />
+                  <span>
+                    {t('userSettings.activity.desktopAuto')}{' '}
+                    {!isTauri() ? (
+                      <em className="muted small">{t('userSettings.activity.desktopAppHint')}</em>
+                    ) : null}
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  className="btn primary"
+                  disabled={activitySaving || !shareGameActivity}
+                  onClick={() => saveActivitySettings()}
+                >
+                  {activitySaving ? t('userSettings.activity.saving') : t('userSettings.activity.save')}
+                </button>
+              </div>
+            )}
+
+            {activeSection === 'voice' && (
+              <>
+                <p className="muted small">{t('userSettings.voice.tabLead')}</p>
+                <div className="voice-settings-row">
+                  <label>{t('voiceSettings.micVolume', { pct: micGain })}</label>
+                  <input
+                    id="voice-settings-mic-gain"
+                    name="mic_gain"
+                    type="range"
+                    min="0"
+                    max="200"
+                    value={micGain}
+                    onChange={(e) => setMicGain(Number(e.target.value))}
+                  />
+                </div>
+                <div className="voice-setting-toggle-row" style={{ marginTop: '0.5rem' }}>
+                  <span className="voice-setting-toggle-label">{t('voiceSettings.micMonitorLabel')}</span>
+                  <button
+                    id="voice-settings-monitor-mic"
+                    name="monitor_mic"
+                    type="button"
+                    className={`voice-setting-toggle-btn ${monitorMic ? 'is-active' : ''}`}
+                    onClick={() => setMonitorMic((prev) => !prev)}
+                  >
+                    <span className="voice-setting-toggle-icon" aria-hidden>{monitorMic ? '🎧' : '📊'}</span>
+                    <span>{monitorMic ? t('voiceSettings.monitorOn') : t('voiceSettings.monitorOff')}</span>
+                  </button>
+                </div>
+                <div className="voice-setting-toggle-row">
+                  <span className="voice-setting-toggle-label">{t('voiceSettings.startCameraLabel')}</span>
+                  <button
+                    id="voice-settings-camera-enabled"
+                    name="camera_enabled"
+                    type="button"
+                    className={`voice-setting-toggle-btn ${startWithCamera ? 'is-active' : ''}`}
+                    onClick={() => setStartWithCamera((prev) => !prev)}
+                  >
+                    <span className="voice-setting-toggle-icon" aria-hidden>{startWithCamera ? '📷' : '🚫'}</span>
+                    <span>{startWithCamera ? t('voiceSettings.cameraOn') : t('voiceSettings.cameraOff')}</span>
+                  </button>
+                </div>
+                <div className="voice-setting-toggle-row">
+                  <span className="voice-setting-toggle-label">{t('voiceSettings.startMutedLabel')}</span>
+                  <button
+                    id="voice-settings-start-muted"
+                    name="start_muted"
+                    type="button"
+                    className={`voice-setting-toggle-btn ${startMuted ? 'is-active' : ''}`}
+                    onClick={() =>
+                      setStartMuted((prev) => {
+                        const next = !prev
+                        if (!next) setStartDeafened(false)
+                        return next
+                      })
+                    }
+                  >
+                    <span className="voice-setting-toggle-icon" aria-hidden>{startMuted ? '🔇' : '🎙️'}</span>
+                    <span>{startMuted ? t('voiceSettings.muted') : t('voiceSettings.unmuted')}</span>
+                  </button>
+                </div>
+                <div className="voice-setting-toggle-row">
+                  <span className="voice-setting-toggle-label">{t('voiceSettings.startDeafenedLabel')}</span>
+                  <button
+                    id="voice-settings-start-deafened"
+                    name="start_deafened"
+                    type="button"
+                    className={`voice-setting-toggle-btn ${startDeafened ? 'is-active' : ''}`}
+                    onClick={() =>
+                      setStartDeafened((prev) => {
+                        const next = !prev
+                        if (next) setStartMuted(true)
+                        return next
+                      })
+                    }
+                  >
+                    <span className="voice-setting-toggle-icon" aria-hidden>{startDeafened ? '🙉' : '👂'}</span>
+                    <span>{startDeafened ? t('voiceSettings.deafened') : t('voiceSettings.listening')}</span>
+                  </button>
+                </div>
+                <div className="mic-status">
+                  <span className="muted small">
+                    {testing
+                      ? monitorMic
+                        ? t('voiceSettings.statusListening')
+                        : t('voiceSettings.statusMeter')
+                      : t('voiceSettings.statusIdle')}
+                  </span>
+                  <div className="mic-meter">
+                    <span className="mic-meter-fill" style={{ width: `${Math.max(6, Math.round(micLevel * 100))}%` }} />
+                  </div>
+                </div>
+                <div className="voice-controls">
+                  {!testing ? (
+                    <button type="button" className="btn secondary" onClick={startMicTest}>
+                      {t('voiceSettings.testMic')}
+                    </button>
+                  ) : (
+                    <button type="button" className="btn ghost" onClick={stopMicTest}>
+                      {t('voiceSettings.stopTest')}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      </div>
+    </div>
+  )
+}

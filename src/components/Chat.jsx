@@ -1,0 +1,1370 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import api from '../services/api'
+import { getSocket } from '../services/socket'
+import VoiceRoom from './VoiceRoom'
+import EmojiText from './EmojiText'
+import RichMessageText from './RichMessageText'
+import MessageLinkPreview from './MessageLinkPreview'
+import MessageVideoEmbeds from './MessageVideoEmbeds'
+import StandardEmojiPicker from './StandardEmojiPicker'
+import EditHistoryModal from './EditHistoryModal'
+import { resolveImageUrl } from '../lib/resolveImageUrl'
+import { isCapacitorNative } from '../lib/mobile-runtime'
+import { pickImageFileFromDevice } from '../services/mobile-media'
+import { getAccessToken } from '../services/session-store'
+
+import { getApiBaseUrl } from '../lib/apiBase'
+
+const baseURL = getApiBaseUrl()
+const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/avif',
+])
+
+export default function Chat({
+  channelId,
+  channelName,
+  channelType = 'text',
+  user,
+  members = [],
+  emojis = [],
+  voiceUserLimit,
+  voiceConnectedCount,
+  rtcVoiceChannelId,
+  rtcVoiceChannelName,
+  onVoiceSessionChange,
+  onOpenChannelSettings,
+  onOpenMembersPanel,
+  membersCount = 0,
+}) {
+  const { t } = useTranslation()
+  const [messages, setMessages] = useState([])
+  const [text, setText] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [sendError, setSendError] = useState('')
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [reactionPickerId, setReactionPickerId] = useState(null)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchBusy, setSearchBusy] = useState(false)
+  const [replyTo, setReplyTo] = useState(null)
+  /** When set, show messages belonging to this thread (root message id). */
+  const [threadRootId, setThreadRootId] = useState(null)
+  const threadRootIdRef = useRef(null)
+  const [editingMessageId, setEditingMessageId] = useState(null)
+  const [editingDraft, setEditingDraft] = useState('')
+  const [editHistoryModalOpen, setEditHistoryModalOpen] = useState(false)
+  const [editHistoryEntries, setEditHistoryEntries] = useState([])
+  const bottomRef = useRef(null)
+  const messageNodeRef = useRef(new Map())
+  const composerInputRef = useRef(null)
+  const fileDragDepthRef = useRef(0)
+  const [fileDragOver, setFileDragOver] = useState(false)
+  const emojiPickerWrapRef = useRef(null)
+  const reactionPickerWrapRef = useRef(null)
+  const typingStopTimerRef = useRef(null)
+  const lastTypingEmitRef = useRef(0)
+  const currentUserIdRef = useRef(null)
+  const [typingPeers, setTypingPeers] = useState({})
+  const [isMobileViewport, setIsMobileViewport] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(max-width: 720px)').matches : false
+  )
+  const [failedAvatarKeys, setFailedAvatarKeys] = useState(() => new Set())
+  /** Index into history prefix matches (↑/↓); reset when composer text changes in handleComposerChange */
+  const [composerHistoryIndex, setComposerHistoryIndex] = useState(0)
+
+  useEffect(() => {
+    currentUserIdRef.current = user?.id != null ? Number(user.id) : null
+  }, [user?.id])
+
+  useEffect(() => {
+    function onComposerInsert(e) {
+      const t = e.detail?.text
+      if (typeof t !== 'string' || !channelId) return
+      const s = t.trim()
+      if (!s) return
+      setText((prev) => (prev && prev.trim() ? `${prev.trimEnd()}\n${s}` : s))
+      requestAnimationFrame(() => composerInputRef.current?.focus())
+    }
+    window.addEventListener('akoenet-composer-insert', onComposerInsert)
+    return () => window.removeEventListener('akoenet-composer-insert', onComposerInsert)
+  }, [channelId, channelType])
+
+  useEffect(() => {
+    threadRootIdRef.current = threadRootId
+  }, [threadRootId])
+
+  const emojiMap = Object.fromEntries(emojis.map((e) => [e.name, resolveImageUrl(e.image_url)]))
+  const memberAvatarByUserId = useMemo(() => {
+    const map = new Map()
+    for (const m of members || []) {
+      if (m?.id != null && m?.avatar_url) {
+        map.set(Number(m.id), m.avatar_url)
+      }
+    }
+    return map
+  }, [members])
+
+  /** Messages whose text starts with the current composer prefix (oldest first). */
+  const composerHistoryMatches = useMemo(() => {
+    if (!channelId) return []
+    const prefix = text.trim()
+    if (prefix.length < 1) return []
+    const pl = prefix.toLowerCase()
+    const out = []
+    for (const m of messages) {
+      if (m._optimistic) continue
+      const c = m.content
+      if (c == null || c === '' || c === '(imagen)') continue
+      if (String(c).toLowerCase().startsWith(pl)) out.push(m)
+    }
+    out.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    return out.slice(0, 40)
+  }, [messages, text, channelId])
+
+  const composerHistorySafeIndex = Math.min(
+    composerHistoryIndex,
+    Math.max(0, composerHistoryMatches.length - 1)
+  )
+  const composerHighlightId =
+    composerHistoryMatches.length > 0 ? composerHistoryMatches[composerHistorySafeIndex]?.id : null
+
+  useEffect(() => {
+    if (composerHighlightId == null) return
+    const node = messageNodeRef.current.get(composerHighlightId)
+    if (node) node.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [composerHighlightId, composerHistorySafeIndex])
+
+  useEffect(() => {
+    if (!channelId) {
+      setMessages([])
+      setFailedAvatarKeys(new Set())
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const params = threadRootId ? { thread_root: threadRootId } : {}
+        const { data } = await api.get(`/messages/channel/${channelId}`, { params })
+        if (!cancelled) setMessages(data)
+      } catch {
+        if (!cancelled) setMessages([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [channelId, threadRootId])
+
+  useEffect(() => {
+    const s = getSocket()
+    if (!s || !channelId) return
+
+    s.emit('join_channel', channelId)
+
+    const onMsg = (msg) => {
+      if (String(msg.channel_id) !== String(channelId)) return
+      const tr = threadRootIdRef.current
+      if (tr == null) {
+        if (msg.thread_root_message_id) {
+          const rootId = Number(msg.thread_root_message_id)
+          setMessages((prev) =>
+            prev.map((m) =>
+              Number(m.id) === rootId
+                ? { ...m, thread_reply_count: (Number(m.thread_reply_count) || 0) + 1 }
+                : m
+            )
+          )
+          return
+        }
+      } else if (Number(msg.id) !== Number(tr) && Number(msg.thread_root_message_id) !== Number(tr)) {
+        return
+      }
+      setMessages((prev) => {
+        const cleaned = prev.filter((m) => {
+          if (!m._optimistic) return true
+          if (Number(m.user_id) !== Number(msg.user_id)) return true
+          return String(m.content).trim() !== String(msg.content).trim()
+        })
+        if (cleaned.some((m) => m.id === msg.id)) return cleaned
+        const next = [...cleaned, msg]
+        if (
+          tr != null &&
+          Number(msg.thread_root_message_id) === Number(tr) &&
+          Number(msg.id) !== Number(tr)
+        ) {
+          return next.map((m) =>
+            Number(m.id) === Number(tr)
+              ? { ...m, thread_reply_count: (Number(m.thread_reply_count) || 0) + 1 }
+              : m
+          )
+        }
+        return next
+      })
+    }
+    const onDeleted = ({ id, channel_id: chId }) => {
+      if (String(chId) !== String(channelId)) return
+      setMessages((prev) => prev.filter((m) => m.id !== id))
+    }
+    const onUpdated = (msg) => {
+      if (String(msg.channel_id) !== String(channelId)) return
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === msg.id
+            ? {
+                ...m,
+                ...msg,
+                reactions: Array.isArray(msg.reactions) ? msg.reactions : m.reactions,
+              }
+            : m
+        )
+      )
+    }
+    const onReactionsUpdated = ({ message_id: messageId, channel_id: chId, reactions }) => {
+      if (String(chId) !== String(channelId)) return
+      setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, reactions: reactions || [] } : m)))
+    }
+    s.on('receive_message', onMsg)
+    s.on('message_deleted', onDeleted)
+    s.on('message_updated', onUpdated)
+    s.on('message_reactions_updated', onReactionsUpdated)
+    const onTyping = (payload) => {
+      if (String(payload?.channel_id) !== String(channelId)) return
+      const myId = currentUserIdRef.current
+      if (myId != null && Number(payload.user_id) === myId) return
+      setTypingPeers((prev) => {
+        const next = { ...prev }
+        const uid = String(payload.user_id)
+        if (payload.typing) {
+          next[uid] = payload.username || `user_${uid}`
+        } else {
+          delete next[uid]
+        }
+        return next
+      })
+    }
+    s.on('channel_typing', onTyping)
+    const onReconnect = () => {
+      const params = threadRootIdRef.current ? { thread_root: threadRootIdRef.current } : {}
+      api
+        .get(`/messages/channel/${channelId}`, { params })
+        .then(({ data }) => setMessages(data))
+        .catch(() => {})
+    }
+    s.on('reconnect', onReconnect)
+    return () => {
+      s.off('reconnect', onReconnect)
+      s.off('receive_message', onMsg)
+      s.off('message_deleted', onDeleted)
+      s.off('message_updated', onUpdated)
+      s.off('message_reactions_updated', onReactionsUpdated)
+      s.off('channel_typing', onTyping)
+      s.emit('leave_channel', channelId)
+    }
+  }, [channelId, threadRootId])
+
+  useEffect(() => {
+    setSearchOpen(false)
+    setSearchQuery('')
+    setSearchResults([])
+    setReplyTo(null)
+    setThreadRootId(null)
+    setEditingMessageId(null)
+    setEditingDraft('')
+    setEditHistoryModalOpen(false)
+    setEditHistoryEntries([])
+    setComposerHistoryIndex(0)
+  }, [channelId])
+
+  useEffect(() => {
+    setTypingPeers({})
+  }, [channelId])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, channelId])
+
+  useEffect(() => {
+    function onDocumentClick(event) {
+      if (emojiPickerWrapRef.current && !emojiPickerWrapRef.current.contains(event.target)) {
+        setPickerOpen(false)
+      }
+      if (reactionPickerWrapRef.current && !reactionPickerWrapRef.current.contains(event.target)) {
+        setReactionPickerId(null)
+      }
+    }
+    function onKeyDown(event) {
+      if (event.key === 'Escape') {
+        setPickerOpen(false)
+        setReactionPickerId(null)
+      }
+    }
+    document.addEventListener('mousedown', onDocumentClick)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onDocumentClick)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const mq = window.matchMedia('(max-width: 720px)')
+    const onChange = (e) => setIsMobileViewport(Boolean(e.matches))
+    setIsMobileViewport(Boolean(mq.matches))
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', onChange)
+      return () => mq.removeEventListener('change', onChange)
+    }
+    mq.addListener(onChange)
+    return () => mq.removeListener(onChange)
+  }, [])
+
+  function emitTyping(typing) {
+    const s = getSocket()
+    if (!s || !channelId) return
+    s.emit('channel_typing', { channel_id: channelId, typing })
+  }
+
+  function handleComposerChange(e) {
+    const v = e.target.value
+    setText(v)
+    setComposerHistoryIndex(0)
+    if (!channelId) return
+    const s = getSocket()
+    if (!s) return
+    const now = Date.now()
+    if (v.trim() && now - lastTypingEmitRef.current > 2000) {
+      emitTyping(true)
+      lastTypingEmitRef.current = now
+    }
+    clearTimeout(typingStopTimerRef.current)
+    typingStopTimerRef.current = setTimeout(() => {
+      emitTyping(false)
+    }, 3000)
+  }
+
+  function send() {
+    const s = getSocket()
+    if (!s || !channelId || !text.trim()) return
+    clearTimeout(typingStopTimerRef.current)
+    emitTyping(false)
+    setSendError('')
+    const toSend = text.trim()
+    const clientId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    const rawReplyId = replyTo?.id
+    const replyId =
+      rawReplyId != null &&
+      (typeof rawReplyId === 'number' || (typeof rawReplyId === 'string' && /^\d+$/.test(rawReplyId)))
+        ? Number(rawReplyId)
+        : null
+    const optimistic = {
+      id: `pending-${clientId}`,
+      _optimistic: true,
+      _clientId: clientId,
+      channel_id: channelId,
+      user_id: user?.id,
+      username: user?.username || 'You',
+      content: toSend,
+      created_at: new Date().toISOString(),
+      reactions: [],
+      avatar_url: user?.avatar_url || null,
+      reply_to_id: replyId,
+      reply_preview_username: replyTo?.username || null,
+      reply_preview_content: replyTo?.snippet || null,
+    }
+    const savedReply = replyTo
+    setMessages((prev) => [...prev, optimistic])
+    setText('')
+    setPickerOpen(false)
+    setReplyTo(null)
+    s.emit(
+      'send_message',
+      {
+        channel_id: channelId,
+        content: toSend,
+        ...(replyId ? { reply_to_message_id: replyId } : {}),
+        ...(threadRootId ? { thread_root_message_id: threadRootId } : {}),
+      },
+      (ack) => {
+        setMessages((prev) => prev.filter((m) => m._clientId !== clientId))
+        if (ack?.error === 'rate_limited') {
+          setSendError(t('chat.errRateLimited'))
+          setText(toSend)
+          setReplyTo(savedReply)
+          return
+        }
+        if (ack?.error === 'blocked_content') {
+          setSendError(t('chat.errBlocked'))
+          setText(toSend)
+          setReplyTo(savedReply)
+          return
+        }
+        if (ack?.error === 'duplicate_message') {
+          setSendError(ack?.message || t('chat.errDuplicate'))
+          setText(toSend)
+          setReplyTo(savedReply)
+          return
+        }
+        if (ack?.error === 'save_failed') {
+          setSendError(t('chat.errSaveFailed'))
+          setText(toSend)
+          setReplyTo(savedReply)
+          return
+        }
+        if (ack?.ok && ack.message) {
+          setMessages((prev) => {
+            let next = prev
+            if (!next.some((m) => m.id === ack.message.id)) {
+              next = [...next, { ...ack.message, reactions: ack.message.reactions || [] }]
+            }
+            if (ack.scheduler_reply && !next.some((m) => m.id === ack.scheduler_reply.id)) {
+              next = [...next, { ...ack.scheduler_reply, reactions: ack.scheduler_reply.reactions || [] }]
+            }
+            return next
+          })
+        }
+      }
+    )
+  }
+
+  function insertEmojiShortcode(name) {
+    const shortcode = `:${name}:`
+    setText((prev) => {
+      if (!prev.trim()) return `${shortcode} `
+      return `${prev} ${shortcode} `
+    })
+  }
+
+  function deleteMessage(messageId) {
+    if (typeof messageId === 'string' && messageId.startsWith('pending-')) {
+      setMessages((prev) => prev.filter((m) => m.id !== messageId))
+      return
+    }
+    const s = getSocket()
+    if (!s) return
+    s.emit('delete_message', { message_id: messageId }, (ack) => {
+      if (ack?.error === 'forbidden') {
+        setSendError(t('chat.errDeleteForbidden'))
+      }
+    })
+  }
+
+  function pinMessage(messageId, pin) {
+    const s = getSocket()
+    if (!s) return
+    s.emit('pin_message', { message_id: messageId, pin }, (ack) => {
+      if (ack?.error === 'forbidden') {
+        setSendError(t('chat.errPinForbidden'))
+      }
+    })
+  }
+
+  function toggleReaction(messageId, reactionKey, active) {
+    const s = getSocket()
+    if (!s) return
+    s.emit('react_message', { message_id: messageId, reaction_key: reactionKey, active })
+  }
+
+  async function runSearch(e) {
+    e?.preventDefault?.()
+    const q = searchQuery.trim()
+    if (q.length < 2 || !channelId) return
+    setSearchBusy(true)
+    try {
+      const { data } = await api.get(`/messages/channel/${channelId}/search`, { params: { q } })
+      setSearchResults(Array.isArray(data) ? data : [])
+    } catch {
+      setSearchResults([])
+    } finally {
+      setSearchBusy(false)
+    }
+  }
+
+  function startReply(m) {
+    const snippet =
+      m.content && m.content !== '(imagen)'
+        ? m.content.slice(0, 120)
+        : m.image_url
+          ? t('common.image')
+          : ''
+    setReplyTo({ id: m.id, username: m.username, snippet })
+  }
+
+  function cancelEdit() {
+    setEditingMessageId(null)
+    setEditingDraft('')
+  }
+
+  async function showEditHistory(messageId) {
+    try {
+      const { data } = await api.get(`/messages/${messageId}/edit-history`)
+      const items = Array.isArray(data) ? data : []
+      setEditHistoryEntries(items.slice(0, 50))
+      setEditHistoryModalOpen(true)
+    } catch (err) {
+      if (err?.response?.status === 403) {
+        setSendError(t('chat.errEditHistory403'))
+        return
+      }
+      setSendError(t('chat.errEditHistory'))
+    }
+  }
+
+  function saveEdit() {
+    if (!editingMessageId || !editingDraft.trim()) return
+    const s = getSocket()
+    if (!s) return
+    setSendError('')
+    const id = editingMessageId
+    const content = editingDraft.trim()
+    s.emit('edit_message', { message_id: id, content }, (ack) => {
+      if (ack?.error === 'blocked_content') {
+        setSendError(t('chat.errEditBlocked'))
+        return
+      }
+      if (ack?.error === 'forbidden' || ack?.error === 'not_found') {
+        setSendError(t('chat.errEditForbidden'))
+        return
+      }
+      if (ack?.ok) {
+        cancelEdit()
+      }
+    })
+  }
+
+  async function reportMessage(messageId) {
+    const reason = window.prompt(t('chat.promptReport'))
+    if (!reason || !reason.trim()) return
+    try {
+      await api.post(`/messages/${messageId}/report`, { reason: reason.trim() })
+      setSendError(t('chat.reportSent'))
+    } catch (err) {
+      const msg =
+        err?.response?.status === 429
+          ? t('chat.report429')
+          : err?.response?.data?.error || t('chat.reportFailed')
+      setSendError(msg)
+    }
+  }
+
+  async function exportHistory(format) {
+    const token = getAccessToken()
+    if (!token || !channelId) return
+    try {
+      const res = await fetch(`${baseURL}/messages/channel/${channelId}/export?format=${format}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) return
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `channel-${channelId}-messages.${format}`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function refreshLatestMessages() {
+    if (!channelId) return
+    try {
+      const latestId = messages.reduce((max, m) => {
+        const n = Number(m?.id)
+        return Number.isFinite(n) ? Math.max(max, n) : max
+      }, 0)
+      const params = threadRootId ? { thread_root: threadRootId } : {}
+      if (latestId > 0) params.after = latestId
+      const { data } = await api.get(`/messages/channel/${channelId}`, { params })
+      const incoming = Array.isArray(data) ? data : []
+      if (!incoming.length) return
+      setMessages((prev) => {
+        const map = new Map(prev.map((m) => [String(m.id), m]))
+        for (const m of incoming) map.set(String(m.id), m)
+        return [...map.values()].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      })
+    } catch {
+      setSendError(t('chat.errRefresh'))
+    }
+  }
+
+  function validateUploadFile(file) {
+    if (!file) return t('chat.uploadNoFile')
+    if (!ALLOWED_IMAGE_MIME_TYPES.has(String(file.type || '').toLowerCase())) {
+      return t('chat.uploadBadType')
+    }
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      return t('chat.uploadTooBig')
+    }
+    return ''
+  }
+
+  async function uploadChannelImage(file) {
+    if (!file || !channelId) return
+    const fileError = validateUploadFile(file)
+    if (fileError) {
+      setSendError(fileError)
+      return
+    }
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const token = getAccessToken()
+      const res = await fetch(`${baseURL}/upload/channel/${channelId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'upload')
+      const s = getSocket()
+      s.emit(
+        'send_message',
+        {
+          channel_id: channelId,
+          content: '',
+          image_url: data.url,
+          ...(threadRootId ? { thread_root_message_id: threadRootId } : {}),
+        },
+        (ack) => {
+          if (ack?.error === 'rate_limited') {
+            setSendError(t('chat.errRateLimited'))
+          }
+          if (ack?.error === 'blocked_content') {
+            setSendError(t('chat.errBlocked'))
+          }
+        }
+      )
+    } catch {
+      /* ignore */
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function onFile(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    await uploadChannelImage(file)
+  }
+
+  async function onPickFromMobileDevice() {
+    const file = await pickImageFileFromDevice()
+    if (!file) return
+    await uploadChannelImage(file)
+  }
+
+  function onChatDragEnter(e) {
+    if (!channelId) return
+    if (!e.dataTransfer?.types?.includes('Files')) return
+    e.preventDefault()
+    fileDragDepthRef.current += 1
+    setFileDragOver(true)
+  }
+
+  function onChatDragLeave(_e) {
+    fileDragDepthRef.current -= 1
+    if (fileDragDepthRef.current <= 0) {
+      fileDragDepthRef.current = 0
+      setFileDragOver(false)
+    }
+  }
+
+  function onChatDragOver(e) {
+    if (!channelId) return
+    if (e.dataTransfer?.types?.includes('Files')) {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'copy'
+    }
+  }
+
+  async function onChatDrop(e) {
+    if (!channelId) return
+    fileDragDepthRef.current = 0
+    setFileDragOver(false)
+    if (!e.dataTransfer?.types?.includes('Files')) return
+    e.preventDefault()
+    const file = e.dataTransfer?.files?.[0]
+    await uploadChannelImage(file)
+  }
+
+  if (!channelId) {
+    return (
+      <main className="chat-panel empty">
+        <div className="chat-empty-hero">
+          <p className="chat-empty-title">{t('chat.emptyChoose')}</p>
+          <p className="chat-empty-sub">{t('chat.emptyHint')}</p>
+        </div>
+      </main>
+    )
+  }
+
+  const isVoice = channelType === 'voice'
+  const isForum = channelType === 'forum'
+  const pinnedMessages = messages
+    .filter((m) => m.is_pinned)
+    .sort((a, b) => new Date(b.pinned_at || b.created_at).getTime() - new Date(a.pinned_at || a.created_at).getTime())
+
+  function jumpToMessage(messageId) {
+    const node = messageNodeRef.current.get(messageId)
+    if (!node) return
+    node.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  const typingNames = Object.values(typingPeers)
+  let typingLine = ''
+  if (typingNames.length === 1) typingLine = t('chat.typingOne', { name: typingNames[0] })
+  else if (typingNames.length === 2)
+    typingLine = t('chat.typingTwo', { a: typingNames[0], b: typingNames[1] })
+  else if (typingNames.length > 2) {
+    const n = typingNames.length - 2
+    typingLine =
+      n === 1
+        ? t('chat.typingManyOne', { a: typingNames[0], b: typingNames[1] })
+        : t('chat.typingMany', { a: typingNames[0], b: typingNames[1], n })
+  }
+
+  return (
+    <main
+      className={`chat-panel${fileDragOver ? ' chat-panel--file-drag' : ''}${isVoice ? ' chat-panel--voice' : ''}`}
+      onDragEnter={onChatDragEnter}
+      onDragLeave={onChatDragLeave}
+      onDragOver={onChatDragOver}
+      onDrop={onChatDrop}
+    >
+      <header className="chat-header">
+        <div className="chat-header-topic">
+          <span className="hash" aria-hidden="true">
+            {isVoice ? '🔊' : isForum ? '🗂' : '#'}
+          </span>
+          <div>
+            <span className="chat-title">{channelName || t('chat.channelFallback')}</span>
+            <p className="chat-header-hint">
+              {isVoice ? t('chat.hintVoice') : t('chat.hintLive')}
+            </p>
+          </div>
+        </div>
+        <div className="chat-header-actions">
+          <button type="button" className="btn ghost small" onClick={refreshLatestMessages} title={t('chat.refreshTitle')}>
+            {t('common.refresh')}
+          </button>
+          {channelId && (
+            <button
+              type="button"
+              className="btn ghost small"
+              onClick={onOpenChannelSettings}
+              title={t('chat.channelSettingsTitle')}
+            >
+              ⚙
+            </button>
+          )}
+          {channelId && typeof onOpenMembersPanel === 'function' && (
+            <button
+              type="button"
+              className="btn ghost small chat-members-trigger"
+              onClick={onOpenMembersPanel}
+              title={t('chat.membersTitle')}
+              aria-label={t('chat.membersOpenAria', { count: membersCount })}
+            >
+              <span className="chat-members-trigger-text">{t('chat.membersLabel')}</span>
+              {membersCount > 0 && (
+                <span className="chat-members-badge" aria-hidden="true">
+                  {membersCount > 99 ? '99+' : membersCount}
+                </span>
+              )}
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn ghost small"
+            onClick={() => setSearchOpen((o) => !o)}
+            title={t('chat.searchTitle')}
+            aria-expanded={searchOpen}
+          >
+            🔎
+          </button>
+          <div className="chat-save-row" role="group" aria-label={t('chat.downloadHistoryAria')}>
+              <button type="button" className="btn link chat-save-link" onClick={() => exportHistory('csv')}>
+                {t('chat.spreadsheet')}
+              </button>
+              <span className="chat-save-dot" aria-hidden="true">
+                ·
+              </span>
+              <button type="button" className="btn link chat-save-link" onClick={() => exportHistory('json')}>
+                {t('chat.jsonBackup')}
+              </button>
+            </div>
+          <span className="chat-live-pill" title={t('chat.liveTitle')}>
+            <span className="chat-live-dot" aria-hidden="true" />
+            {t('chat.live')}
+          </span>
+        </div>
+      </header>
+
+      {threadRootId && !isVoice && (
+        <div className="thread-banner" role="region" aria-label={t('chat.threadAria')}>
+          <button type="button" className="btn ghost small" onClick={() => setThreadRootId(null)}>
+            {t('chat.backToChannel')}
+          </button>
+          <span className="thread-banner-label">
+            {t('chat.threadLabel')}
+            {(() => {
+              const root = messages.find((m) => Number(m.id) === Number(threadRootId))
+              const n = Number(root?.thread_reply_count)
+              if (!n || n < 1) return null
+              return (
+                <span className="thread-banner-count">
+                  {' '}
+                  {n === 1 ? t('chat.threadReply_one', { count: n }) : t('chat.threadReply_other', { count: n })}
+                </span>
+              )
+            })()}
+          </span>
+        </div>
+      )}
+
+      <>
+      {searchOpen && (
+        <section className="chat-search-panel" aria-label={t('chat.searchInChannelAria')}>
+          <form className="chat-search-form" onSubmit={runSearch}>
+            <input
+              className="composer-input chat-search-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('chat.searchPlaceholder')}
+              aria-label={t('chat.searchQueryAria')}
+            />
+            <button type="submit" className="btn secondary small" disabled={searchBusy || searchQuery.trim().length < 2}>
+              {searchBusy ? '…' : t('common.search')}
+            </button>
+            <button
+              type="button"
+              className="btn ghost small"
+              onClick={() => {
+                setSearchOpen(false)
+                setSearchResults([])
+              }}
+            >
+              {t('chat.close')}
+            </button>
+          </form>
+          {searchResults.length > 0 && (
+            <ul className="chat-search-results">
+              {searchResults.map((sm) => (
+                <li key={sm.id}>
+                  <button
+                    type="button"
+                    className="chat-search-hit"
+                    onClick={() => {
+                      jumpToMessage(sm.id)
+                      setSearchOpen(false)
+                    }}
+                  >
+                    <span className="chat-search-hit-user">{sm.username}</span>
+                    <span className="chat-search-hit-text">
+                      {sm.content && sm.content !== '(imagen)'
+                        ? sm.content.slice(0, 120)
+                        : sm.image_url
+                          ? t('common.image')
+                          : ''}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+      {pinnedMessages.length > 0 && (
+        <section className="pinned-strip">
+          <div className="pinned-strip-head">
+            <span className="pinned-strip-label">{t('chat.pinnedForEveryone')}</span>
+            <span className="pinned-strip-badge">{pinnedMessages.length}</span>
+          </div>
+          <div className="pinned-strip-list">
+            {pinnedMessages.map((m) => (
+              <button
+                key={`pin-${m.id}`}
+                type="button"
+                className="pinned-chip"
+                onClick={() => jumpToMessage(m.id)}
+                title={t('chat.goToMessage')}
+              >
+                <span className="pinned-chip-user">{m.username}:</span>
+                {m.content && m.content !== '(imagen)' && (
+                  <span className="pinned-chip-text">
+                    <RichMessageText text={m.content.slice(0, 80)} emojis={emojiMap} />
+                  </span>
+                )}
+                {m.image_url && (
+                  <>
+                    <img
+                      src={resolveImageUrl(m.image_url)}
+                      alt={t('chat.pinnedImageAlt')}
+                      className="pinned-chip-image"
+                    />
+                    <span className="pinned-chip-preview" aria-hidden="true">
+                      <img src={resolveImageUrl(m.image_url)} alt="" className="pinned-chip-preview-image" />
+                    </span>
+                  </>
+                )}
+                {!m.content && m.image_url && <span className="pinned-chip-text">{t('common.image')}</span>}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+      <div className="message-list">
+        {typingLine && (
+          <div className="typing-bar" role="status">
+            <span className="typing-dots" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+            {typingLine}
+          </div>
+        )}
+        {sendError && <div className="error-banner inline">{sendError}</div>}
+        {messages.length === 0 && (
+          <div className="empty-chat-tip">
+            <p className="empty-chat-title">{t('chat.quietTitle')}</p>
+            <p className="empty-chat-sub">
+              {isVoice ? t('chat.quietVoice') : t('chat.quietText')}
+            </p>
+          </div>
+        )}
+        {messages.map((m) => {
+          const isOwnMessage = user?.id != null && Number(m.user_id) === Number(user.id)
+          return (
+          <article
+            key={m.id}
+            className={`message-row${m._optimistic ? ' message-row--optimistic' : ''}${
+              isOwnMessage ? ' message-row--own' : ''
+            }${
+              composerHighlightId != null && String(m.id) === String(composerHighlightId)
+                ? ' message-row--composer-history-match'
+                : ''
+            }`}
+            id={
+              composerHighlightId != null && String(m.id) === String(composerHighlightId)
+                ? `hist-msg-${m.id}`
+                : undefined
+            }
+            ref={(el) => {
+              if (el) messageNodeRef.current.set(m.id, el)
+              else messageNodeRef.current.delete(m.id)
+            }}
+          >
+            {(m.avatar_url || memberAvatarByUserId.get(Number(m.user_id))) &&
+            !failedAvatarKeys.has(`${m.id}:${m.avatar_url || memberAvatarByUserId.get(Number(m.user_id))}`) ? (
+              <img
+                className="avatar avatar-img"
+                src={resolveImageUrl(m.avatar_url || memberAvatarByUserId.get(Number(m.user_id)))}
+                alt={t('chat.userAvatar', { name: m.username || t('channelList.userFallback') })}
+                onError={() =>
+                  setFailedAvatarKeys((prev) => {
+                    const next = new Set(prev)
+                    next.add(`${m.id}:${m.avatar_url || memberAvatarByUserId.get(Number(m.user_id))}`)
+                    return next
+                  })
+                }
+              />
+            ) : (
+              <div className="avatar">{m.username?.slice(0, 1).toUpperCase()}</div>
+            )}
+            <div className="message-content">
+              <div className="message-meta">
+                <strong>{m.username}</strong>
+                {m.is_pinned && <span className="pin-badge">{t('chat.pinned')}</span>}
+                <time>
+                  {new Date(m.created_at).toLocaleString(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </time>
+                {m.edited_at && <span className="edited-badge">{t('common.edited')}</span>}
+              </div>
+              {(m.reply_preview_username || m.reply_preview_content) && (
+                <div className="message-reply-preview">
+                  <span className="message-reply-preview-label">
+                    {t('chat.replyingTo', {
+                      name: m.reply_preview_username || t('chat.replyingToGeneric'),
+                    })}
+                  </span>
+                  {m.reply_preview_content && m.reply_preview_content !== '(imagen)' && (
+                    <span className="message-reply-preview-snippet">
+                      {String(m.reply_preview_content).slice(0, 100)}
+                    </span>
+                  )}
+                </div>
+              )}
+              {editingMessageId === m.id ? (
+                <div className="message-edit-block">
+                  <textarea
+                    className="composer-input message-edit-textarea"
+                    value={editingDraft}
+                    onChange={(e) => setEditingDraft(e.target.value)}
+                    rows={3}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        saveEdit()
+                      }
+                      if (e.key === 'Escape') cancelEdit()
+                    }}
+                  />
+                  <div className="message-edit-actions">
+                    <button type="button" className="btn primary small" onClick={saveEdit}>
+                      {t('chat.save')}
+                    </button>
+                    <button type="button" className="btn ghost small" onClick={cancelEdit}>
+                      {t('chat.cancel')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+              {m.content && m.content !== '(imagen)' && (
+                <p className="message-body">
+                  <RichMessageText text={m.content} emojis={emojiMap} />
+                </p>
+              )}
+              {m.content && m.content !== '(imagen)' && (
+                <MessageVideoEmbeds content={m.content} />
+              )}
+              {m.content && m.content !== '(imagen)' && (
+                <MessageLinkPreview content={m.content} />
+              )}
+              {m.image_url && (
+                <a href={m.image_url} target="_blank" rel="noreferrer">
+                  <img
+                    src={resolveImageUrl(m.image_url)}
+                    alt=""
+                    className="message-image"
+                  />
+                </a>
+              )}
+                </>
+              )}
+              <div
+                className="reaction-row"
+                ref={reactionPickerId === m.id ? reactionPickerWrapRef : undefined}
+              >
+                {!m._optimistic && editingMessageId !== m.id &&
+                (m.reactions || []).map((r) => (
+                  <button
+                    key={`${m.id}-${r.key}`}
+                    type="button"
+                    className={`reaction-chip ${r.reacted ? 'active' : ''}`}
+                    onClick={() => toggleReaction(m.id, r.key, !r.reacted)}
+                  >
+                    <EmojiText text={r.key} emojis={emojiMap} /> <span>{r.count}</span>
+                  </button>
+                ))}
+                {!m._optimistic && editingMessageId !== m.id && reactionPickerId === m.id && (
+                  <div className="reaction-picker-inline">
+                    {['👍', '❤️', '🔥', '😂'].map((k) => (
+                      <button key={k} type="button" className="reaction-chip" onClick={() => toggleReaction(m.id, k, true)}>
+                        {k}
+                      </button>
+                    ))}
+                    {emojis.slice(0, 8).map((emoji) => {
+                      const key = `:${emoji.name}:`
+                      return (
+                        <button
+                          key={`${m.id}-pick-${emoji.id}`}
+                          type="button"
+                          className="reaction-chip"
+                          onClick={() => toggleReaction(m.id, key, true)}
+                        >
+                          <EmojiText text={key} emojis={emojiMap} />
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+              <div className="message-actions" aria-label={t('chat.messageActionsAria')}>
+                <button
+                  type="button"
+                  className="message-action-icon"
+                  title={t('chat.deleteTitle')}
+                  aria-label={t('chat.deleteAria')}
+                  onClick={() => deleteMessage(m.id)}
+                >
+                  🗑️
+                </button>
+                {!m._optimistic && editingMessageId !== m.id && (
+                  <button
+                    type="button"
+                    className="message-action-icon"
+                    title={t('chat.replyTitle')}
+                    aria-label={t('chat.replyAria')}
+                    onClick={() => startReply(m)}
+                  >
+                    ↩
+                  </button>
+                )}
+                {!m._optimistic && !threadRootId && channelType === 'text' && (
+                  <button
+                    type="button"
+                    className="message-action-icon message-thread-btn"
+                    title={
+                      Number(m.thread_reply_count) > 0
+                        ? t('chat.threadOpenCount', { count: m.thread_reply_count })
+                        : t('chat.threadOpen')
+                    }
+                    aria-label={t('chat.threadOpenAria')}
+                    onClick={() => setThreadRootId(Number(m.id))}
+                  >
+                    <span className="message-thread-btn-inner" aria-hidden>
+                      #
+                      {Number(m.thread_reply_count) > 0 ? (
+                        <span className="thread-reply-count-pill">{m.thread_reply_count}</span>
+                      ) : null}
+                    </span>
+                  </button>
+                )}
+                {!m._optimistic && (
+                  <>
+                    <button
+                      type="button"
+                      className={`message-action-icon${m.is_pinned ? ' message-action-icon--on' : ''}`}
+                      title={m.is_pinned ? t('chat.unpin') : t('chat.pin')}
+                      aria-label={m.is_pinned ? t('chat.unpinAria') : t('chat.pinAria')}
+                      onClick={() => pinMessage(m.id, !m.is_pinned)}
+                    >
+                      📌
+                    </button>
+                    <button
+                      type="button"
+                      className="message-action-icon"
+                      title={t('chat.reactTitle')}
+                      aria-label={t('chat.reactAria')}
+                      onClick={() => setReactionPickerId((prev) => (prev === m.id ? null : m.id))}
+                    >
+                      ➕
+                    </button>
+                    <button
+                      type="button"
+                      className="message-action-icon"
+                      title={t('chat.reportTitle')}
+                      aria-label={t('chat.reportAria')}
+                      onClick={() => reportMessage(m.id)}
+                    >
+                      🚩
+                    </button>
+                    {user?.id != null && Number(m.user_id) === Number(user.id) && m.content && m.content !== '(imagen)' && (
+                      <button
+                        type="button"
+                        className="message-action-icon"
+                        title={t('chat.editTitle')}
+                        aria-label={t('chat.editAria')}
+                        onClick={() => {
+                          setEditingMessageId(m.id)
+                          setEditingDraft(m.content || '')
+                        }}
+                      >
+                        ✎
+                      </button>
+                    )}
+                    {!!m.edited_at && (
+                      <button
+                        type="button"
+                        className="message-action-icon"
+                        title={t('chat.viewHistoryTitle')}
+                        aria-label={t('chat.viewHistoryAria')}
+                        onClick={() => showEditHistory(m.id)}
+                      >
+                        🕘
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </article>
+          )
+        })}
+        <div ref={bottomRef} />
+      </div>
+      </>
+
+      {rtcVoiceChannelId != null && (
+        <VoiceRoom
+          channelId={rtcVoiceChannelId}
+          user={user}
+          autoJoin={isVoice && !isMobileViewport}
+          compact={!isVoice}
+          channelLabel={rtcVoiceChannelName}
+          voiceUserLimit={voiceUserLimit}
+          voiceConnectedCount={voiceConnectedCount}
+          onVoiceSessionChange={onVoiceSessionChange}
+        />
+      )}
+
+      <footer className="composer">
+        {replyTo && (
+          <div className="reply-context-bar">
+            <div className="reply-context-text">
+              <span className="reply-context-label">{t('chat.replyingToBar', { name: replyTo.username })}</span>
+              {replyTo.snippet ? (
+                <p className="reply-context-snippet">{replyTo.snippet}</p>
+              ) : null}
+            </div>
+            <button type="button" className="btn ghost small" onClick={() => setReplyTo(null)} aria-label={t('chat.cancelReplyAria')}>
+              ✕
+            </button>
+          </div>
+        )}
+        <label className="file-btn">
+          <input
+            id="chat-composer-attachment"
+            name="attachment"
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={onFile}
+          />
+          📎
+        </label>
+        {isCapacitorNative() && (
+          <button
+            type="button"
+            className="btn ghost small file-btn-mobile"
+            onClick={onPickFromMobileDevice}
+            title={t('chat.attachFromDevice', { defaultValue: 'Attach from device' })}
+            aria-label={t('chat.attachFromDevice', { defaultValue: 'Attach from device' })}
+          >
+            📷
+          </button>
+        )}
+        <StandardEmojiPicker
+          inputRef={composerInputRef}
+          text={text}
+          setText={setText}
+          disabled={!channelId}
+        />
+        {emojis.length > 0 && (
+          <div className="emoji-picker-wrap" ref={emojiPickerWrapRef}>
+            <button
+              type="button"
+              className="btn ghost small"
+              onClick={() => setPickerOpen((prev) => !prev)}
+              title={t('chat.serverEmojisTitle')}
+            >
+              😀
+            </button>
+            {pickerOpen && (
+              <div className="emoji-picker-panel">
+                {emojis.map((emoji) => (
+                  <button
+                    key={emoji.id}
+                    type="button"
+                    className="emoji-picker-item"
+                    onClick={() => insertEmojiShortcode(emoji.name)}
+                    title={`:${emoji.name}:`}
+                  >
+                    <img
+                      src={resolveImageUrl(emoji.image_url)}
+                      alt={emoji.name}
+                    />
+                    <span>:{emoji.name}:</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <input
+          ref={composerInputRef}
+          id="chat-composer-message"
+          name="message"
+          className="composer-input"
+          placeholder={
+            isVoice
+              ? t('chat.phVoice')
+              : isForum
+                ? t('chat.phForum')
+                : channelName
+                  ? t('chat.phChannel', { name: channelName })
+                  : t('chat.phDefault')
+          }
+          value={text}
+          onChange={handleComposerChange}
+          onKeyDown={(e) => {
+            if (composerHistoryMatches.length > 1 && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+              e.preventDefault()
+              const len = composerHistoryMatches.length
+              if (e.key === 'ArrowDown') {
+                setComposerHistoryIndex((i) => (i + 1) % len)
+              } else {
+                setComposerHistoryIndex((i) => (i - 1 + len) % len)
+              }
+              return
+            }
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              send()
+            }
+          }}
+          aria-autocomplete="list"
+          aria-controls="chat-composer-history-hint"
+          aria-activedescendant={
+            composerHighlightId != null ? `hist-msg-${composerHighlightId}` : undefined
+          }
+        />
+        <button
+          type="button"
+          className="btn primary chat-send-btn"
+          onClick={send}
+          disabled={uploading || !text.trim()}
+        >
+          {isForum ? t('chat.post') : t('chat.send')}
+        </button>
+        {text.trim().length > 0 && composerHistoryMatches.length > 0 && (
+          <div
+            id="chat-composer-history-hint"
+            className="composer-history-hint"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="composer-history-hint-label">{t('chat.historyMatch')}</span>
+            <span className="composer-history-hint-meta">
+              {composerHistorySafeIndex + 1} / {composerHistoryMatches.length}
+            </span>
+            <span className="composer-history-hint-snippet">
+              {composerHistoryMatches[composerHistorySafeIndex]?.username}:{' '}
+              {String(composerHistoryMatches[composerHistorySafeIndex]?.content || '').slice(0, 120)}
+              {String(composerHistoryMatches[composerHistorySafeIndex]?.content || '').length > 120 ? '…' : ''}
+            </span>
+            {composerHistoryMatches.length > 1 ? (
+              <span className="composer-history-hint-keys muted small">↑ ↓</span>
+            ) : null}
+          </div>
+        )}
+      </footer>
+      <EditHistoryModal
+        open={editHistoryModalOpen}
+        title={t('chat.editHistoryTitle')}
+        entries={editHistoryEntries}
+        onClose={() => {
+          setEditHistoryModalOpen(false)
+          setEditHistoryEntries([])
+        }}
+      />
+    </main>
+  )
+}

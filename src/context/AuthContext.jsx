@@ -1,0 +1,345 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import api, {
+  refreshSessionAfterForeground,
+  startSessionKeepAlive,
+  stopSessionKeepAlive,
+} from '../services/api'
+import { connectAkoeNet, disconnectAkoeNet } from '../services/socket'
+import { addNativeAppStateListener } from '../lib/mobile-runtime'
+import {
+  clearSessionTokens,
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+  setRefreshToken,
+} from '../services/session-store'
+import { reportError } from '../lib/reportError'
+
+const AuthContext = createContext(null)
+const SESSION_NOTICE_KEY = 'akoenet_session_notice'
+
+/** True when the browser got no HTTP response (server down, restarting, wrong port, etc.). */
+function isUnreachableApiError(err) {
+  if (!err) return false
+  const code = err.code
+  if (code === 'ERR_NETWORK' || code === 'ECONNABORTED' || code === 'ECONNREFUSED') return true
+  if (err.message === 'Network Error') return true
+  const msg = String(err.message || '')
+  if (msg.includes('CONNECTION_REFUSED') || msg.includes('Failed to fetch')) return true
+  return !err.response
+}
+
+/** 5xx / rate-limit: no borrar tokens; el backend puede estar frío (p. ej. Render) o saturado. */
+function isTransientServerError(err) {
+  const s = err?.response?.status
+  if (s == null) return false
+  if (s >= 500 && s <= 599) return true
+  if (s === 429 || s === 408) return true
+  return false
+}
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [serverUnreachable, setServerUnreachable] = useState(false)
+
+  const logout = useCallback(async () => {
+    const rt = getRefreshToken()
+    try {
+      if (rt) {
+        await api.post('/auth/logout', { refresh_token: rt })
+      }
+    } catch (err) {
+      reportError('auth.logout', err)
+    }
+    clearSessionTokens()
+    stopSessionKeepAlive()
+    disconnectAkoeNet()
+    setUser(null)
+    setServerUnreachable(false)
+  }, [])
+
+  /** Revokes refresh tokens on all devices; clears this session. */
+  const logoutAllDevices = useCallback(async () => {
+    try {
+      await api.post('/auth/logout-all')
+    } catch (err) {
+      reportError('auth.logoutAllDevices', err)
+    }
+    clearSessionTokens()
+    stopSessionKeepAlive()
+    disconnectAkoeNet()
+    setUser(null)
+    setServerUnreachable(false)
+  }, [])
+
+  const refreshUser = useCallback(async () => {
+    const token = getAccessToken()
+    if (!token) {
+      setRefreshToken(null)
+      setUser(null)
+      setServerUnreachable(false)
+      setLoading(false)
+      return
+    }
+    setServerUnreachable(false)
+    setLoading(true)
+
+    const delays = [0, 900, 1800]
+    let lastErr = null
+    for (let i = 0; i < delays.length; i += 1) {
+      if (delays[i] > 0) {
+        await new Promise((r) => setTimeout(r, delays[i]))
+      }
+      try {
+        const { data } = await api.get('/auth/me')
+        setUser(data)
+        if (data.needs_terms_acceptance) {
+          stopSessionKeepAlive()
+          disconnectAkoeNet()
+        } else {
+          connectAkoeNet(getAccessToken() || token)
+          startSessionKeepAlive()
+        }
+        setServerUnreachable(false)
+        setLoading(false)
+        return
+      } catch (err) {
+        lastErr = err
+        if (isUnreachableApiError(err) && i < delays.length - 1) {
+          continue
+        }
+        if (isUnreachableApiError(err)) {
+          stopSessionKeepAlive()
+          disconnectAkoeNet()
+          setUser(null)
+          setServerUnreachable(true)
+          setLoading(false)
+          return
+        }
+        break
+      }
+    }
+
+    if (!lastErr) {
+      setLoading(false)
+      return
+    }
+
+    if (isTransientServerError(lastErr)) {
+      stopSessionKeepAlive()
+      disconnectAkoeNet()
+      setUser(null)
+      setServerUnreachable(true)
+      setLoading(false)
+      return
+    }
+
+    if (lastErr.response?.data?.error === 'Token expired, please login again') {
+      localStorage.setItem(
+        SESSION_NOTICE_KEY,
+        'Your session expired due to a security update. Please sign in again.'
+      )
+    }
+    clearSessionTokens()
+    stopSessionKeepAlive()
+    disconnectAkoeNet()
+    setUser(null)
+    setServerUnreachable(false)
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    refreshUser()
+  }, [refreshUser])
+
+  useEffect(() => {
+    const onSessionLost = () => {
+      disconnectAkoeNet()
+      setUser(null)
+      setServerUnreachable(false)
+      setLoading(false)
+    }
+    window.addEventListener('akoenet:session-lost', onSessionLost)
+    return () => window.removeEventListener('akoenet:session-lost', onSessionLost)
+  }, [])
+
+  useEffect(() => {
+    const onTerms = () => {
+      refreshUser()
+    }
+    window.addEventListener('akoenet:terms-required', onTerms)
+    return () => window.removeEventListener('akoenet:terms-required', onTerms)
+  }, [refreshUser])
+
+  useEffect(() => {
+    if (!user) return undefined
+    const onVis = () => {
+      if (document.visibilityState === 'visible') {
+        refreshSessionAfterForeground()
+      }
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return undefined
+    let removeListener = null
+    addNativeAppStateListener(() => {
+      refreshSessionAfterForeground()
+    })
+      .then((cleanup) => {
+        removeListener = cleanup
+      })
+      .catch((err) => reportError('auth.nativeAppStateListener', err))
+    return () => {
+      try {
+        removeListener?.()
+      } catch (err) {
+        reportError('auth.nativeAppStateListener.cleanup', err)
+      }
+    }
+  }, [user])
+
+  const login = useCallback(async (email, password) => {
+    const { data } = await api.post('/auth/login', { email, password })
+    if (data.requires_2fa && data.two_factor_token) {
+      return { requires2fa: true, twoFactorToken: data.two_factor_token }
+    }
+    setAccessToken(data.token)
+    if (data.refresh_token) setRefreshToken(data.refresh_token)
+    setUser(data.user)
+    setServerUnreachable(false)
+    if (!data.user.needs_terms_acceptance) {
+      connectAkoeNet(data.token)
+      startSessionKeepAlive()
+    } else {
+      stopSessionKeepAlive()
+      disconnectAkoeNet()
+    }
+    return { user: data.user, requires2fa: false }
+  }, [])
+
+  const completeLogin2fa = useCallback(async (twoFactorToken, code) => {
+    const { data } = await api.post('/auth/login/2fa', {
+      two_factor_token: twoFactorToken,
+      code,
+    })
+    setAccessToken(data.token)
+    if (data.refresh_token) setRefreshToken(data.refresh_token)
+    setUser(data.user)
+    setServerUnreachable(false)
+    if (!data.user.needs_terms_acceptance) {
+      connectAkoeNet(data.token)
+      startSessionKeepAlive()
+    } else {
+      stopSessionKeepAlive()
+      disconnectAkoeNet()
+    }
+    return data.user
+  }, [])
+
+  const loginWithToken = useCallback(async (token) => {
+    setAccessToken(token)
+    const { data } = await api.get('/auth/me')
+    setUser(data)
+    if (!data.needs_terms_acceptance) {
+      connectAkoeNet(token)
+      startSessionKeepAlive()
+    } else {
+      stopSessionKeepAlive()
+      disconnectAkoeNet()
+    }
+    return data
+  }, [])
+
+  const acceptTerms = useCallback(async () => {
+    const { data: ver } = await api.get('/auth/terms/version')
+    const { data } = await api.post('/auth/terms/accept', { version: ver.current_terms_version })
+    setUser(data.user)
+    const t = getAccessToken()
+    if (t && data.user && !data.user.needs_terms_acceptance) {
+      connectAkoeNet(t)
+      startSessionKeepAlive()
+    }
+    return data.user
+  }, [])
+
+  const registerStart = useCallback(async (email, invite) => {
+    const body = { email }
+    if (invite) body.invite = invite
+    const { data } = await api.post('/auth/register/start', body)
+    return { data }
+  }, [])
+
+  const registerComplete = useCallback(
+    async (token, username, password, birth_date) => {
+      const { data: ver } = await api.get('/auth/terms/version')
+      const { data } = await api.post('/auth/register/complete', {
+        token,
+        username,
+        password,
+        birth_date,
+        accept_terms_version: ver.current_terms_version,
+      })
+      return login(data.email, password)
+    },
+    [login]
+  )
+
+  const updateCurrentUser = useCallback((partial) => {
+    setUser((prev) => {
+      if (!prev) return prev
+      return { ...prev, ...(partial || {}) }
+    })
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      serverUnreachable,
+      login,
+      completeLogin2fa,
+      loginWithToken,
+      registerStart,
+      registerComplete,
+      logout,
+      logoutAllDevices,
+      refreshUser,
+      updateCurrentUser,
+      acceptTerms,
+    }),
+    [
+      user,
+      loading,
+      serverUnreachable,
+      login,
+      completeLogin2fa,
+      loginWithToken,
+      registerStart,
+      registerComplete,
+      logout,
+      logoutAllDevices,
+      refreshUser,
+      updateCurrentUser,
+      acceptTerms,
+    ]
+  )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth outside AuthProvider')
+  return ctx
+}
