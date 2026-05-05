@@ -19,7 +19,7 @@ export const landingContent = {
       eyebrow: 'Communities + streaming',
       title: 'Organize your community and your streaming schedule',
       lead:
-        'Built-in Streamer Scheduler commands (`!schedule`, `!next`), servers with text and voice, DMs, mentions, and roles — more than a chat platform, built for communities and streamers.',
+        'Built-in StreamAutomator commands (`!schedule`, `!next`), servers with text and voice, DMs, mentions, and roles — more than a chat platform, built for communities and streamers.',
       ctaPrimary: 'Get started',
       ctaSecondary: 'I already have an account',
     },
@@ -37,7 +37,7 @@ export const landingContent = {
     featuresTitle: 'What you get',
     featureCards: [
       {
-        title: 'Streamer Scheduler',
+        title: 'StreamAutomator',
         body: 'Show upcoming streams from the public Scheduler API with simple chat commands; set your slug in user settings.',
       },
       {
@@ -151,7 +151,7 @@ export const landingContent = {
       eyebrow: 'Comunidades + streaming',
       title: 'Organiza tu comunidad y tu calendario de streams',
       lead:
-        'Integración con Streamer Scheduler (`!schedule`, `!next`), servidores con texto y voz, DM, menciones y roles — una plataforma amplia, pensada para comunidades y streamers.',
+        'Integración con StreamAutomator (`!schedule`, `!next`), servidores con texto y voz, DM, menciones y roles — una plataforma amplia, pensada para comunidades y streamers.',
       ctaPrimary: 'Empezar gratis',
       ctaSecondary: 'Ya tengo cuenta',
     },
@@ -169,7 +169,7 @@ export const landingContent = {
     featuresTitle: 'Funciones principales',
     featureCards: [
       {
-        title: 'Streamer Scheduler',
+        title: 'StreamAutomator',
         body: 'Muestra próximos streams desde la API pública del Scheduler con comandos en el chat; configura tu slug en ajustes de usuario.',
       },
       {

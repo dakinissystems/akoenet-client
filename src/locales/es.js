@@ -175,7 +175,7 @@ export default {
     database: 'Base de datos',
     redis: 'Redis',
     storage: 'Almacenamiento',
-    scheduler: 'API de Streamer Scheduler',
+    scheduler: 'API de StreamAutomator',
     ok: 'OK',
     error: 'ERROR',
     notConfigured: 'SIN CONFIG',
@@ -204,7 +204,7 @@ export default {
       tagline: 'AkoeNet · tus comunidades',
       schedulerTitle: 'Organiza y automatiza tus streams',
       schedulerBody:
-        'AkoeNet incluye integración con Streamer Scheduler: en cualquier canal de texto, usa !schedule o !next. Configura tu slug público en Ajustes de usuario (usuario de Streamer Scheduler). Los servidores nuevos reciben un canal de próximos streams y un mensaje de bienvenida con ejemplos.',
+        'AkoeNet incluye integración con StreamAutomator: en cualquier canal de texto, usa !schedule o !next. Configura tu slug público en Ajustes de usuario (usuario de StreamAutomator). Los servidores nuevos reciben un canal de próximos streams y un mensaje de bienvenida con ejemplos.',
       createTitle: 'Crear servidor',
       createHint: 'Elige un nombre claro. Podrás renombrar y organizar canales después.',
       serverNamePh: 'Nombre del servidor',

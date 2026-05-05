@@ -174,7 +174,7 @@ export default {
     database: 'Database',
     redis: 'Redis',
     storage: 'Storage',
-    scheduler: 'Streamer Scheduler API',
+    scheduler: 'StreamAutomator API',
     ok: 'OK',
     error: 'ERROR',
     notConfigured: 'NO CONFIG',
@@ -202,7 +202,7 @@ export default {
       tagline: 'AkoeNet · your communities',
       schedulerTitle: 'Organize and automate your streaming',
       schedulerBody:
-        'AkoeNet includes a Streamer Scheduler integration: in any server text channel, run !schedule or !next. Set your public Scheduler slug in User Settings (Streamer Scheduler username). New servers get an upcoming streams channel plus a welcome message with examples.',
+        'AkoeNet includes a StreamAutomator integration: in any server text channel, run !schedule or !next. Set your public Scheduler slug in User Settings (StreamAutomator username). New servers get an upcoming streams channel plus a welcome message with examples.',
       createTitle: 'Create server',
       createHint: 'Pick a clear name. You can rename and organize channels later.',
       serverNamePh: 'Server name',

@@ -84,7 +84,7 @@ export default {
   onboarding: {
     title: 'Welcome to AkoeNet',
     lead:
-      'AkoeNet combines Discord-style communities with a built-in <sched>Streamer Scheduler</sched> so you can share upcoming streams without leaving the app.',
+      'AkoeNet combines Discord-style communities with a built-in <sched>StreamAutomator</sched> so you can share upcoming streams without leaving the app.',
     bulletServer:
       '<b>Create or join a server</b> — your home base for channels and voice.',
     bulletScheduler:
@@ -294,8 +294,8 @@ export default {
       customStatusPh: 'What are you up to?',
       bio: 'Bio',
       bioPh: 'About you…',
-      schedulerSlug: 'Streamer Scheduler username (public slug)',
-      schedulerSlugPh: 'e.g. Test — must match /streamer/… on Streamer Scheduler',
+      schedulerSlug: 'StreamAutomator username (public slug)',
+      schedulerSlugPh: 'e.g. Test — must match /streamer/… on StreamAutomator',
       schedulerSlugHint:
         'If your Twitch login differs from your Scheduler profile URL, set the Scheduler account name here so the sidebar schedule and !schedule use the correct API.',
       saveProfile: 'Save profile',
@@ -853,7 +853,7 @@ export default {
       'The backend could not connect to the Scheduler (timeout, DNS, or connection refused). Check SCHEDULER_API_BASE_URL, that the Scheduler is running, and from Docker use a URL the backend container can reach (e.g. host.docker.internal, not only localhost from the host).',
     errStreamer404Title: 'Scheduler: streamer not found',
     errStreamer404Body:
-      'The Scheduler API returned 404 for this username. In User settings, set “Streamer Scheduler username” to your public /streamer/… slug if it differs from Twitch. Or use SCHEDULER_DEFAULT_STREAMER_USERNAME / ?username= with the Scheduler slug. Path default: /api/streamer/{username}/events.',
+      'The Scheduler API returned 404 for this username. In User settings, set “StreamAutomator username” to your public /streamer/… slug if it differs from Twitch. Or use SCHEDULER_DEFAULT_STREAMER_USERNAME / ?username= with the Scheduler slug. Path default: /api/streamer/{username}/events.',
     errUnauthorizedTitle: 'Scheduler: unauthorized',
     errUnauthorizedBody:
       'The Scheduler rejected the request. If your API requires a token, set SCHEDULER_API_TOKEN (or SCHEDULER_API_EXTRA_HEADER / VALUE) in the backend .env.',

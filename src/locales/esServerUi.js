@@ -85,7 +85,7 @@ export default {
   onboarding: {
     title: 'Bienvenido a AkoeNet',
     lead:
-      'AkoeNet combina comunidades al estilo Discord con un <sched>Streamer Scheduler</sched> integrado para compartir próximos streams sin salir de la app.',
+      'AkoeNet combina comunidades al estilo Discord con un <sched>StreamAutomator</sched> integrado para compartir próximos streams sin salir de la app.',
     bulletServer:
       '<b>Crea o únete a un servidor</b> — tu base para canales y voz.',
     bulletScheduler:
@@ -296,8 +296,8 @@ export default {
       customStatusPh: '¿En qué estás?',
       bio: 'Bio',
       bioPh: 'Sobre ti…',
-      schedulerSlug: 'Usuario del Streamer Scheduler (slug público)',
-      schedulerSlugPh: 'p. ej. Test — debe coincidir con /streamer/… en Streamer Scheduler',
+      schedulerSlug: 'Usuario del StreamAutomator (slug público)',
+      schedulerSlugPh: 'p. ej. Test — debe coincidir con /streamer/… en StreamAutomator',
       schedulerSlugHint:
         'Si tu inicio de sesión de Twitch difiere de la URL de tu perfil en Scheduler, pon aquí el nombre de la cuenta Scheduler para que la barra lateral y !schedule usen la API correcta.',
       saveProfile: 'Guardar perfil',

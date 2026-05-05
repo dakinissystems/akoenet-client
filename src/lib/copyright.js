@@ -32,7 +32,7 @@ export function clientCopyrightLineParts(locale) {
 }
 
 /**
- * Línea © con marca Dakinys para pie / textos planos (paridad con Streamer Scheduler `dakinisCopyrightNotice`).
+ * Línea © con marca Dakinys para pie / textos planos (paridad con StreamAutomator `dakinisCopyrightNotice`).
  * @param {string} [locale]
  */
 export function dakinisCopyrightNotice(locale = 'en') {
