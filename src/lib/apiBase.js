@@ -3,7 +3,7 @@
  * VITE_API_URL overrides in dev; in production builds, a localhost value usually means a leaked
  * frontend/.env from the dev machine and would break shipped apps (desktop installers, etc.).
  */
-const PRODUCTION_API_DEFAULT = 'https://akoenet-backend.dakinissystems.com'
+const PRODUCTION_API_DEFAULT = 'https://api.akoenet.dakinissystems.com'
 
 function stripTrailingSlash(u) {
   return String(u || '').replace(/\/$/, '')
