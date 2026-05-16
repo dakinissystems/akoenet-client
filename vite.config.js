@@ -52,5 +52,16 @@ export default defineConfig(({ mode }) => {
       allow: [__dirname, path.join(__dirname, '..')],
     },
   },
+  preview: {
+    host: '0.0.0.0',
+    port: Number(process.env.PORT) || 4173,
+    strictPort: true,
+    allowedHosts: [
+      'akoenet.dakinissystems.com',
+      'www.akoenet.dakinissystems.com',
+      'localhost',
+      '.railway.app',
+    ],
+  },
   }
 })
