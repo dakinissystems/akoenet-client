@@ -1,0 +1,6 @@
+# akoenet-client on Railway (akoenet.dakinissystems.com via Cloudflare CNAME)
+[build]
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "npm run start"

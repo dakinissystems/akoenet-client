@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "node scripts/verify-invite-links.mjs",
-    "build": "vite build",
+    "build": "vite build && node scripts/publish-release-assets.mjs",
+    "start": "node scripts/serve-production.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "mobile:sync": "npx cap sync",
