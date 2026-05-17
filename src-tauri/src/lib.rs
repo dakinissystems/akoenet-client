@@ -1,4 +1,4 @@
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -6,11 +6,19 @@ pub fn run() {
 
   #[cfg(desktop)]
   {
-    builder = builder.plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+    builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
       if let Some(window) = app.get_webview_window("main") {
         let _ = window.unminimize();
         let _ = window.show();
         let _ = window.set_focus();
+      }
+      let urls: Vec<String> = argv
+        .iter()
+        .filter(|arg| arg.starts_with("akoenet://"))
+        .cloned()
+        .collect();
+      if !urls.is_empty() {
+        let _ = app.emit("deep-link://new-url", urls);
       }
     }));
   }

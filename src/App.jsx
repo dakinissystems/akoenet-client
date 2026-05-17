@@ -86,11 +86,14 @@ function AuthGateRoute({ children, requireAdmin = false }) {
 
 export default function App() {
   const navigate = useNavigate()
+  const { loginWithToken } = useAuth()
 
   useEffect(() => {
     let cleanup = null
-    const init = isTauri() ? initDesktopIntegrations : initMobileIntegrations
-    init((to) => navigate(to))
+    const run = isTauri()
+      ? initDesktopIntegrations({ navigate, loginWithToken })
+      : initMobileIntegrations((to) => navigate(to))
+    run
       .then((fn) => {
         cleanup = fn
       })
@@ -104,7 +107,7 @@ export default function App() {
         reportError(isTauri() ? 'desktopIntegrations.cleanup' : 'mobileIntegrations.cleanup', err)
       }
     }
-  }, [navigate])
+  }, [navigate, loginWithToken])
 
   useEffect(() => {
     const onMobilePushToken = (event) => {

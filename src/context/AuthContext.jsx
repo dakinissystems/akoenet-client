@@ -247,8 +247,9 @@ export function AuthProvider({ children }) {
     return data.user
   }, [])
 
-  const loginWithToken = useCallback(async (token) => {
+  const loginWithToken = useCallback(async (token, refreshToken) => {
     setAccessToken(token)
+    if (refreshToken) setRefreshToken(refreshToken)
     const { data } = await api.get('/auth/me')
     setUser(data)
     if (!data.needs_terms_acceptance) {
