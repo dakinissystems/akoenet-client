@@ -1,0 +1,8 @@
+{
+  "appId": "com.dakinis.akoenet",
+  "appName": "AkoeNet",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

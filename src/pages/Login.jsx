@@ -281,7 +281,7 @@ export default function Login() {
                   /* ignore */
                 }
               }
-              const nativeFlow = isCapacitorNative()
+              const nativeFlow = isCapacitorNative() || isTauri()
               window.location.href = nativeFlow
                 ? `${apiBase}/auth/twitch/start?native=1`
                 : `${apiBase}/auth/twitch/start`

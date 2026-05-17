@@ -37,7 +37,13 @@ function consumeTwitchOAuthFromUrl() {
     if (token) setAccessToken(token)
     const refresh = params.get('refresh_token')
     if (refresh) setRefreshToken(refresh)
-    if (err) sessionStorage.setItem(TWITCH_OAUTH_ERR_KEY, err)
+    if (err) {
+      const detail = params.get('twitch_detail')
+      sessionStorage.setItem(
+        TWITCH_OAUTH_ERR_KEY,
+        detail ? `${err}:${detail}` : err
+      )
+    }
     const path = err ? '/login' : window.location.pathname || '/'
     const cleanHash =
       window.location.hash?.includes('?') && (token || err)

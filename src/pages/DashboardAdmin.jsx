@@ -29,6 +29,19 @@ function formatUptimeMs(ms) {
   return `${m}m`
 }
 
+function readyStateIcon(state) {
+  if (state === 'connected' || state === 'ok' || state === 'local') return '✅'
+  if (state === 'not_configured') return '⚪'
+  return '❌'
+}
+
+function readyStateLabel(state, t) {
+  if (state === 'connected') return t('admin.readyConnected')
+  if (state === 'disconnected') return t('admin.readyDisconnected')
+  if (state === 'not_configured') return t('admin.readyNotConfigured')
+  return state || '—'
+}
+
 function KpiCard({ icon, title, value, delta, deltaLabel, sub }) {
   const d = delta
   const showDelta = d != null && !Number.isNaN(Number(d))
@@ -56,6 +69,7 @@ export default function DashboardAdmin({ embedded = false }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [health, setHealth] = useState(null)
+  const [ready, setReady] = useState(null)
   const [deps, setDeps] = useState(null)
   const [history, setHistory] = useState([])
   const [auditLogs, setAuditLogs] = useState([])
@@ -91,7 +105,9 @@ export default function DashboardAdmin({ embedded = false }) {
     setHistory((prev) => {
       const entry = {
         at: new Date().toISOString(),
-        ok: payload?.ok ?? false,
+        liveness: payload?.liveness ?? false,
+        readiness: payload?.readiness ?? false,
+        deps: payload?.deps ?? false,
         total: payload?.total_latency_ms ?? null,
       }
       return [entry, ...prev].slice(0, 10)
@@ -117,13 +133,34 @@ export default function DashboardAdmin({ embedded = false }) {
     reportParams.set('status', reportStatus)
     if (reportServerId.trim()) reportParams.set('server_id', reportServerId.trim())
 
+    let healthBody = null
+    let readyBody = null
+
     try {
-      const healthRes = await api.get('/health')
-      setHealth(healthRes.data)
+      const healthRes = await api.get('/health', acceptAllStatuses)
+      healthBody = healthRes.data && typeof healthRes.data === 'object' ? healthRes.data : null
+      setHealth(healthBody)
+      if (healthRes.status !== 200 || !healthBody?.ok) {
+        setError(t('admin.errHealth'))
+        setLoading(false)
+        return
+      }
     } catch {
       setError(t('admin.errHealth'))
       setLoading(false)
       return
+    }
+
+    try {
+      const readyRes = await api.get('/health/ready', acceptAllStatuses)
+      readyBody = readyRes.data && typeof readyRes.data === 'object' ? readyRes.data : null
+      setReady(readyBody)
+      if (readyRes.status !== 200 && readyRes.status !== 503) {
+        warnings.push(t('admin.warnReadyHttp', { status: readyRes.status }))
+      }
+    } catch {
+      setReady(null)
+      warnings.push(t('admin.warnReadyHttp', { status: 'network' }))
     }
 
     try {
@@ -151,7 +188,6 @@ export default function DashboardAdmin({ embedded = false }) {
       const depsBody = depsRes.data && typeof depsRes.data === 'object' ? depsRes.data : null
       if (depsBody?.deps && typeof depsBody.deps === 'object') {
         setDeps(depsBody)
-        pushHistory(depsBody)
       } else {
         setDeps(null)
         if (depsRes.status === 404) {
@@ -162,6 +198,13 @@ export default function DashboardAdmin({ embedded = false }) {
           warnings.push(t('admin.warnDepsHttp', { status: depsRes.status }))
         }
       }
+
+      pushHistory({
+        liveness: Boolean(healthBody?.ok),
+        readiness: Boolean(readyBody?.ok),
+        deps: Boolean(depsBody?.ok),
+        total_latency_ms: depsBody?.total_latency_ms ?? null,
+      })
 
       if (auditRes.status === 200 && auditRes.data && Array.isArray(auditRes.data.items)) {
         setAuditLogs(auditRes.data.items)
@@ -371,46 +414,107 @@ export default function DashboardAdmin({ embedded = false }) {
               />
             </div>
 
-            {deps?.deps ? (
+            {(health || ready || deps?.deps) ? (
               <div className="admin-health-strip">
                 <h3>
                   <span>🟢 {t('admin.healthTitle')}</span>
                   <span className="muted small">
                     {t('admin.healthLastCheck')}{' '}
-                    {deps.checked_at ? new Date(deps.checked_at).toLocaleString() : '—'}
+                    {ready?.checked_at
+                      ? new Date(ready.checked_at).toLocaleString()
+                      : deps?.checked_at
+                        ? new Date(deps.checked_at).toLocaleString()
+                        : '—'}
                   </span>
                 </h3>
-                <div className="admin-health-line">
-                  <span>
-                    <strong>{t('admin.healthApi')}</strong> {health?.ok ? '✅' : '❌'}{' '}
-                    <Latency ms={deps.deps.api?.latency_ms} />
-                  </span>
-                  <span>
-                    <strong>{t('admin.healthDb')}</strong> {deps.deps.db?.ok ? '✅' : '❌'}{' '}
-                    <Latency ms={deps.deps.db?.latency_ms} />
-                  </span>
-                  <span>
-                    <strong>{t('admin.healthRedis')}</strong>{' '}
-                    {deps.deps.redis?.enabled ? (deps.deps.redis?.ok ? '✅' : '❌') : '⚪'}{' '}
-                    <Latency ms={deps.deps.redis?.latency_ms} />
-                  </span>
-                  <span>
-                    <strong>{t('admin.healthStorage')}</strong> {deps.deps.storage?.ok ? '✅' : '❌'} (
-                    {deps.deps.storage?.driver || 'local'})
-                  </span>
-                  <span>
-                    <strong>{t('admin.healthScheduler')}</strong>{' '}
-                    {!sch?.configured ? `⚪ ${t('admin.schedulerNotConfigured')}` : sch?.ok ? '✅' : '❌'}
-                    {sch?.configured && sch?.version
-                      ? ` v${sch.version}${sch?.legacy ? ` ${t('admin.schedulerLegacy')}` : ''}`
-                      : ''}
-                  </span>
+
+                <div
+                  className="admin-probes-grid"
+                  style={{
+                    display: 'grid',
+                    gap: '0.75rem',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                    marginBottom: '0.75rem',
+                  }}
+                >
+                  <div className="admin-probe-card" style={{ padding: '0.65rem 0.75rem', border: '1px solid var(--border, #333)', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                      <strong>{t('admin.healthLivenessTitle')}</strong>
+                      <code className="inline-code small">{t('admin.healthLivenessPath')}</code>
+                      <StatusBadge
+                        ok={Boolean(health?.ok)}
+                        label={health?.ok ? t('admin.statusOk') : t('admin.statusError')}
+                      />
+                    </div>
+                    <p className="muted small" style={{ margin: 0 }}>{t('admin.healthLivenessHint')}</p>
+                  </div>
+                  <div className="admin-probe-card" style={{ padding: '0.65rem 0.75rem', border: '1px solid var(--border, #333)', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                      <strong>{t('admin.healthReadinessTitle')}</strong>
+                      <code className="inline-code small">{t('admin.healthReadinessPath')}</code>
+                      <StatusBadge
+                        ok={Boolean(ready?.ok)}
+                        label={ready?.ok ? t('admin.statusOk') : t('admin.statusError')}
+                      />
+                    </div>
+                    <p className="muted small" style={{ margin: '0 0 0.35rem' }}>{t('admin.healthReadinessHint')}</p>
+                    {ready ? (
+                      <div className="admin-health-line">
+                        <span>
+                          <strong>{t('admin.healthPostgres')}</strong> {readyStateIcon(ready.postgres)}{' '}
+                          {readyStateLabel(ready.postgres, t)}
+                        </span>
+                        <span>
+                          <strong>{t('admin.healthRedis')}</strong> {readyStateIcon(ready.redis)}{' '}
+                          {readyStateLabel(ready.redis, t)}
+                        </span>
+                        <span>
+                          <strong>{t('admin.healthStorage')}</strong> {readyStateIcon(ready.storage)}{' '}
+                          {ready.storage || '—'}
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="muted small" style={{ margin: 0 }}>{t('admin.na')}</p>
+                    )}
+                  </div>
                 </div>
-                <p className="muted small" style={{ margin: '0.55rem 0 0' }}>
-                  {t('admin.healthFooterProcess')} {formatUptimeMs(deps.uptime_ms)} · {t('admin.healthFooterApp')}{' '}
-                  <code className="inline-code">{deps.version || 'unknown'}</code> · {t('admin.healthFooterCheck')}{' '}
-                  <Latency ms={deps.total_latency_ms} />
-                </p>
+
+                {deps?.deps ? (
+                  <>
+                    <h4 className="muted small" style={{ margin: '0 0 0.45rem' }}>GET /admin/health/deps</h4>
+                    <div className="admin-health-line">
+                      <span>
+                        <strong>{t('admin.healthApi')}</strong> {health?.ok ? '✅' : '❌'}{' '}
+                        <Latency ms={deps.deps.api?.latency_ms} />
+                      </span>
+                      <span>
+                        <strong>{t('admin.healthDb')}</strong> {deps.deps.db?.ok ? '✅' : '❌'}{' '}
+                        <Latency ms={deps.deps.db?.latency_ms} />
+                      </span>
+                      <span>
+                        <strong>{t('admin.healthRedis')}</strong>{' '}
+                        {deps.deps.redis?.enabled ? (deps.deps.redis?.ok ? '✅' : '❌') : '⚪'}{' '}
+                        <Latency ms={deps.deps.redis?.latency_ms} />
+                      </span>
+                      <span>
+                        <strong>{t('admin.healthStorage')}</strong> {deps.deps.storage?.ok ? '✅' : '❌'} (
+                        {deps.deps.storage?.driver || 'local'})
+                      </span>
+                      <span>
+                        <strong>{t('admin.healthScheduler')}</strong>{' '}
+                        {!sch?.configured ? `⚪ ${t('admin.schedulerNotConfigured')}` : sch?.ok ? '✅' : '❌'}
+                        {sch?.configured && sch?.version
+                          ? ` v${sch.version}${sch?.legacy ? ` ${t('admin.schedulerLegacy')}` : ''}`
+                          : ''}
+                      </span>
+                    </div>
+                    <p className="muted small" style={{ margin: '0.55rem 0 0' }}>
+                      {t('admin.healthFooterProcess')} {formatUptimeMs(deps.uptime_ms)} · {t('admin.healthFooterApp')}{' '}
+                      <code className="inline-code">{deps.version || 'unknown'}</code> · {t('admin.healthFooterCheck')}{' '}
+                      <Latency ms={deps.total_latency_ms} />
+                    </p>
+                  </>
+                ) : null}
               </div>
             ) : null}
 
@@ -451,6 +555,9 @@ export default function DashboardAdmin({ embedded = false }) {
                 <h3>⚠️ {t('admin.alertsTitle')}</h3>
                 <ul>
                   <li>{t('admin.alertLicenses')}</li>
+                  {health?.ok && ready && !ready.ok ? (
+                    <li>{t('admin.alertReadinessFailed')}</li>
+                  ) : null}
                   <li>
                     {t('admin.alertReportsPending')}{' '}
                     {pendingFromOverview != null ? formatNum(pendingFromOverview) : '—'}
@@ -685,7 +792,11 @@ export default function DashboardAdmin({ embedded = false }) {
                   {history.map((h, i) => (
                     <li key={`${h.at}-${i}`}>
                       <span>{new Date(h.at).toLocaleTimeString()}</span>
-                      <span>{h.ok ? t('admin.statusOk') : t('admin.statusError')}</span>
+                      <span>
+                        {t('admin.healthLivenessTitle')}: {h.liveness ? '✅' : '❌'} · {t('admin.healthReadinessTitle')}:{' '}
+                        {h.readiness ? '✅' : '❌'}
+                        {h.deps != null ? ` · deps: ${h.deps ? '✅' : '❌'}` : ''}
+                      </span>
                       <span>{h.total ?? t('admin.na')} ms</span>
                     </li>
                   ))}
