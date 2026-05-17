@@ -1,24 +1,22 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   getLandingDeviceKind,
   isAndroidBrowser,
   isIosBrowser,
-  isStandalonePwa,
+  isWindowsBrowser,
 } from '../lib/landingDevice'
 import { isCapacitorNative } from '../lib/mobile-runtime'
 
-/**
- * Sección “descargar / instalar app”: copia distinta para móvil vs PC y PWA (Chrome/Edge).
- *
- * beforeinstallprompt: si usamos preventDefault() para ofrecer nuestro botón “Instalar”,
- * Chrome puede registrar en consola que el banner nativo no se mostró hasta que se llame
- * prompt() — es el patrón recomendado para instalación diferida, no un fallo de la app.
- */
-const desktopDocsUrl = import.meta.env.VITE_DESKTOP_BUILD_DOCS_URL
-const desktopInstallerUrl = import.meta.env.VITE_DESKTOP_INSTALLER_URL
-/** Opcional: fuerza el texto de versión junto al botón (evita confusiones si la URL no lleva semver). */
-const desktopInstallerVersionEnv = String(import.meta.env.VITE_DESKTOP_INSTALLER_VERSION || '').trim()
-const hasHostedDesktop = Boolean(desktopInstallerUrl || desktopDocsUrl)
+const appVersion = typeof __APP_VERSION__ !== 'undefined' ? String(__APP_VERSION__) : '1.5.12'
+
+const desktopInstallerUrl =
+  String(import.meta.env.VITE_DESKTOP_INSTALLER_URL || '').trim() ||
+  `/releases/desktop/AkoeNet_${appVersion}_x64-setup.exe`
+const desktopInstallerVersionEnv = String(import.meta.env.VITE_DESKTOP_INSTALLER_VERSION || appVersion).trim()
+const playStoreUrl = String(import.meta.env.VITE_ANDROID_PLAY_STORE_URL || '').trim()
+const apkUrl = String(import.meta.env.VITE_ANDROID_APK_URL || '').trim()
+const androidStoreApproved =
+  String(import.meta.env.VITE_ANDROID_STORE_APPROVED || '').trim().toLowerCase() === 'true'
 
 function semverFromInstallerUrl(url) {
   if (!url || typeof url !== 'string') return null
@@ -30,9 +28,7 @@ function semverFromInstallerUrl(url) {
       return null
     }
   }
-  const fromTag = path.match(/\/download\/v(\d+\.\d+\.\d+)\//i)
-  if (fromTag) return fromTag[1]
-  const fromFile = path.match(/AkoeNet_(\d+\.\d+\.\d+)_/i)
+  const fromFile = path.match(/AkoeNet[_-](\d+\.\d+\.\d+)/i)
   if (fromFile) return fromFile[1]
   const loose = path.match(/(\d+\.\d+\.\d+)/g)
   return loose ? loose[loose.length - 1] : null
@@ -43,40 +39,87 @@ function installerSemverForDisplay() {
   return semverFromInstallerUrl(desktopInstallerUrl)
 }
 
-const installerSemverShown = installerSemverForDisplay()
-
-function NativeDesktopBlock({ a }) {
+function WindowsDownloadCard({ copy }) {
+  const d = copy.desktop
+  const version = installerSemverForDisplay()
   return (
-    <div className="landing-app-card landing-app-card--muted landing-app-card--desktop-native">
-      <h3 className="landing-app-card-title">{a.desktop.nativeTitle}</h3>
-      <p className="landing-app-card-body">
-        {desktopInstallerUrl ? a.desktop.nativeBodyHosted : a.desktop.nativeBody}
-      </p>
-      {desktopInstallerUrl ? (
-        <a
-          className="btn primary landing-app-native-download"
-          href={desktopInstallerUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {a.desktop.nativeDownloadCta}
-        </a>
-      ) : null}
-      {desktopInstallerUrl && installerSemverShown ? (
+    <div className="landing-app-card landing-app-card--primary">
+      <h3 className="landing-app-card-title">{d.nativeTitle}</h3>
+      <p className="landing-app-card-body">{d.nativeBodyHosted}</p>
+      <p className="muted small landing-app-not-extension">{d.notExtensionNote}</p>
+      <a
+        className="btn primary landing-app-native-download"
+        href={desktopInstallerUrl}
+        download
+        rel="noopener noreferrer"
+      >
+        {d.nativeDownloadCta}
+      </a>
+      {version ? (
         <p className="muted small landing-app-installer-version-hint">
-          {a.desktop.installerVersionHint.replace('{{v}}', installerSemverShown)}
+          {d.installerVersionHint.replace('{{v}}', version)}
         </p>
       ) : null}
-      {desktopDocsUrl ? (
-        <a
-          className="landing-app-native-docs"
-          href={desktopDocsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {a.desktop.nativeDocsCta}
-        </a>
-      ) : null}
+      <p className="muted small landing-app-smartscreen-hint">{d.smartscreenHint}</p>
+    </div>
+  )
+}
+
+function MobileDownloadCard({ copy, mobileOs }) {
+  const m = copy.mobile
+  const approved = androidStoreApproved && (playStoreUrl || apkUrl)
+
+  if (mobileOs === 'android') {
+    return (
+      <div className="landing-app-card landing-app-card--primary">
+        <h3 className="landing-app-card-title">{m.androidTitle}</h3>
+        {approved ? (
+          <>
+            <p className="landing-app-card-body">{m.androidBodyApproved}</p>
+            {playStoreUrl ? (
+              <a
+                className="btn primary landing-app-store-btn"
+                href={playStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {m.playStoreCta}
+              </a>
+            ) : null}
+            {apkUrl ? (
+              <a
+                className="btn secondary landing-app-apk-btn"
+                href={apkUrl}
+                download
+                rel="noopener noreferrer"
+              >
+                {m.apkCta}
+              </a>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <p className="landing-app-card-body">{m.androidBodyPending}</p>
+            <p className="muted small landing-app-not-extension">{m.notExtensionNote}</p>
+          </>
+        )}
+      </div>
+    )
+  }
+
+  if (mobileOs === 'ios') {
+    return (
+      <div className="landing-app-card landing-app-card--muted">
+        <h3 className="landing-app-card-title">{m.iosTitle}</h3>
+        <p className="landing-app-card-body">{m.iosBody}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="landing-app-card landing-app-card--muted">
+      <h3 className="landing-app-card-title">{m.otherTitle}</h3>
+      <p className="landing-app-card-body">{m.otherBody}</p>
     </div>
   )
 }
@@ -85,52 +128,16 @@ export default function LandingAppSection({ t }) {
   const a = t.appSection
   const nativeMobileApp = isCapacitorNative()
   const [kind, setKind] = useState(() => getLandingDeviceKind())
-  const [standalone, setStandalone] = useState(() => isStandalonePwa())
-  const [deferredPrompt, setDeferredPrompt] = useState(null)
-  const [installOutcome, setInstallOutcome] = useState(null)
 
   const isMobile = kind === 'mobile' || kind === 'tablet'
   const mobileOs = isIosBrowser() ? 'ios' : isAndroidBrowser() ? 'android' : 'other'
+  const showWindowsDownload = !isMobile && isWindowsBrowser()
 
   useEffect(() => {
     setKind(getLandingDeviceKind())
-    setStandalone(isStandalonePwa())
   }, [])
 
-  useEffect(() => {
-    if (standalone) return undefined
-    const onBip = (e) => {
-      e.preventDefault()
-      setDeferredPrompt(e)
-    }
-    window.addEventListener('beforeinstallprompt', onBip)
-    return () => window.removeEventListener('beforeinstallprompt', onBip)
-  }, [standalone])
-
-  const runInstall = useCallback(async () => {
-    if (!deferredPrompt) return
-    setInstallOutcome(null)
-    try {
-      await deferredPrompt.prompt()
-      const { outcome } = await deferredPrompt.userChoice
-      setInstallOutcome(outcome === 'accepted' ? 'accepted' : 'dismissed')
-    } catch {
-      setInstallOutcome('error')
-    }
-    setDeferredPrompt(null)
-  }, [deferredPrompt])
-
   if (nativeMobileApp) return null
-
-  if (standalone && !hasHostedDesktop) {
-    return (
-      <section id="app" className="landing-section landing-app" aria-labelledby="landing-app-title">
-        <div className="landing-section-inner landing-app-inner">
-          <p className="landing-app-standalone">{a.standaloneNote}</p>
-        </div>
-      </section>
-    )
-  }
 
   return (
     <section id="app" className="landing-section landing-app" aria-labelledby="landing-app-title">
@@ -139,67 +146,31 @@ export default function LandingAppSection({ t }) {
           {a.title}
         </h2>
         <p className="landing-app-lead">{a.lead}</p>
+        <p className="muted small landing-app-not-extension landing-app-lead-note">{a.notExtensionLead}</p>
 
-        {isMobile ? (
-          <>
-            <div className="landing-app-columns">
-              {standalone ? (
-                <div className="landing-app-card landing-app-card--muted">
-                  <h3 className="landing-app-card-title">{a.desktop.standalonePwaTitle}</h3>
-                  <p className="landing-app-card-body">{a.desktop.standalonePwaLead}</p>
-                </div>
-              ) : (
-                <div className="landing-app-card">
-                  <h3 className="landing-app-card-title">{a.mobile.pwaTitle}</h3>
-                  {mobileOs === 'ios' ? (
-                    <p className="landing-app-card-body">{a.mobile.pwaBodyIOS}</p>
-                  ) : mobileOs === 'android' ? (
-                    <p className="landing-app-card-body">{a.mobile.pwaBodyAndroid}</p>
-                  ) : (
-                    <p className="landing-app-card-body">{a.mobile.pwaBodyOther}</p>
-                  )}
-                </div>
-              )}
-              <div className="landing-app-card landing-app-card--muted">
-                <h3 className="landing-app-card-title">{a.mobile.roadmapTitle}</h3>
-                <p className="landing-app-card-body">{a.mobile.roadmapBody}</p>
-              </div>
+        <div className="landing-app-columns landing-app-columns--download">
+          {isMobile ? (
+            <MobileDownloadCard copy={a} mobileOs={mobileOs} />
+          ) : showWindowsDownload ? (
+            <WindowsDownloadCard copy={a} />
+          ) : (
+            <div className="landing-app-card landing-app-card--primary">
+              <h3 className="landing-app-card-title">{a.desktop.nativeTitle}</h3>
+              <p className="landing-app-card-body">{a.desktop.nativeBodyHosted}</p>
+              <p className="muted small">{a.desktop.nonWindowsHint}</p>
+              <a
+                className="btn primary landing-app-native-download"
+                href={desktopInstallerUrl}
+                download
+                rel="noopener noreferrer"
+              >
+                {a.desktop.nativeDownloadCta}
+              </a>
             </div>
-            {hasHostedDesktop ? (
-              <div className="landing-app-columns landing-app-mobile-desktop-row">
-                <NativeDesktopBlock a={a} />
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <div className="landing-app-columns">
-            {standalone ? (
-              <div className="landing-app-card landing-app-card--muted">
-                <h3 className="landing-app-card-title">{a.desktop.standalonePwaTitle}</h3>
-                <p className="landing-app-card-body">{a.desktop.standalonePwaLead}</p>
-              </div>
-            ) : (
-              <div className="landing-app-card">
-                <h3 className="landing-app-card-title">{a.desktop.pwaTitle}</h3>
-                <p className="landing-app-card-body">{a.desktop.pwaBody}</p>
-                {deferredPrompt ? (
-                  <button type="button" className="btn primary landing-app-install-btn" onClick={() => void runInstall()}>
-                    {a.desktop.installCta}
-                  </button>
-                ) : (
-                  <p className="landing-app-hint">{a.desktop.installFallback}</p>
-                )}
-                {installOutcome === 'accepted' ? (
-                  <p className="landing-app-toast ok">{a.desktop.installAccepted}</p>
-                ) : null}
-                {installOutcome === 'dismissed' ? (
-                  <p className="landing-app-toast muted">{a.desktop.installDismissed}</p>
-                ) : null}
-              </div>
-            )}
-            <NativeDesktopBlock a={a} />
-          </div>
-        )}
+          )}
+        </div>
+
+        <p className="muted small landing-app-web-fallback">{a.webFallback}</p>
       </div>
     </section>
   )

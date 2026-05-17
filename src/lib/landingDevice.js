@@ -30,6 +30,11 @@ export function isAndroidBrowser() {
   return /Android/i.test(navigator.userAgent)
 }
 
+export function isWindowsBrowser() {
+  if (typeof navigator === 'undefined') return false
+  return /Windows/i.test(navigator.userAgent)
+}
+
 export function isStandalonePwa() {
   if (typeof window === 'undefined') return false
   try {

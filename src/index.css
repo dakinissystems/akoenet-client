@@ -6954,6 +6954,40 @@ input.theme-color-hex:disabled {
   align-items: stretch;
 }
 
+.landing-app-columns--download {
+  grid-template-columns: minmax(260px, 32rem);
+  max-width: 36rem;
+}
+
+.landing-app-card--primary {
+  border-color: rgba(125, 211, 252, 0.35);
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.landing-app-lead-note,
+.landing-app-not-extension {
+  margin-top: 0.35rem;
+}
+
+.landing-app-store-btn,
+.landing-app-apk-btn {
+  margin-top: 0.85rem;
+  display: inline-block;
+}
+
+.landing-app-apk-btn {
+  margin-left: 0.5rem;
+}
+
+.landing-app-web-fallback {
+  margin-top: 1rem;
+  max-width: 36rem;
+}
+
+.landing-app-smartscreen-hint {
+  margin-top: 0.65rem;
+}
+
 .landing-app-card {
   padding: 1.1rem 1.15rem;
   border-radius: 12px;

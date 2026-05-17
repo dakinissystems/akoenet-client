@@ -65,7 +65,7 @@ export const landingContent = {
       },
       {
         q: 'Do I need to install anything?',
-        a: 'No installer is required: it runs in the browser. Optionally install it as a PWA from the “App” section — that is not a browser extension. You need an account and, for voice, microphone permission (and camera if you use it).',
+        a: 'You can use AkoeNet in the browser without installing anything. On Windows, download the desktop app from the “App” section. On Android, install from Google Play once listed (not a Chrome extension). You need an account and, for voice, microphone permission (and camera if you use it).',
       },
       {
         q: 'How do voice channels work?',
@@ -97,42 +97,36 @@ export const landingContent = {
       error: 'Paste a link or invite code.',
     },
     appSection: {
-      title: 'Install the app',
+      title: 'Download the app',
       lead:
-        'The usual “install” is the PWA (left): same app in its own window. On the right you can download the Windows desktop installer (Tauri) when we host it, or build from source. None of these is a browser extension.',
-      standaloneNote: "You're already using AkoeNet as an installed app.",
+        'On Windows, download the desktop installer. On Android, get the app from Google Play once approved — or download the APK when we publish it. This is not a Chrome or Edge extension.',
+      notExtensionLead:
+        'AkoeNet is a standalone app (desktop or store install). We do not offer a browser extension.',
+      webFallback: 'You can also use AkoeNet in this browser — sign in above with no install.',
       desktop: {
-        pwaTitle: 'From the browser (Chrome / Edge)',
-        pwaBody:
-          'Add AkoeNet as its own window with a taskbar or dock icon. This is progressive web app install — not a Chrome/Edge extension and not an add-on from a store.',
-        installCta: 'Install AkoeNet',
-        installFallback:
-          'If you don’t see a button, use the install icon in the address bar, or the browser menu → Install / Install page as app.',
-        installAccepted: 'Installation started — check your applications or taskbar.',
-        installDismissed: 'You can install anytime from the browser menu.',
-        standalonePwaTitle: 'Web app (already installed)',
-        standalonePwaLead:
-          'You opened AkoeNet from the installed shortcut or home screen. The browser install banner is hidden here by design.',
-        nativeTitle: 'Native desktop (Windows, Tauri)',
-        nativeBody:
-          'There is no pre-built installer to download from this site. To produce a .exe / .app / installer, clone the repo, install Rust, configure frontend/.env, then run npm run tauri:build in frontend/. See frontend/README.md. Still not a browser extension.',
+        nativeTitle: 'Windows desktop app',
         nativeBodyHosted:
-          'Windows installer below. Same web client in a native window — not a browser extension. You can also build from source.',
-        nativeDownloadCta: 'Download Windows installer (x64)',
-        nativeDocsCta: 'Open build instructions',
-        installerVersionHint: 'Installer linked from this button: v{{v}}',
+          'Download the installer for Windows 10/11 (64-bit). Native window with Twitch sign-in and game presence — not a browser extension.',
+        notExtensionNote: 'Not a Chrome extension, not an Edge add-on, and not from a browser store.',
+        nativeDownloadCta: 'Download for Windows (x64)',
+        installerVersionHint: 'Version {{v}}',
+        smartscreenHint:
+          'Windows may show SmartScreen for new publishers. Choose “More info” → “Run anyway” if you trust this site.',
+        nonWindowsHint: 'This installer is for Windows. On macOS or Linux, use the web app in your browser for now.',
       },
       mobile: {
-        pwaTitle: 'Add to your home screen',
-        pwaBodyAndroid:
-          'Open this site in Chrome. Tap the menu (⋮) → Add to Home screen or Install app. You’ll get a full-screen shortcut like a native app.',
-        pwaBodyIOS:
-          'Open this site in Safari. Tap the Share button → Add to Home Screen. On iOS, installing from the home screen works best with Safari.',
-        pwaBodyOther:
-          'Use your browser’s menu to add this page to your home screen or install it as an app, if your browser supports it.',
-        roadmapTitle: 'App stores (roadmap)',
-        roadmapBody:
-          'A Capacitor build for Google Play and the App Store is planned for richer push and store discovery; the PWA works today without a store.',
+        androidTitle: 'Android app',
+        androidBodyPending:
+          'The AkoeNet Android app is in Google Play review. When approved, you will be able to install it from the store or download the APK here. Not a browser extension.',
+        androidBodyApproved:
+          'Install AkoeNet from Google Play or download the APK below. Full-screen app with push notifications — not a Chrome extension.',
+        playStoreCta: 'Get it on Google Play',
+        apkCta: 'Download APK',
+        notExtensionNote: 'Not a Chrome extension or browser add-on.',
+        iosTitle: 'iPhone & iPad',
+        iosBody: 'The iOS app will be listed on the App Store when available. Until then, use AkoeNet in Safari in your browser.',
+        otherTitle: 'Mobile browser',
+        otherBody: 'Use AkoeNet in your browser, or switch to Android when the store listing is live.',
       },
     },
   },
@@ -197,7 +191,7 @@ export const landingContent = {
       },
       {
         q: '¿Necesito instalar algo?',
-        a: 'No hace falta un instalador clásico: el cliente es web. Opcionalmente puedes instalarla como PWA desde la sección “App” — eso no es una extensión del navegador. Necesitas cuenta y, para voz, permiso de micrófono (y cámara si la usas).',
+        a: 'Puedes usar AkoeNet en el navegador sin instalar nada. En Windows, descarga la app de escritorio en la sección “App”. En Android, instálala desde Google Play cuando esté publicada (no es una extensión de Chrome). Necesitas cuenta y, para voz, permiso de micrófono (y cámara si la usas).',
       },
       {
         q: '¿Cómo funcionan los canales de voz?',
@@ -229,42 +223,36 @@ export const landingContent = {
       error: 'Pega un enlace o un código de invitación.',
     },
     appSection: {
-      title: 'Instalar la app',
+      title: 'Descargar la app',
       lead:
-        'La forma habitual de “instalar” es la PWA (columna izquierda): misma app en ventana propia. A la derecha puedes descargar el instalador de escritorio para Windows (Tauri) cuando lo ofrecemos, o compilar desde el código. Ninguna opción es una extensión del navegador.',
-      standaloneNote: 'Ya estás usando AkoeNet como app instalada.',
+        'En Windows, descarga el instalador de escritorio. En Android, instálala desde Google Play cuando esté aprobada — o descarga el APK cuando lo publiquemos. No es una extensión de Chrome ni de Edge.',
+      notExtensionLead:
+        'AkoeNet es una aplicación independiente (escritorio o tienda). No ofrecemos extensión de navegador.',
+      webFallback: 'También puedes usar AkoeNet en este navegador — entra arriba sin instalar nada.',
       desktop: {
-        pwaTitle: 'Desde el navegador (Chrome / Edge)',
-        pwaBody:
-          'Añade AkoeNet como ventana propia con icono en la barra de tareas o el dock. Es instalación PWA: no es una extensión de Chrome ni de Edge ni un complemento de tienda.',
-        installCta: 'Instalar AkoeNet',
-        installFallback:
-          'Si no ves el botón, usa el icono de instalación en la barra de direcciones o el menú del navegador → Instalar página como aplicación.',
-        installAccepted: 'Instalación iniciada: revisa aplicaciones o la barra de tareas.',
-        installDismissed: 'Puedes instalar cuando quieras desde el menú del navegador.',
-        standalonePwaTitle: 'App web (ya instalada)',
-        standalonePwaLead:
-          'Abriste AkoeNet desde el acceso instalado o la pantalla de inicio. El aviso de instalación del navegador no aplica aquí.',
-        nativeTitle: 'Escritorio nativo (Windows, Tauri)',
-        nativeBody:
-          'Desde esta web no se ofrece un instalador listo para descargar. Para obtener .exe / .app / instalador, clona el repositorio, instala Rust, configura frontend/.env y ejecuta npm run tauri:build en frontend/. Detalle en frontend/README.md. Tampoco es una extensión del navegador.',
+        nativeTitle: 'App de escritorio para Windows',
         nativeBodyHosted:
-          'Instalador para Windows más abajo. Mismo cliente web en ventana nativa — no es extensión del navegador. También puedes compilar desde el código.',
-        nativeDownloadCta: 'Descargar instalador Windows (x64)',
-        nativeDocsCta: 'Ver instrucciones de compilación',
-        installerVersionHint: 'Instalador del enlace de este botón: v{{v}}',
+          'Descarga el instalador para Windows 10/11 (64 bits). Ventana nativa con inicio de sesión Twitch y presencia de juego — no es una extensión del navegador.',
+        notExtensionNote: 'No es extensión de Chrome, ni complemento de Edge, ni de la tienda del navegador.',
+        nativeDownloadCta: 'Descargar para Windows (x64)',
+        installerVersionHint: 'Versión {{v}}',
+        smartscreenHint:
+          'Windows puede mostrar SmartScreen con editores nuevos. Elige “Más información” → “Ejecutar de todas formas” si confías en este sitio.',
+        nonWindowsHint: 'Este instalador es para Windows. En macOS o Linux, usa la web en el navegador por ahora.',
       },
       mobile: {
-        pwaTitle: 'Añadir a la pantalla de inicio',
-        pwaBodyAndroid:
-          'Abre este sitio en Chrome. Menú (⋮) → Añadir a la pantalla de inicio o Instalar aplicación. Tendrás un acceso a pantalla completa parecido a una app nativa.',
-        pwaBodyIOS:
-          'Abre este sitio en Safari. Compartir → Añadir a pantalla de inicio. En iOS conviene usar Safari para la instalación.',
-        pwaBodyOther:
-          'Usa el menú del navegador para añadir esta página al inicio o instalarla como app, si tu navegador lo permite.',
-        roadmapTitle: 'Tiendas de apps (hoja de ruta)',
-        roadmapBody:
-          'Se plantea un empaquetado con Capacitor para Google Play y App Store (notificaciones y descubrimiento); la PWA ya funciona sin tienda.',
+        androidTitle: 'App para Android',
+        androidBodyPending:
+          'La app de AkoeNet está en revisión en Google Play. Cuando se apruebe, podrás instalarla desde la tienda o descargar el APK aquí. No es una extensión del navegador.',
+        androidBodyApproved:
+          'Instala AkoeNet desde Google Play o descarga el APK abajo. App a pantalla completa con notificaciones — no es extensión de Chrome.',
+        playStoreCta: 'Disponible en Google Play',
+        apkCta: 'Descargar APK',
+        notExtensionNote: 'No es extensión ni complemento del navegador.',
+        iosTitle: 'iPhone e iPad',
+        iosBody: 'La app para iOS estará en la App Store cuando esté disponible. Mientras tanto, usa AkoeNet en Safari.',
+        otherTitle: 'Móvil en el navegador',
+        otherBody: 'Usa AkoeNet en el navegador, o cambia a Android cuando la ficha en la tienda esté activa.',
       },
     },
   },
