@@ -5,6 +5,7 @@ import './i18n.js'
 import './index.css'
 import { applyTheme, loadTheme } from './lib/themePreferences.js'
 import { isTauri } from './lib/isTauri.js'
+import { consumeTauriDeepLinksOnBootstrap } from './services/desktop-integrations.js'
 import { runDesktopUpdateCheck } from './lib/desktopUpdates.js'
 import { reportError } from './lib/reportError.js'
 import App from './App.jsx'
@@ -66,6 +67,7 @@ function bootstrapThemeEarly() {
 }
 async function bootstrapSessionEarly() {
   await hydrateSessionFromNativeStorage()
+  if (isTauri()) await consumeTauriDeepLinksOnBootstrap()
   consumeTwitchOAuthFromUrl()
 }
 

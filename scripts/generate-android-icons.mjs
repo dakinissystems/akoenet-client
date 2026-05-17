@@ -1,5 +1,5 @@
 /**
- * Íconos / splash: usar `@capacitor/assets` cuando exista android/ + recursos base.
+ * Launcher icons from public/Akoenet.png (Tauri icon + Android mipmaps).
  */
 import { existsSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
@@ -10,7 +10,7 @@ if (!existsSync('android')) {
   process.exit(0)
 }
 
-const r = spawnSync('npx', ['@capacitor/assets', 'generate', '--android'], {
+const r = spawnSync('node', ['scripts/sync-app-icons.mjs'], {
   stdio: 'inherit',
   shell: process.platform === 'win32',
 })

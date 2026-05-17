@@ -13,6 +13,8 @@ import Register from './pages/Register'
 import DashboardAdmin from './pages/DashboardAdmin'
 import InvitePage from './pages/InvitePage'
 import { initMobileIntegrations } from './services/mobile-integrations'
+import { initDesktopIntegrations } from './services/desktop-integrations'
+import { isTauri } from './lib/isTauri'
 import { reportError } from './lib/reportError'
 import { getAccessToken } from './services/session-store'
 
@@ -87,16 +89,19 @@ export default function App() {
 
   useEffect(() => {
     let cleanup = null
-    initMobileIntegrations((to) => navigate(to)).then((fn) => {
-      cleanup = fn
-    }).catch((err) => {
-      reportError('mobileIntegrations.init', err)
-    })
+    const init = isTauri() ? initDesktopIntegrations : initMobileIntegrations
+    init((to) => navigate(to))
+      .then((fn) => {
+        cleanup = fn
+      })
+      .catch((err) => {
+        reportError(isTauri() ? 'desktopIntegrations.init' : 'mobileIntegrations.init', err)
+      })
     return () => {
       try {
         cleanup?.()
       } catch (err) {
-        reportError('mobileIntegrations.cleanup', err)
+        reportError(isTauri() ? 'desktopIntegrations.cleanup' : 'mobileIntegrations.cleanup', err)
       }
     }
   }, [navigate])

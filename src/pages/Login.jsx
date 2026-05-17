@@ -273,18 +273,30 @@ export default function Login() {
                   : undefined
             }
             onClick={() => {
-              const inv = searchParams.get(INVITE_QUERY_PARAM)
-              if (inv) {
-                try {
-                  sessionStorage.setItem(PENDING_INVITE_KEY, inv)
-                } catch {
-                  /* ignore */
+              void (async () => {
+                const inv = searchParams.get(INVITE_QUERY_PARAM)
+                if (inv) {
+                  try {
+                    sessionStorage.setItem(PENDING_INVITE_KEY, inv)
+                  } catch {
+                    /* ignore */
+                  }
                 }
-              }
-              const nativeFlow = isCapacitorNative() || isTauri()
-              window.location.href = nativeFlow
-                ? `${apiBase}/auth/twitch/start?native=1`
-                : `${apiBase}/auth/twitch/start`
+                const nativeFlow = isCapacitorNative() || isTauri()
+                const url = nativeFlow
+                  ? `${apiBase}/auth/twitch/start?native=1`
+                  : `${apiBase}/auth/twitch/start`
+                if (isTauri()) {
+                  try {
+                    const { openUrl } = await import('@tauri-apps/plugin-opener')
+                    await openUrl(url)
+                    return
+                  } catch {
+                    /* fallback: in-webview navigation */
+                  }
+                }
+                window.location.href = url
+              })()
             }}
           >
             {twitchGate === 'loading'
