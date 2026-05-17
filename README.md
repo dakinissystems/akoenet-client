@@ -1,34 +1,46 @@
-# 💬 AkoeNet Client
+# AkoeNet — Client
 
-Frontend de **AkoeNet**, una plataforma de comunicación en tiempo real similar a Discord, enfocada en comunidades privadas y herramientas de gestión.
+Cliente web, Android y escritorio (Windows) de **AkoeNet**: comunidades en tiempo real, chat, voz, DMs e integración con StreamAutomator y Twitch.
 
----
+**Mantenido por [Dakinis Systems](https://dakinissystems.com).**
 
-## 🚀 Características
+## Producción
 
-- Chats en tiempo real
-- Sistema de servidores/comunidades
-- Gestión de usuarios
-- Preparado para web, mobile (Capacitor) y desktop (Tauri)
+| Servicio | URL |
+|----------|-----|
+| Web | https://akoenet.dakinissystems.com |
+| API | https://api.akoenet.dakinissystems.com |
 
----
+## Requisitos
 
-## 🧱 Stack
+- Node.js 20+
+- Android: JDK 17+, Android SDK (solo para `.aab`)
+- Escritorio: [Rust](https://rustup.rs/) (solo para instalador Windows)
 
-- React + Vite
-- Capacitor (Android)
-- Tauri (Desktop)
-- APIs REST
+## Comandos
 
----
+```bash
+npm ci
+npm run dev              # desarrollo local
+npm run build            # build web + copia releases a public/
+npm run start            # sirve dist/ (Railway / preview)
+npm run release:android  # .aab en releases/android/
+npm run release:desktop  # instalador en releases/desktop/ (Rust)
+```
 
-## 📁 Estructura
+## Variables de entorno
 
-```text
-frontend/
-├── src/              # Código fuente
-├── public/           # Archivos públicos
-├── android/          # Build mobile (Capacitor)
-├── src-tauri/        # Desktop (Tauri)
-├── assets/
-├── scripts/
+Copia `.env.example` → `.env` en desarrollo. En producción, el build usa `.env.production` (API pública, versión del instalador).
+
+Opcionales para la landing:
+
+- `VITE_DESKTOP_INSTALLER_URL` — enlace al `.exe` de Windows
+- `VITE_ANDROID_STORE_APPROVED`, `VITE_ANDROID_PLAY_STORE_URL`, `VITE_ANDROID_APK_URL` — cuando Google Play apruebe la app
+
+## Descargas públicas
+
+Tras `npm run build`, los artefactos quedan bajo `/releases/` en el sitio estático (p. ej. instalador Windows, `.aab` Android).
+
+## Licencia
+
+MIT — Copyright (c) Dakinis Systems. Ver [LICENSE](./LICENSE).
