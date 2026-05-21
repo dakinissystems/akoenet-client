@@ -1,11 +1,11 @@
-# Política de Privacidad — AkoeNet
+﻿# Política de Privacidad — AkoeNet
 Última actualización: 2026-05-08
 
 Esta Política explica cómo AkoeNet recopila, utiliza y protege datos personales.
 
 1. Responsable del tratamiento
 Responsable: Christian
-Contacto: privacy@akoenet.local
+Contacto: privacy@dakinis-systems.com
 País/Jurisdicción: España
 
 2. Datos que podemos recopilar
@@ -73,10 +73,19 @@ Si operamos con usuarios en la UE:
 Podemos actualizar esta Política. Publicaremos la versión vigente con su fecha de actualización.
 
 14. Contacto
-Consultas de privacidad: privacy@akoenet.local
+Consultas de privacidad: privacy@dakinis-systems.com
 
 15. DPO y avisos de copyright
 - DPO / protección de datos: formulario en `/legal/dpo`
 - Retirada por copyright (DMCA): formulario en `/legal/dmca`
+
+16. Servicios de Google y otros terceros
+
+- **WebRTC (STUN):** en salas de voz puede usarse `stun.l.google.com` para establecer conexiones; no implica login con cuenta Google.
+- **Firebase Cloud Messaging (Android):** si activas push en la app Android y el servicio está configurado, tratamos el token del dispositivo vía infraestructura de Google/Firebase.
+- **Twitch y otras plataformas OAuth:** identificadores y tokens según las integraciones que conectes.
+- **Tipografías:** la interfaz web usa fuentes del sistema; no cargamos Google Fonts en el cliente.
+
+Puedes revocar acceso OAuth en tu cuenta de la plataforma correspondiente. La configuración «servicios vinculados» de tu cuenta personal de Google (LMD/DMA en la UE) es independiente de AkoeNet.
 
 Nota: Este documento no constituye asesoría legal profesional.

@@ -1,4 +1,4 @@
-# Child Safety Standards
+﻿# Child Safety Standards
 Last updated: 2026-05-08
 
 AkoeNet has a zero-tolerance policy against child sexual exploitation and abuse (CSAE).

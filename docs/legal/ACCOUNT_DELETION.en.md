@@ -1,4 +1,4 @@
-# Account deletion (AkoeNet)
+﻿# Account deletion (AkoeNet)
 Last updated: 2026-05-08
 
 You can request account deletion in two ways:

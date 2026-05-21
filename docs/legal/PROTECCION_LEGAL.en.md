@@ -1,4 +1,4 @@
-# Legal notice and intellectual property protection — AkoeNet
+﻿# Legal notice and intellectual property protection — AkoeNet
 
 This document provides a legal basis to protect AkoeNet software, brand, and content.
 It does not constitute professional legal advice. Validate it with a lawyer in your jurisdiction before production.
@@ -17,11 +17,11 @@ You may not:
 - use large-scale scraping or API abuse
 
 4) Copyright notice
-Copyright (c) 2026 Dakinys Systems. All rights reserved.
+Copyright (c) 2026 Dakinis Systems. All rights reserved.
 
 5) Copyright removal / DMCA
 If you believe content infringes your rights, you can submit a removal request through:
 - Form: `/legal/dmca`
 
-Contact: legal@akoenet.local
+Contact: legal@dakinis-systems.com
 

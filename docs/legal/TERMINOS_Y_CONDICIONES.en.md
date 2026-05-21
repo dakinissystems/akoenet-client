@@ -1,11 +1,11 @@
-# Terms of Service — AkoeNet
+﻿# Terms of Service — AkoeNet
 Last updated: 2026-05-08
 
 By creating an account or using the service, you agree to these Terms.
 
 1. Service operator
 Operator: Christian
-Contact: legal@akoenet.local
+Contact: legal@dakinis-systems.com
 Country/Jurisdiction: Spain
 
 2. Service description
@@ -52,5 +52,5 @@ AkoeNet does not process online gateway payments (for example, Stripe) in the cu
 Where applicable, billing is handled by bank transfer outside the platform.
 
 13. Legal contact
-For legal inquiries or notices: legal@akoenet.local
+For legal inquiries or notices: legal@dakinis-systems.com
 

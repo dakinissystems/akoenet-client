@@ -1,4 +1,4 @@
-# Estándares de Seguridad Infantil
+﻿# Estándares de Seguridad Infantil
 Última actualización: 2026-05-08
 
 AkoeNet mantiene una política de tolerancia cero contra la explotación y el abuso sexual infantil (CSAE).

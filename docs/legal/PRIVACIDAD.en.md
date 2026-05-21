@@ -1,11 +1,11 @@
-# Privacy Policy — AkoeNet
+﻿# Privacy Policy — AkoeNet
 Last updated: 2026-05-08
 
 This policy explains how AkoeNet collects, uses, and protects personal data.
 
 1. Data controller
 Controller: Christian
-Contact: privacy@akoenet.local
+Contact: privacy@dakinis-systems.com
 Country/Jurisdiction: Spain
 
 2. Data we may collect
@@ -72,10 +72,19 @@ If we operate with users in the EU:
 We may update this policy. We will publish the current version with its update date.
 
 14. Contact
-Privacy inquiries: privacy@akoenet.local
+Privacy inquiries: privacy@dakinis-systems.com
 
 15. DPO and copyright notices
 - DPO / data protection: `/legal/dpo`
 - Copyright removal (DMCA): `/legal/dmca`
+
+16. Google and other third-party services
+
+- **WebRTC (STUN):** voice rooms may use `stun.l.google.com` for connection setup; this does not require a Google account login.
+- **Firebase Cloud Messaging (Android):** if you enable push on the Android app and the service is configured, we process device tokens via Google/Firebase infrastructure.
+- **Twitch and other OAuth platforms:** identifiers and tokens for integrations you connect.
+- **Fonts:** the web UI uses system fonts; we do not load Google Fonts in the client.
+
+You can revoke OAuth access in the relevant platform account. Linked Google services on your personal Google account (EU DMA) are separate from AkoeNet.
 
 Note: This document does not constitute professional legal advice.

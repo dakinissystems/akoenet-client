@@ -1,4 +1,4 @@
-# Declaración de moderación de contenidos — AkoeNet
+﻿# Declaración de moderación de contenidos — AkoeNet
 
 Última actualización: 2026-04-06
 

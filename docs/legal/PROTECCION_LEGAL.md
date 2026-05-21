@@ -1,4 +1,4 @@
-# Protección legal de AkoeNet
+﻿# Protección legal de AkoeNet
 
 Este documento define una base legal operativa para proteger el software, la marca y el contenido de AkoeNet.
 No constituye asesoría legal profesional. Se recomienda validarlo con un abogado de tu jurisdicción antes de producción.
@@ -18,11 +18,11 @@ Se prohíbe:
 - usar mecanismos de scraping masivo o abuso de la API
 
 4) Aviso de copyright
-Copyright (c) 2026 Dakinys Systems. Todos los derechos reservados.
+Copyright (c) 2026 Dakinis Systems. Todos los derechos reservados.
 
 5) Retirada de contenido / DMCA
 Si consideras que algún contenido compartido infringe derechos de autor, puedes enviar una notificación conforme al procedimiento de retirada:
 - Formulario: `/legal/dmca`
 
-Contacto: legal@akoenet.local
+Contacto: legal@dakinis-systems.com
 

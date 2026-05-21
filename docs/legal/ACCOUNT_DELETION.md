@@ -1,4 +1,4 @@
-# Eliminación de cuenta (AkoeNet)
+﻿# Eliminación de cuenta (AkoeNet)
 
 Última actualización: 2026-05-08
 

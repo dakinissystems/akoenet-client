@@ -1,4 +1,4 @@
-# Política de Cookies y almacenamiento local — AkoeNet
+﻿# Política de Cookies y almacenamiento local — AkoeNet
 
 Última actualización: 2026-04-06
 
@@ -18,7 +18,7 @@ La aplicación utiliza almacenamiento para:
   - `akoenet_cookie_consent_v1` (legacy)
   - `akoenet_cookie_consent_v2` (consentimiento con formato JSON)
 
-En el estado actual, no se cargan cookies de analítica de terceros en el bundle por defecto.
+En el estado actual, no se cargan cookies de analítica de terceros ni Google Fonts en el bundle por defecto.
 
 4. Cómo gestionar tu elección
 La primera vez que visitas el sitio, se muestra un banner para:

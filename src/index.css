@@ -9,7 +9,7 @@
   --echonet: #3b82f6;
   --echonet-glow: rgba(59, 130, 246, 0.35);
   --danger: #f87171;
-  --font: Inter, 'DM Sans', system-ui, sans-serif;
+  --font: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* Semantic tokens (overridden by themePreferences.applyTheme) */
   --nexora-strong: #e5e7eb;
   --nexora-input-bg: rgba(0, 0, 0, 0.25);

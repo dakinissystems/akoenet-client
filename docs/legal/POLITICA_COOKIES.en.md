@@ -1,4 +1,4 @@
-# Cookie policy and local storage — AkoeNet
+﻿# Cookie policy and local storage — AkoeNet
 
 Last updated: 2026-04-06
 
