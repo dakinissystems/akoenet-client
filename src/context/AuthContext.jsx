@@ -20,6 +20,14 @@ import {
   setAccessToken,
   setRefreshToken,
 } from '../services/session-store'
+import {
+  exchangePlatformToken,
+  getIdpRefreshToken,
+  isIdpAuthEnabled,
+  loginViaIdp,
+  logoutIdp,
+  setIdpRefreshToken,
+} from '../services/idp-auth'
 import { reportError } from '../lib/reportError'
 
 const AuthContext = createContext(null)
@@ -52,6 +60,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     const rt = getRefreshToken()
+    const idpRt = getIdpRefreshToken()
     try {
       if (rt) {
         await api.post('/auth/logout', { refresh_token: rt })
@@ -59,7 +68,9 @@ export function AuthProvider({ children }) {
     } catch (err) {
       reportError('auth.logout', err)
     }
+    await logoutIdp(idpRt)
     clearSessionTokens()
+    setIdpRefreshToken(null)
     stopSessionKeepAlive()
     disconnectAkoeNet()
     setUser(null)
@@ -210,6 +221,24 @@ export function AuthProvider({ children }) {
   }, [user])
 
   const login = useCallback(async (email, password) => {
+    if (isIdpAuthEnabled()) {
+      const idp = await loginViaIdp(email, password)
+      if (idp.refreshToken) setIdpRefreshToken(idp.refreshToken)
+      const data = await exchangePlatformToken(api, idp.token)
+      setAccessToken(data.token)
+      if (data.refresh_token) setRefreshToken(data.refresh_token)
+      setUser(data.user)
+      setServerUnreachable(false)
+      if (!data.user.needs_terms_acceptance) {
+        connectAkoeNet(data.token)
+        startSessionKeepAlive()
+      } else {
+        stopSessionKeepAlive()
+        disconnectAkoeNet()
+      }
+      return { user: data.user, requires2fa: false }
+    }
+
     const { data } = await api.post('/auth/login', { email, password })
     if (data.requires_2fa && data.two_factor_token) {
       return { requires2fa: true, twoFactorToken: data.two_factor_token }
