@@ -1,4 +1,4 @@
-﻿# Privacy Policy — AkoeNet
+# Privacy Policy — AkoeNet
 Last updated: 2026-05-08
 
 This policy explains how AkoeNet collects, uses, and protects personal data.

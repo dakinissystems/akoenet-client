@@ -1,4 +1,4 @@
-﻿# Política de Privacidad — AkoeNet
+# Política de Privacidad — AkoeNet
 Última actualización: 2026-05-08
 
 Esta Política explica cómo AkoeNet recopila, utiliza y protege datos personales.

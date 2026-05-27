@@ -1,4 +1,4 @@
-﻿# Política de Cookies y almacenamiento local — AkoeNet
+# Política de Cookies y almacenamiento local — AkoeNet
 
 Última actualización: 2026-04-06
 
