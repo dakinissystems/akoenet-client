@@ -22,12 +22,13 @@ import {
 } from '../services/session-store'
 import {
   exchangePlatformToken,
+  getIdpAuthUrl,
   getIdpRefreshToken,
   isIdpAuthEnabled,
   loginViaIdp,
-  logoutIdp,
   setIdpRefreshToken,
 } from '../services/idp-auth'
+import { dakinisPerformClientLogout, dakinisRevokeIdpRefreshToken } from '../lib/dakinis-client-logout.js'
 import { reportError } from '../lib/reportError'
 
 const AuthContext = createContext(null)
@@ -58,17 +59,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [serverUnreachable, setServerUnreachable] = useState(false)
 
-  const logout = useCallback(async () => {
-    const rt = getRefreshToken()
-    const idpRt = getIdpRefreshToken()
-    try {
-      if (rt) {
-        await api.post('/auth/logout', { refresh_token: rt })
-      }
-    } catch (err) {
-      reportError('auth.logout', err)
-    }
-    await logoutIdp(idpRt)
+  const clearLocalSession = useCallback(() => {
     clearSessionTokens()
     setIdpRefreshToken(null)
     stopSessionKeepAlive()
@@ -77,19 +68,52 @@ export function AuthProvider({ children }) {
     setServerUnreachable(false)
   }, [])
 
+  const logout = useCallback(async () => {
+    const rt = getRefreshToken()
+    const idpRt = getIdpRefreshToken()
+    await dakinisPerformClientLogout({
+      revokeServer: [
+        async () => {
+          if (!rt) return
+          try {
+            await api.post('/auth/logout', { refresh_token: rt })
+          } catch (err) {
+            reportError('auth.logout', err)
+          }
+        },
+        async () => {
+          await dakinisRevokeIdpRefreshToken({
+            authBaseUrl: getIdpAuthUrl(),
+            refreshToken: idpRt,
+          })
+        },
+      ],
+      clearLocalSession,
+    })
+  }, [clearLocalSession])
+
   /** Revokes refresh tokens on all devices; clears this session. */
   const logoutAllDevices = useCallback(async () => {
-    try {
-      await api.post('/auth/logout-all')
-    } catch (err) {
-      reportError('auth.logoutAllDevices', err)
-    }
-    clearSessionTokens()
-    stopSessionKeepAlive()
-    disconnectAkoeNet()
-    setUser(null)
-    setServerUnreachable(false)
-  }, [])
+    const idpRt = getIdpRefreshToken()
+    await dakinisPerformClientLogout({
+      revokeServer: [
+        async () => {
+          try {
+            await api.post('/auth/logout-all')
+          } catch (err) {
+            reportError('auth.logoutAllDevices', err)
+          }
+        },
+        async () => {
+          await dakinisRevokeIdpRefreshToken({
+            authBaseUrl: getIdpAuthUrl(),
+            refreshToken: idpRt,
+          })
+        },
+      ],
+      clearLocalSession,
+    })
+  }, [clearLocalSession])
 
   const refreshUser = useCallback(async () => {
     const token = getAccessToken()

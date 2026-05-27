@@ -9,6 +9,7 @@ import { consumeTauriDeepLinksOnBootstrap } from './services/desktop-integration
 import { runDesktopUpdateCheck } from './lib/desktopUpdates.js'
 import { reportError } from './lib/reportError.js'
 import App from './App.jsx'
+import { akoenetInitSentryBrowser, Sentry } from './lib/sentry.js'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { LandingLocaleProvider } from './context/LandingLocaleProvider.jsx'
 import {
@@ -89,15 +90,25 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
 }
 
 function mountReactApp() {
+  akoenetInitSentryBrowser()
   createRoot(document.getElementById('root')).render(
     <StrictMode>
-      <AppRouter>
-        <LandingLocaleProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </LandingLocaleProvider>
-      </AppRouter>
+      <Sentry.ErrorBoundary
+        fallback={
+          <div style={{ padding: '2rem', fontFamily: 'system-ui,sans-serif' }}>
+            <h1>Error inesperado</h1>
+            <p>Recarga la página. Si persiste, contacta soporte.</p>
+          </div>
+        }
+      >
+        <AppRouter>
+          <LandingLocaleProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </LandingLocaleProvider>
+        </AppRouter>
+      </Sentry.ErrorBoundary>
     </StrictMode>
   )
 }

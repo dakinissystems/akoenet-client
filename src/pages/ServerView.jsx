@@ -12,6 +12,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import api from '../services/api'
 import { getSocket } from '../services/socket'
 import { useAuth } from '../context/AuthContext'
+import { useAuthLogout } from '../hooks/useAuthLogout'
 import ServerSidebar from '../components/ServerSidebar'
 import ChannelList from '../components/ChannelList'
 import Chat from '../components/Chat'
@@ -67,7 +68,8 @@ export default function ServerView() {
   const id = parseInt(serverId, 10)
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { user, logout, updateCurrentUser } = useAuth()
+  const { user, updateCurrentUser } = useAuth()
+  const { signOut } = useAuthLogout()
   const [servers, setServers] = useState([])
   const [channels, setChannels] = useState([])
   const [categories, setCategories] = useState([])
@@ -707,7 +709,7 @@ export default function ServerView() {
             collapsedCategories={collapsedCategories}
             onToggleCategory={toggleCategoryCollapse}
             user={user}
-            onLogout={logout}
+            onLogout={signOut}
             onOpenUserSettings={() => {
               setUserSettingsSection('profile')
               setUserSettingsOpen(true)

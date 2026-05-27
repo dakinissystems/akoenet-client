@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useAuthLogout } from '../hooks/useAuthLogout'
 import { useDismissiblePopover } from '../hooks/useDismissiblePopover'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { inviteLandingPath, parseInviteTokenFromInput } from '../lib/invites'
@@ -18,7 +19,8 @@ const PENDING_INVITE_KEY = 'akoenet_pending_invite'
 
 export default function Dashboard() {
   const { t } = useTranslation()
-  const { user, logout, loading: authLoading, refreshUser } = useAuth()
+  const { user, loading: authLoading, refreshUser } = useAuth()
+  const { signOut } = useAuthLogout()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [servers, setServers] = useState([])
@@ -260,7 +262,7 @@ export default function Dashboard() {
                   className="btn link"
                   onClick={() => {
                     closeUserMenu()
-                    logout()
+                    signOut()
                   }}
                 >
                   {t('dashboard.home.userMenuLogout')}

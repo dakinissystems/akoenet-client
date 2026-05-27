@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useAuthLogout } from '../hooks/useAuthLogout'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import {
   buildMicTestMonitorGraph,
@@ -40,7 +41,8 @@ function getVoiceStorageKey(userId) {
 
 export default function UserSettingsModal({ open, onClose, initialSection = 'profile' }) {
   const { t } = useTranslation()
-  const { user, refreshUser, logout, logoutAllDevices } = useAuth()
+  const { user, refreshUser } = useAuth()
+  const { signOut, signOutAllDevices } = useAuthLogout()
   const [activeSection, setActiveSection] = useState('profile')
   const [username, setUsername] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
@@ -227,7 +229,7 @@ export default function UserSettingsModal({ open, onClose, initialSection = 'pro
     try {
       await api.delete('/auth/me', { data: { reason: 'User requested self-service account erasure (Settings).' } })
       onClose()
-      logout()
+      signOut()
     } catch {
       setError(t('userSettings.account.eraseFail'))
     } finally {
@@ -726,7 +728,7 @@ export default function UserSettingsModal({ open, onClose, initialSection = 'pro
                       setInfo('')
                       setLogoutAllBusy(true)
                       try {
-                        await logoutAllDevices()
+                        await signOutAllDevices()
                         onClose()
                       } catch {
                         setError(t('userSettings.account.logoutAllError'))

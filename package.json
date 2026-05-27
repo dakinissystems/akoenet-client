@@ -35,6 +35,7 @@
     "@capacitor/core": "^7.4.3",
     "@capacitor/preferences": "^7.0.2",
     "@capacitor/push-notifications": "^7.0.2",
+    "@sentry/react": "^9.47.1",
     "@tauri-apps/plugin-deep-link": "^2.4.9",
     "@tauri-apps/plugin-log": "^2.8.0",
     "@tauri-apps/plugin-notification": "^2.3.3",

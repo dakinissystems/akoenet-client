@@ -17,6 +17,7 @@ import { initDesktopIntegrations } from './services/desktop-integrations'
 import { isTauri } from './lib/isTauri'
 import { reportError } from './lib/reportError'
 import { getAccessToken } from './services/session-store'
+import DevSentryErrorButton from './components/DevSentryErrorButton.jsx'
 
 const pushTokenInFlight = new Set()
 const pushTokenSent = new Set()
@@ -206,6 +207,7 @@ export default function App() {
         </Routes>
       </Suspense>
       <CookieConsentBanner />
+      <DevSentryErrorButton />
     </>
   )
 }
