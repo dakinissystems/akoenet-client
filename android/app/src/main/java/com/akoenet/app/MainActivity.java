@@ -1,4 +1,4 @@
-package com.dakinis.akoenet;
+package com.akoenet.app;
 
 import com.getcapacitor.BridgeActivity;
 

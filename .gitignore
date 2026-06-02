@@ -143,9 +143,12 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
-# Release binaries
+# Release binaries (web downloads only — never bundle into Capacitor)
+public/releases/android/*.aab
+public/releases/desktop/*
 public/releases/*.exe
 public/releases/*.sig
+releases/android/*.aab
 
 # Native build outputs (keep releases/android/*.aab when tagged)
 android/app/build/

@@ -1,5 +1,6 @@
 /**
- * Copy built mobile/desktop artifacts into public/releases for static hosting.
+ * Copy built mobile/desktop artifacts into public/releases for static hosting (web only).
+ * No ejecutar en mobile:bundle:release — cap-sync-android-mobile usa vite build sin este paso.
  */
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
