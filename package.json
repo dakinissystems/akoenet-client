@@ -1,7 +1,7 @@
 {
   "name": "akonet-frontend",
   "private": true,
-  "version": "1.5.15",
+  "version": "1.5.16",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,7 @@
     "mobile:sync": "npx cap sync",
     "mobile:sync:android": "node scripts/cap-sync-android-mobile.mjs",
     "mobile:sync-version": "node scripts/sync-mobile-version.mjs",
-    "mobile:bundle:release": "node scripts/sync-mobile-version.mjs && node scripts/cap-sync-android-mobile.mjs && node scripts/run-android-gradle.mjs bundleRelease && node scripts/verify-release-aab-signed.mjs && node scripts/copy-android-aab.mjs",
+    "mobile:bundle:release": "node scripts/sync-mobile-version.mjs && node scripts/cap-sync-android-mobile.mjs && node scripts/run-android-gradle.mjs bundleRelease && node scripts/verify-release-aab-signed.mjs && node scripts/verify-release-aab-signing-key.mjs && node scripts/copy-android-aab.mjs",
     "mobile:add:android": "npx cap add android",
     "mobile:add:ios": "npx cap add ios",
     "mobile:open:android": "npx cap open android",

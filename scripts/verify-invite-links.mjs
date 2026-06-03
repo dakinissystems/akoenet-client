@@ -6,6 +6,7 @@ import {
   buildInviteCreatePayload,
   inviteFullUrl,
   inviteLandingPath,
+  isEmbeddedShellOrigin,
   parseInviteTokenFromInput,
 } from '../src/lib/invites.js';
 
@@ -32,6 +33,11 @@ if (parseInviteTokenFromInput(url) !== token) {
 const singleUse = buildInviteCreatePayload('temporary', true);
 if (singleUse.max_uses !== 1 || !singleUse.expires_in_hours) {
   console.error('[verify-invite-links] buildInviteCreatePayload temporary');
+  process.exit(1);
+}
+
+if (!isEmbeddedShellOrigin('https://localhost') || !isEmbeddedShellOrigin('capacitor://localhost')) {
+  console.error('[verify-invite-links] isEmbeddedShellOrigin');
   process.exit(1);
 }
 

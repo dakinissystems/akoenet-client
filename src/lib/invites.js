@@ -53,17 +53,56 @@ export function buildInviteCreatePayload(inviteType, singleUseTemporary) {
     : { max_uses: null, expires_in_hours: null }
 }
 
+/** SPA pública (enlaces de invitación, registro por email, etc.). */
+const PRODUCTION_PUBLIC_ORIGIN = 'https://akoenet.dakinissystems.com'
+
+function stripTrailingSlash(u) {
+  return String(u || '').replace(/\/$/, '')
+}
+
+function preferStrictPublicOrigin() {
+  return String(import.meta.env.VITE_PUBLIC_ORIGIN_STRICT || '').trim() === 'true'
+}
+
+/** Capacitor/Tauri/WebView: origin suele ser https://localhost aunque el build sea de producción. */
+export function isEmbeddedShellOrigin(urlStr) {
+  try {
+    const u = new URL(urlStr)
+    const h = u.hostname.toLowerCase()
+    const p = u.protocol.toLowerCase()
+    if (p === 'capacitor:' || p === 'ionic:') return true
+    if (h === 'localhost' || h === '127.0.0.1' || h === '[::1]') return true
+    if (h === 'tauri.localhost' || h.endsWith('.tauri.localhost')) return true
+    return false
+  } catch {
+    return false
+  }
+}
+
 /**
- * Public origin for pasted invite links (prod URL). Falls back to `window.location.origin`.
- * Set `VITE_PUBLIC_ORIGIN` when the app is opened via localhost but shared links must target production.
+ * Origen público para enlaces compartidos (invitaciones a servidor).
+ * En app nativa o builds prod con WebView en localhost, usa la URL pública, no window.location.origin.
+ * Override: VITE_PUBLIC_ORIGIN. Dev local: deja localhost salvo que definas VITE_PUBLIC_ORIGIN.
  */
 export function getInviteShareOrigin() {
-  const fromEnv =
-    typeof import.meta !== 'undefined' && import.meta.env?.VITE_PUBLIC_ORIGIN
-      ? String(import.meta.env.VITE_PUBLIC_ORIGIN).trim()
-      : ''
-  const base = fromEnv || (typeof window !== 'undefined' ? window.location.origin : '')
-  return String(base).replace(/\/$/, '')
+  const fromEnv = String(import.meta.env.VITE_PUBLIC_ORIGIN || '').trim()
+
+  if (fromEnv) {
+    if (import.meta.env.PROD && isEmbeddedShellOrigin(fromEnv) && !preferStrictPublicOrigin()) {
+      return PRODUCTION_PUBLIC_ORIGIN
+    }
+    return stripTrailingSlash(fromEnv)
+  }
+
+  const winOrigin = typeof window !== 'undefined' ? window.location.origin : ''
+  if (winOrigin) {
+    if (import.meta.env.PROD && isEmbeddedShellOrigin(winOrigin) && !preferStrictPublicOrigin()) {
+      return PRODUCTION_PUBLIC_ORIGIN
+    }
+    return stripTrailingSlash(winOrigin)
+  }
+
+  return import.meta.env.PROD ? PRODUCTION_PUBLIC_ORIGIN : stripTrailingSlash(winOrigin) || PRODUCTION_PUBLIC_ORIGIN
 }
 
 /**
