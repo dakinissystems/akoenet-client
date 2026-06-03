@@ -107,6 +107,10 @@ export default {
     invalidToken: 'Enlace no válido o ausente. Solicita un nuevo correo de registro.',
     tokenExpired: 'Este enlace no es válido o ha caducado. Empieza de nuevo desde Registrarse.',
     tokenVerifyFailed: 'No se pudo verificar este enlace.',
+    tokenDbSchema:
+      'El servidor aún no tiene la base de datos actualizada (tabla de registro). El administrador debe ejecutar las migraciones en el backend.',
+    tokenApiUnreachable:
+      'No hay conexión con la API en {{url}}. Comprueba que el backend esté activo y que CORS permita este sitio.',
     backSignUp: '← Volver al registro',
     username: 'Usuario',
     password: 'Contraseña',

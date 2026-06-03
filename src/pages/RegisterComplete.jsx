@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
+import { getApiBaseUrl } from '../lib/apiBase'
+import { getRegistrationTokenFromLocation } from '../lib/register-token-url'
 import { inviteLandingPath, INVITE_QUERY_PARAM } from '../lib/invites'
 import { postAuthDestination } from '../lib/postAuthDestination'
 import AuthLegalStrip from '../components/AuthLegalStrip'
@@ -15,7 +17,11 @@ export default function RegisterComplete() {
   const { registerComplete, user, loading } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const token = String(searchParams.get('token') || '').trim()
+  const token = useMemo(() => {
+    const fromRouter = String(searchParams.get('token') || '').trim()
+    if (/^[a-f0-9]{64}$/i.test(fromRouter)) return fromRouter
+    return getRegistrationTokenFromLocation()
+  }, [searchParams])
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -51,11 +57,16 @@ export default function RegisterComplete() {
         setInviteFromToken(inv || null)
       } catch (err) {
         if (cancelled) return
-        setLoadError(
-          err.response?.data?.error === 'invalid_or_expired_token'
-            ? t('registerComplete.tokenExpired')
-            : t('registerComplete.tokenVerifyFailed')
-        )
+        const code = err.response?.data?.error
+        if (code === 'invalid_or_expired_token') {
+          setLoadError(t('registerComplete.tokenExpired'))
+        } else if (code === 'database_schema_outdated') {
+          setLoadError(t('registerComplete.tokenDbSchema'))
+        } else if (!err.response) {
+          setLoadError(t('registerComplete.tokenApiUnreachable', { url: getApiBaseUrl() }))
+        } else {
+          setLoadError(t('registerComplete.tokenVerifyFailed'))
+        }
       } finally {
         if (!cancelled) setPendingLoading(false)
       }

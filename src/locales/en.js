@@ -106,6 +106,10 @@ export default {
     invalidToken: 'Invalid or missing link. Request a new registration email.',
     tokenExpired: 'This link is invalid or has expired. Start again from Sign up.',
     tokenVerifyFailed: 'Could not verify this link.',
+    tokenDbSchema:
+      'The server database is missing the registration table. An administrator must run migrations on the backend.',
+    tokenApiUnreachable:
+      'Cannot reach the API at {{url}}. Check that the backend is up and CORS allows this site.',
     backSignUp: '← Back to sign up',
     username: 'Username',
     password: 'Password',
