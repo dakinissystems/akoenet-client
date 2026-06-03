@@ -31,6 +31,7 @@ const LegalDocPage = lazy(() => import('./pages/LegalDocPage'))
 const DmcaPage = lazy(() => import('./pages/DmcaPage'))
 const DpoPage = lazy(() => import('./pages/DpoPage'))
 const SystemStatus = lazy(() => import('./pages/SystemStatus'))
+const HubSso = lazy(() => import('./pages/HubSso'))
 
 function PageFallback() {
   const { t } = useTranslation()
@@ -173,6 +174,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/register/complete" element={<RegisterComplete />} />
           <Route path="/auth/twitch/callback" element={<TwitchCallback />} />
+          <Route path="/auth/hub-sso" element={<HubSso />} />
           <Route path="/legal/dmca" element={<DmcaPage />} />
           <Route path="/legal/dpo" element={<DpoPage />} />
           <Route path="/legal/:slug" element={<LegalDocPage />} />

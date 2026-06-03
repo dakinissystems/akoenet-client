@@ -43,10 +43,16 @@ export default function Login() {
   const apiBase = getApiBaseUrl()
 
   useEffect(() => {
+    const hinted = searchParams.get('email')
+    if (hinted && !email) setEmail(hinted)
+  }, [searchParams, email])
+
+  useEffect(() => {
     if (!loading && user) {
-      navigate('/', { replace: true })
+      const dest = postAuthDestination(searchParams)
+      navigate(dest || '/', { replace: true })
     }
-  }, [loading, user, navigate])
+  }, [loading, user, navigate, searchParams])
 
   useEffect(() => {
     let msg = localStorage.getItem(SESSION_NOTICE_KEY)
