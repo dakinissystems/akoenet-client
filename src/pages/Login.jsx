@@ -10,6 +10,7 @@ import { isTauri } from '../lib/isTauri'
 import { isCapacitorNative } from '../lib/mobile-runtime'
 import AuthLegalStrip from '../components/AuthLegalStrip'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import PasswordInput from '../components/PasswordInput'
 
 const SESSION_NOTICE_KEY = 'akoenet_session_notice'
 const LEGACY_SESSION_NOTICE_KEYS = ['akonet_session_notice', 'Akonet_session_notice']
@@ -254,10 +255,9 @@ export default function Login() {
           </label>
           <label>
             {t('login.password')}
-            <input
+            <PasswordInput
               id="login-password"
               name="password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

@@ -9,6 +9,7 @@ import { inviteLandingPath, INVITE_QUERY_PARAM } from '../lib/invites'
 import { postAuthDestination } from '../lib/postAuthDestination'
 import AuthLegalStrip from '../components/AuthLegalStrip'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import PasswordInput from '../components/PasswordInput'
 
 const PENDING_INVITE_KEY = 'akoenet_pending_invite'
 
@@ -191,10 +192,9 @@ export default function RegisterComplete() {
             </label>
             <label>
               {t('registerComplete.password')}
-              <input
+              <PasswordInput
                 id="register-complete-password"
                 name="password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

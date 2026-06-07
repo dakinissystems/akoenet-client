@@ -80,6 +80,8 @@ export default {
     termsShort: 'términos',
     privacyShort: 'política de privacidad',
     goHome: 'Ir a AkoeNet',
+    showPassword: 'Mostrar contraseña',
+    hidePassword: 'Ocultar contraseña',
   },
   register: {
     loading: 'Cargando…',

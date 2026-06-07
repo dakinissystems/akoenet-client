@@ -79,6 +79,8 @@ export default {
     termsShort: 'terms',
     privacyShort: 'privacy policy',
     goHome: 'Go to AkoeNet',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
   },
   register: {
     loading: 'Loading…',

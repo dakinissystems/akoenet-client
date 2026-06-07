@@ -60,3 +60,22 @@ export function getApiBaseUrl() {
 
   return url
 }
+
+/**
+ * Socket.IO usa solo el origin de la URL; el path del API (p. ej. /akoenet vía gateway)
+ * debe pasarse en `path` o termina en /socket.io/ en la raíz del host.
+ */
+export function getSocketIoEndpoint() {
+  const base = getApiBaseUrl()
+  try {
+    const withScheme = base.includes('://') ? base : `https://${base}`
+    const parsed = new URL(withScheme)
+    const prefix = parsed.pathname.replace(/\/$/, '')
+    return {
+      url: parsed.origin,
+      path: prefix ? `${prefix}/socket.io` : '/socket.io',
+    }
+  } catch {
+    return { url: base, path: '/socket.io' }
+  }
+}
