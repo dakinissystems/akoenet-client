@@ -935,6 +935,8 @@ export default {
     errSocket: 'Realtime connection unavailable — reload the page or wait a few seconds',
     errNoMicCamera: 'No microphone or camera access',
     errNoMic: 'No microphone access',
+    errNoMicNative:
+      'No microphone access. In Settings → Apps → AkoeNet, enable Microphone permission and try again.',
     errMicTest: 'No microphone access for test',
     errCameraToggle: 'Camera could not be toggled',
     yourScreen: 'Your screen',

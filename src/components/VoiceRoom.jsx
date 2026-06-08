@@ -13,6 +13,8 @@ import {
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { getSavedVoiceSettings } from './VoiceSettingsModal'
 import { reportError } from '../lib/reportError'
+import { ensureVoiceMediaPermissions } from '../services/mobile-audio-permissions'
+import { isCapacitorNative } from '../lib/mobile-runtime'
 
 const fallbackIceServers = [{ urls: 'stun:stun.l.google.com:19302' }]
 
@@ -1186,6 +1188,20 @@ export default function VoiceRoom({
       const wantVideo = Boolean(settings.startWithCamera)
       const startDeafened = Boolean(settings.startDeafened)
       const startMuted = startDeafened || Boolean(settings.startMuted)
+
+      const mediaPerm = await ensureVoiceMediaPermissions({ camera: wantVideo })
+      if (!mediaPerm.granted) {
+        joinInProgressRef.current = false
+        setError(
+          isCapacitorNative()
+            ? tr('voiceRoom.errNoMicNative')
+            : discordStyle
+              ? tr('voiceRoom.errNoMicCamera')
+              : tr('voiceRoom.errNoMic')
+        )
+        return
+      }
+
       let stream
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -1428,6 +1444,11 @@ export default function VoiceRoom({
   async function startMicTest() {
     if (joined || testingMic) return
     setError('')
+    const mediaPerm = await ensureVoiceMediaPermissions({ camera: false })
+    if (!mediaPerm.granted) {
+      setError(isCapacitorNative() ? tr('voiceRoom.errNoMicNative') : tr('voiceRoom.errMicTest'))
+      return
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: getMicTestAudioConstraints(),

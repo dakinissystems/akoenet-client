@@ -1206,8 +1206,8 @@ export default function Chat({
         <VoiceRoom
           channelId={rtcVoiceChannelId}
           user={user}
-          autoJoin={isVoice && !isMobileViewport}
-          compact={!isVoice}
+          autoJoin={isVoice && !isMobileViewport && !isCapacitorNative()}
+          compact={!isVoice || isMobileViewport || isCapacitorNative()}
           channelLabel={rtcVoiceChannelName}
           voiceUserLimit={voiceUserLimit}
           voiceConnectedCount={voiceConnectedCount}

@@ -941,6 +941,8 @@ export default {
     errSocket: 'Sin conexión en tiempo real — recarga la página o espera unos segundos',
     errNoMicCamera: 'Sin acceso al micrófono o a la cámara',
     errNoMic: 'Sin acceso al micrófono',
+    errNoMicNative:
+      'Sin acceso al micrófono. En Ajustes → Aplicaciones → AkoeNet activa Permiso de micrófono y vuelve a intentar.',
     errMicTest: 'Sin acceso al micrófono para la prueba',
     errCameraToggle: 'No se pudo cambiar la cámara',
     yourScreen: 'Tu pantalla',

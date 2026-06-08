@@ -1914,7 +1914,9 @@ textarea {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .channel-list-toolbar {
@@ -5868,7 +5870,29 @@ input.theme-color-hex:disabled {
     border: none;
     background: #06090f;
     padding: 0.6rem 0.6rem calc(0.95rem + env(safe-area-inset-bottom, 0px));
-    min-height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+
+  .app-shell--server .chat-panel.chat-panel--voice > .voice-room-discord.voice-room-compact {
+    flex-shrink: 0;
+    margin-top: auto;
+    max-height: min(58vh, 420px);
+    overflow-y: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(6, 9, 15, 0.92), #06090f);
+  }
+
+  .app-shell--server .channel-list-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-shell--server .channel-list.channel-list-discord {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .app-shell--server .chat-panel.chat-panel--voice .voice-room-top {
@@ -5956,7 +5980,7 @@ input.theme-color-hex:disabled {
   /* Server view: rail fija a la izquierda; canales y chat a la derecha. */
   .app-shell:not(.dashboard-shell) {
     grid-template-columns: 56px minmax(0, 1fr);
-    grid-template-rows: minmax(0, min(40vh, 300px)) minmax(0, 1fr);
+    grid-template-rows: minmax(0, min(46vh, 340px)) minmax(0, 1fr);
     grid-template-areas:
       'rail channels'
       'rail chat';
@@ -5964,6 +5988,10 @@ input.theme-color-hex:disabled {
     min-height: calc(100vh - 62px);
     width: 100%;
     max-width: 100%;
+  }
+
+  .app-shell--server:has(.chat-panel--voice) {
+    grid-template-rows: minmax(148px, min(52vh, 380px)) minmax(0, 1fr);
   }
 
   .app-shell:not(.dashboard-shell) > .rail {
