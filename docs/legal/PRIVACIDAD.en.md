@@ -5,7 +5,7 @@ This policy explains how AkoeNet collects, uses, and protects personal data.
 
 1. Data controller
 Controller: Christian
-Contact: dakinissystems@gmail.com
+Contact: privacy@dakinissystems.com
 Country/Jurisdiction: Spain
 
 2. Data we may collect
@@ -72,7 +72,7 @@ If we operate with users in the EU:
 We may update this policy. We will publish the current version with its update date.
 
 14. Contact
-Privacy inquiries: dakinissystems@gmail.com
+Privacy inquiries: privacy@dakinissystems.com
 
 15. DPO and copyright notices
 - DPO / data protection: `/legal/dpo`

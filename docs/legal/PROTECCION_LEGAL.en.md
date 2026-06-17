@@ -23,5 +23,5 @@ Copyright (c) 2026 Dakinis Systems. All rights reserved.
 If you believe content infringes your rights, you can submit a removal request through:
 - Form: `/legal/dmca`
 
-Contact: dakinissystems@gmail.com
+Contact: legal@dakinissystems.com
 

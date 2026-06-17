@@ -16,7 +16,7 @@ Nuestros estándares de seguridad incluyen:
 Cómo reportar
 Los usuarios pueden reportar problemas de seguridad infantil desde la aplicación (cuando esté disponible) o contactando a nuestro equipo de seguridad:
 
-Email: dakinissystems@gmail.com
+Email: legal@dakinissystems.com
 
 AkoeNet se compromete a mantener una plataforma segura para todas las personas usuarias y a proteger a los menores frente al abuso y la explotación.
 

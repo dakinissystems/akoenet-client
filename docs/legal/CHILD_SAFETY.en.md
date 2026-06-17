@@ -16,7 +16,7 @@ Our safety standards include:
 How to report
 Users can report child safety issues from the app (when available) or by contacting our safety team:
 
-Email: dakinissystems@gmail.com
+Email: legal@dakinissystems.com
 
 AkoeNet is committed to maintaining a safe platform and protecting minors from abuse and exploitation.
 

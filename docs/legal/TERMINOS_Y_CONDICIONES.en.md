@@ -5,7 +5,7 @@ By creating an account or using the service, you agree to these Terms.
 
 1. Service operator
 Operator: Christian
-Contact: dakinissystems@gmail.com
+Contact: legal@dakinissystems.com
 Country/Jurisdiction: Spain
 
 2. Service description
@@ -52,5 +52,5 @@ AkoeNet does not process online gateway payments (for example, Stripe) in the cu
 Where applicable, billing is handled by bank transfer outside the platform.
 
 13. Legal contact
-For legal inquiries or notices: dakinissystems@gmail.com
+For legal inquiries or notices: legal@dakinissystems.com
 

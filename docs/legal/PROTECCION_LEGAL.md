@@ -24,5 +24,5 @@ Copyright (c) 2026 Dakinis Systems. Todos los derechos reservados.
 Si consideras que algún contenido compartido infringe derechos de autor, puedes enviar una notificación conforme al procedimiento de retirada:
 - Formulario: `/legal/dmca`
 
-Contacto: dakinissystems@gmail.com
+Contacto: legal@dakinissystems.com
 
