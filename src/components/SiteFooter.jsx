@@ -3,7 +3,7 @@ import { useLandingLocale } from '../hooks/useLandingLocale'
 import { clientCopyrightLineParts } from '../lib/copyright'
 import { DAKINIS_SYSTEMS_URL, footerContent } from '../lib/landingContent'
 
-const legalContactEmail = String(import.meta.env.VITE_LEGAL_CONTACT_EMAIL || '').trim()
+const legalContactEmail = String(import.meta.env.VITE_LEGAL_CONTACT_EMAIL || 'dakinissystems@gmail.com').trim()
 
 export default function SiteFooter({ className = '' }) {
   const { locale } = useLandingLocale()

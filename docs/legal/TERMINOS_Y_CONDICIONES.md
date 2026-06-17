@@ -5,7 +5,7 @@ Al crear una cuenta o usar el servicio, aceptas estos Términos.
 
 1. Titular del servicio
 Titular: Christian
-Correo de contacto: legal@dakinis-systems.com
+Correo de contacto: dakinissystems@gmail.com
 País/Jurisdicción: España
 
 2. Objeto del servicio
@@ -52,5 +52,5 @@ AkoeNet no procesa pagos con pasarela online (por ejemplo, Stripe) en la impleme
 Cuando aplique, el cobro se gestiona por transferencia fuera de la plataforma.
 
 13. Contacto legal
-Para consultas legales o notificaciones: legal@dakinis-systems.com
+Para consultas legales o notificaciones: dakinissystems@gmail.com
 

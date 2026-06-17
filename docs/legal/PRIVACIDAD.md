@@ -1,11 +1,11 @@
-# Política de Privacidad — AkoeNet
+﻿# Política de Privacidad — AkoeNet
 Última actualización: 2026-05-08
 
 Esta Política explica cómo AkoeNet recopila, utiliza y protege datos personales.
 
 1. Responsable del tratamiento
 Responsable: Christian
-Contacto: privacy@dakinis-systems.com
+Contacto: dakinissystems@gmail.com
 País/Jurisdicción: España
 
 2. Datos que podemos recopilar
@@ -73,7 +73,7 @@ Si operamos con usuarios en la UE:
 Podemos actualizar esta Política. Publicaremos la versión vigente con su fecha de actualización.
 
 14. Contacto
-Consultas de privacidad: privacy@dakinis-systems.com
+Consultas de privacidad: dakinissystems@gmail.com
 
 15. DPO y avisos de copyright
 - DPO / protección de datos: formulario en `/legal/dpo`
