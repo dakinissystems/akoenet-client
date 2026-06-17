@@ -57,7 +57,7 @@ export default function DmcaPage() {
     return (
       <div className="auth-page legal-form-page">
         <div className="auth-card legal-form-card">
-          <h1>DMCA notice received</h1>
+          <h1>Notice received</h1>
           <p className="muted">
             Reference id: <strong>{referenceId}</strong>
           </p>
@@ -79,10 +79,10 @@ export default function DmcaPage() {
         <p className="muted small" style={{ marginBottom: '0.75rem' }}>
           <Link to="/">← Home</Link>
         </p>
-        <h1>DMCA takedown notice</h1>
+        <h1>Copyright & IP complaints</h1>
         <p className="muted small">
-          For copyright complaints under applicable law (e.g. U.S. DMCA). Only complete this form if you are the
-          rights holder or authorized to act on their behalf.
+          For copyright and intellectual property complaints (including DMCA-style notices where applicable). Complete
+          only if you are the rights holder or authorized agent.
         </p>
         {error && <div className="error-banner">{error}</div>}
         <form onSubmit={onSubmit} className="form-stack legal-form-stack">

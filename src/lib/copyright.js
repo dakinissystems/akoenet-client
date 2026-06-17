@@ -1,9 +1,8 @@
 /**
  * Atribución de derechos de autor del cliente web AkoeNet.
- * Dakinys Systems constituye la titularidad de marca y despliegue referenciada en el pie legal.
  */
 
-export const COPYRIGHT_HOLDER = 'Dakinys Systems'
+export const COPYRIGHT_HOLDER = 'Dakinis Systems'
 
 function isSpanishCopyrightLocale(locale) {
   return String(locale ?? 'en').toLowerCase().startsWith('es')
@@ -20,8 +19,7 @@ function getCopyrightDisplayYear() {
 }
 
 /**
- * Partes del pie © usadas en SiteFooter y AuthLegalStrip (nombre titular + sufijo legal).
- * @param {string} [locale] Código BCP 47 (`es`, `en`, `es-ES`, etc.)
+ * @param {string} [locale]
  */
 export function clientCopyrightLineParts(locale) {
   return {
@@ -32,7 +30,6 @@ export function clientCopyrightLineParts(locale) {
 }
 
 /**
- * Línea © con marca Dakinys para pie / textos planos (paridad con StreamAutomator `dakinisCopyrightNotice`).
  * @param {string} [locale]
  */
 export function dakinisCopyrightNotice(locale = 'en') {

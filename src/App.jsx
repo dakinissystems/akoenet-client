@@ -29,7 +29,8 @@ const ServerView = lazy(() => import('./pages/ServerView'))
 const TwitchCallback = lazy(() => import('./pages/TwitchCallback'))
 const LegalDocPage = lazy(() => import('./pages/LegalDocPage'))
 const DmcaPage = lazy(() => import('./pages/DmcaPage'))
-const DpoPage = lazy(() => import('./pages/DpoPage'))
+const DpoPage = lazy(() => import('./pages/PrivacyRequestsPage'))
+const PrivacyRequestsPage = DpoPage
 const SystemStatus = lazy(() => import('./pages/SystemStatus'))
 const HubSso = lazy(() => import('./pages/HubSso'))
 
@@ -176,7 +177,9 @@ export default function App() {
           <Route path="/auth/twitch/callback" element={<TwitchCallback />} />
           <Route path="/auth/hub-sso" element={<HubSso />} />
           <Route path="/legal/dmca" element={<DmcaPage />} />
-          <Route path="/legal/dpo" element={<DpoPage />} />
+          <Route path="/legal/privacy-requests" element={<PrivacyRequestsPage />} />
+          <Route path="/legal/privacidad-solicitudes" element={<PrivacyRequestsPage />} />
+          <Route path="/legal/dpo" element={<PrivacyRequestsPage />} />
           <Route path="/legal/:slug" element={<LegalDocPage />} />
           <Route path="/invite/:token" element={<InvitePage />} />
           <Route path="/status" element={<SystemStatus />} />
