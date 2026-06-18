@@ -16,12 +16,6 @@ export default {
       'Arranca o reinicia el backend y reintenta. El token de sesión sigue almacenado en este dispositivo.',
     tryAgain: 'Reintentar',
   },
-  hubSso: {
-    working: 'Conectando tu cuenta Dakinis con AkoeNet…',
-    idpDisabled: 'SSO del ecosistema no está configurado (falta VITE_DAKINIS_AUTH_URL).',
-    exchangeFailed: 'No se pudo validar la sesión del Hub. Inicia sesión manualmente.',
-    goLogin: 'Ir a iniciar sesión',
-  },
   login: {
     title: 'Iniciar sesión',
     signingIn: 'Entrando…',
@@ -80,8 +74,6 @@ export default {
     termsShort: 'términos',
     privacyShort: 'política de privacidad',
     goHome: 'Ir a AkoeNet',
-    showPassword: 'Mostrar contraseña',
-    hidePassword: 'Ocultar contraseña',
   },
   register: {
     loading: 'Cargando…',

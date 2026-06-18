@@ -1,7 +1,7 @@
 /** Copy for the public landing page (EN default, ES alternate). */
 
-/** Public marketing / company site (Dakinis Systems). */
-export const DAKINIS_SYSTEMS_URL = 'https://dakinissystems.com/'
+/** Public marketing / company site (Dakinys Systems). */
+export const DAKINIS_SYSTEMS_URL = 'https://dakinissystems.onrender.com/'
 
 export const landingContent = {
   en: {
@@ -267,10 +267,8 @@ export const footerContent = {
     terms: 'Terms',
     privacy: 'Privacy',
     legal: 'Legal',
-    dmca: 'Copyright / IP',
-    privacyRequests: 'Privacy requests',
-    security: 'Security',
-    transparency: 'Transparency (DSA)',
+    dmca: 'DMCA',
+    dpo: 'Data rights',
     accountDeletion: 'Delete account',
     childSafety: 'Child safety',
     cookies: 'Cookies',
@@ -292,10 +290,8 @@ export const footerContent = {
     terms: 'Términos',
     privacy: 'Privacidad',
     legal: 'Legal',
-    dmca: 'Copyright / PI',
-    privacyRequests: 'Solicitudes de privacidad',
-    security: 'Seguridad',
-    transparency: 'Transparencia (DSA)',
+    dmca: 'DMCA',
+    dpo: 'Derechos de datos',
     accountDeletion: 'Borrar cuenta',
     childSafety: 'Seguridad infantil',
     cookies: 'Cookies',

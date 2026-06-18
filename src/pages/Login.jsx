@@ -10,7 +10,6 @@ import { isTauri } from '../lib/isTauri'
 import { isCapacitorNative } from '../lib/mobile-runtime'
 import AuthLegalStrip from '../components/AuthLegalStrip'
 import LanguageSwitcher from '../components/LanguageSwitcher'
-import PasswordInput from '../components/PasswordInput'
 
 const SESSION_NOTICE_KEY = 'akoenet_session_notice'
 const LEGACY_SESSION_NOTICE_KEYS = ['akonet_session_notice', 'Akonet_session_notice']
@@ -44,16 +43,10 @@ export default function Login() {
   const apiBase = getApiBaseUrl()
 
   useEffect(() => {
-    const hinted = searchParams.get('email')
-    if (hinted && !email) setEmail(hinted)
-  }, [searchParams, email])
-
-  useEffect(() => {
     if (!loading && user) {
-      const dest = postAuthDestination(searchParams)
-      navigate(dest || '/', { replace: true })
+      navigate('/', { replace: true })
     }
-  }, [loading, user, navigate, searchParams])
+  }, [loading, user, navigate])
 
   useEffect(() => {
     let msg = localStorage.getItem(SESSION_NOTICE_KEY)
@@ -255,9 +248,10 @@ export default function Login() {
           </label>
           <label>
             {t('login.password')}
-            <PasswordInput
+            <input
               id="login-password"
               name="password"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

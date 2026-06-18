@@ -3,7 +3,7 @@ import { useLandingLocale } from '../hooks/useLandingLocale'
 import { clientCopyrightLineParts } from '../lib/copyright'
 import { DAKINIS_SYSTEMS_URL, footerContent } from '../lib/landingContent'
 
-const legalContactEmail = String(import.meta.env.VITE_LEGAL_CONTACT_EMAIL || 'legal@dakinissystems.com').trim()
+const legalContactEmail = String(import.meta.env.VITE_LEGAL_CONTACT_EMAIL || '').trim()
 
 export default function SiteFooter({ className = '' }) {
   const { locale } = useLandingLocale()
@@ -17,15 +17,12 @@ export default function SiteFooter({ className = '' }) {
     { to: '/legal/privacidad', label: f.privacy },
     { to: '/legal/account-deletion', label: f.accountDeletion },
     { to: '/legal/child-safety', label: f.childSafety },
-    { to: '/legal/seguridad', label: f.security },
     { to: '/status', label: f.status },
   ]
-  const privacyRequestsPath = locale === 'es' ? '/legal/privacidad-solicitudes' : '/legal/privacy-requests'
   const secondaryLinks = [
     { to: '/legal/proteccion', label: f.legal },
     { to: '/legal/dmca', label: f.dmca },
-    { to: privacyRequestsPath, label: f.privacyRequests },
-    { to: '/legal/transparencia', label: f.transparency },
+    { to: '/legal/dpo', label: f.dpo },
     { to: '/legal/cookies', label: f.cookies },
     { to: '/legal/moderacion', label: f.moderation },
   ]

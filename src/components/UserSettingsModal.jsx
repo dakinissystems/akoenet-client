@@ -20,7 +20,6 @@ import {
 } from '../lib/themePreferences'
 import { isTauri } from '../lib/isTauri'
 import LanguageSwitcher from './LanguageSwitcher'
-import PasswordInput from './PasswordInput'
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -705,23 +704,11 @@ export default function UserSettingsModal({ open, onClose, initialSection = 'pro
                 <form onSubmit={(e) => { e.preventDefault(); saveUserSettings() }} className="form-stack">
                   <label>
                     {t('userSettings.account.currentPasswordHint')}
-                    <PasswordInput
-                      id="settings-current-password"
-                      name="current_password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      autoComplete="current-password"
-                    />
+                    <input id="settings-current-password" name="current_password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
                   </label>
                   <label>
                     {t('userSettings.account.newPassword')}
-                    <PasswordInput
-                      id="settings-new-password"
-                      name="new_password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      autoComplete="new-password"
-                    />
+                    <input id="settings-new-password" name="new_password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
                   </label>
                   <button type="submit" className="btn primary" disabled={saving}>
                     {saving ? t('userSettings.profile.saving') : t('userSettings.account.saveAccountSettings')}
@@ -760,7 +747,8 @@ export default function UserSettingsModal({ open, onClose, initialSection = 'pro
                       <p className="muted small">{t('userSettings.account.twofaEnabledLine')}</p>
                       <label>
                         {t('userSettings.account.currentPassword')}
-                        <PasswordInput
+                        <input
+                          type="password"
                           value={disable2faPassword}
                           onChange={(e) => setDisable2faPassword(e.target.value)}
                           autoComplete="current-password"

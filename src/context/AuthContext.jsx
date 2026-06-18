@@ -120,13 +120,7 @@ export function AuthProvider({ children }) {
     if (!token) {
       setRefreshToken(null)
       setUser(null)
-      setLoading(true)
-      try {
-        await api.get('/health')
-        setServerUnreachable(false)
-      } catch {
-        setServerUnreachable(true)
-      }
+      setServerUnreachable(false)
       setLoading(false)
       return
     }
@@ -154,9 +148,6 @@ export function AuthProvider({ children }) {
         return
       } catch (err) {
         lastErr = err
-        if (err.response?.status === 401) {
-          break
-        }
         if (isUnreachableApiError(err) && i < delays.length - 1) {
           continue
         }

@@ -931,12 +931,8 @@ export default {
     errMicProcess: 'Could not process microphone',
     errVoiceFull: 'This voice channel is full',
     errJoinVoice: 'Could not join voice channel',
-    errJoinTimeout: 'Voice channel join timed out — check your connection and try again',
-    errSocket: 'Realtime connection unavailable — reload the page or wait a few seconds',
     errNoMicCamera: 'No microphone or camera access',
     errNoMic: 'No microphone access',
-    errNoMicNative:
-      'No microphone access. In Settings → Apps → AkoeNet, enable Microphone permission and try again.',
     errMicTest: 'No microphone access for test',
     errCameraToggle: 'Camera could not be toggled',
     yourScreen: 'Your screen',

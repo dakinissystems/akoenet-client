@@ -15,10 +15,6 @@ import accountDeletionMd from '../../docs/legal/ACCOUNT_DELETION.md?raw'
 import accountDeletionEn from '../../docs/legal/ACCOUNT_DELETION.en.md?raw'
 import childSafetyMd from '../../docs/legal/CHILD_SAFETY.md?raw'
 import childSafetyEn from '../../docs/legal/CHILD_SAFETY.en.md?raw'
-import seguridadMd from '../../docs/legal/SEGURIDAD.md?raw'
-import seguridadEn from '../../docs/legal/SEGURIDAD.en.md?raw'
-import transparenciaMd from '../../docs/legal/TRANSPARENCIA_DSA.md?raw'
-import transparenciaEn from '../../docs/legal/TRANSPARENCIA_DSA.en.md?raw'
 
 const DOCS = {
   privacidad: {
@@ -48,14 +44,6 @@ const DOCS = {
   'child-safety': {
     es: { title: 'Estándares de seguridad infantil', body: childSafetyMd },
     en: { title: 'Child Safety Standards', body: childSafetyEn },
-  },
-  seguridad: {
-    es: { title: 'Política de seguridad', body: seguridadMd },
-    en: { title: 'Security policy', body: seguridadEn },
-  },
-  transparencia: {
-    es: { title: 'Informe de transparencia (DSA)', body: transparenciaMd },
-    en: { title: 'Transparency Report (DSA)', body: transparenciaEn },
   },
 }
 

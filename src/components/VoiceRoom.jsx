@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getSocket, whenSocketReady } from '../services/socket'
+import { getSocket } from '../services/socket'
 import {
   buildRemoteVoicePlaybackGraph,
   buildVoiceOutgoingGraph,
@@ -13,8 +13,6 @@ import {
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { getSavedVoiceSettings } from './VoiceSettingsModal'
 import { reportError } from '../lib/reportError'
-import { ensureVoiceMediaPermissions } from '../services/mobile-audio-permissions'
-import { isCapacitorNative } from '../lib/mobile-runtime'
 
 const fallbackIceServers = [{ urls: 'stun:stun.l.google.com:19302' }]
 
@@ -1166,7 +1164,8 @@ export default function VoiceRoom({
 
   async function joinVoice(opts = {}) {
     const discordStyle = Boolean(opts.discordStyle)
-    if (!channelId) return
+    const socket = getSocket()
+    if (!socket || !channelId) return
     if (voiceJoinedChannelRef.current === channelId && localStreamRef.current) return
     if (joinInProgressRef.current) return
     if (testingMic) {
@@ -1174,34 +1173,12 @@ export default function VoiceRoom({
     }
     setError('')
     joinInProgressRef.current = true
-    let socket
-    try {
-      socket = await whenSocketReady()
-    } catch {
-      joinInProgressRef.current = false
-      setError(tr('voiceRoom.errSocket'))
-      return
-    }
     try {
       const settings = getSavedVoiceSettings(user?.id)
       micGainRef.current = settings.micGain
       const wantVideo = Boolean(settings.startWithCamera)
       const startDeafened = Boolean(settings.startDeafened)
       const startMuted = startDeafened || Boolean(settings.startMuted)
-
-      const mediaPerm = await ensureVoiceMediaPermissions({ camera: wantVideo })
-      if (!mediaPerm.granted) {
-        joinInProgressRef.current = false
-        setError(
-          isCapacitorNative()
-            ? tr('voiceRoom.errNoMicNative')
-            : discordStyle
-              ? tr('voiceRoom.errNoMicCamera')
-              : tr('voiceRoom.errNoMic')
-        )
-        return
-      }
-
       let stream
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -1266,23 +1243,7 @@ export default function VoiceRoom({
       })
       setMuted(startMuted)
       setDeafened(startDeafened)
-      let ackHandled = false
-      const ackTimer = window.setTimeout(() => {
-        if (ackHandled) return
-        ackHandled = true
-        joinInProgressRef.current = false
-        setError(tr('voiceRoom.errJoinTimeout'))
-        teardownVoiceOutgoingProcessing()
-        stream.getTracks().forEach((t) => t.stop())
-        localStreamRef.current = null
-        rawVoiceStreamRef.current = null
-        voiceJoinedChannelRef.current = null
-        clearLocalMeter()
-      }, 12_000)
       socket.emit('voice:join', { channelId, username: user?.username }, (ack) => {
-        if (ackHandled) return
-        ackHandled = true
-        window.clearTimeout(ackTimer)
         joinInProgressRef.current = false
         if (!ack?.ok) {
           const err = ack?.error
@@ -1321,29 +1282,20 @@ export default function VoiceRoom({
   }
 
   useEffect(() => {
-    if (!autoJoin || !channelId || joined) return undefined
+    if (!autoJoin || !channelId) return undefined
     let cancelled = false
-    const socket = getSocket()
-    const attemptJoin = () => {
-      if (cancelled || joined || joinInProgressRef.current) return
-      joinVoice({ discordStyle: true })
-    }
     const id = window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
         if (cancelled) return
-        attemptJoin()
+        joinVoice({ discordStyle: true })
       })
     })
-    if (socket && !socket.connected) {
-      socket.on('connect', attemptJoin)
-    }
     return () => {
       cancelled = true
       window.cancelAnimationFrame(id)
-      socket?.off('connect', attemptJoin)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channelId, autoJoin, joined])
+  }, [channelId, autoJoin])
 
   function leaveVoice() {
     const hadServerSession = voiceJoinedChannelRef.current != null
@@ -1444,11 +1396,6 @@ export default function VoiceRoom({
   async function startMicTest() {
     if (joined || testingMic) return
     setError('')
-    const mediaPerm = await ensureVoiceMediaPermissions({ camera: false })
-    if (!mediaPerm.granted) {
-      setError(isCapacitorNative() ? tr('voiceRoom.errNoMicNative') : tr('voiceRoom.errMicTest'))
-      return
-    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: getMicTestAudioConstraints(),

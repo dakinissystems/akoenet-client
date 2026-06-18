@@ -526,49 +526,6 @@ input:focus {
   border-color: var(--echonet);
 }
 
-.password-input {
-  position: relative;
-  display: flex;
-  align-items: stretch;
-  width: 100%;
-}
-
-.password-input input {
-  width: 100%;
-  padding-right: 2.75rem;
-}
-
-.password-input__toggle {
-  position: absolute;
-  right: 0.3rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  padding: 0;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--nexora-muted);
-  cursor: pointer;
-  line-height: 0;
-}
-
-.password-input__toggle:hover:not(:disabled),
-.password-input__toggle:focus-visible {
-  color: var(--echonet);
-  outline: none;
-  background: rgba(59, 130, 246, 0.12);
-}
-
-.password-input__toggle:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
 textarea {
   font: inherit;
   padding: 0.65rem 0.75rem;
@@ -1914,9 +1871,7 @@ textarea {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 .channel-list-toolbar {
@@ -5870,29 +5825,7 @@ input.theme-color-hex:disabled {
     border: none;
     background: #06090f;
     padding: 0.6rem 0.6rem calc(0.95rem + env(safe-area-inset-bottom, 0px));
-    min-height: 0;
-    max-height: 100%;
-    flex: 1 1 auto;
-    overflow-y: auto;
-  }
-
-  .app-shell--server .chat-panel.chat-panel--voice > .voice-room-discord.voice-room-compact {
-    flex-shrink: 0;
-    margin-top: auto;
-    max-height: min(58vh, 420px);
-    overflow-y: auto;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(180deg, rgba(6, 9, 15, 0.92), #06090f);
-  }
-
-  .app-shell--server .channel-list-scroll {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .app-shell--server .channel-list.channel-list-discord {
-    flex: 1 1 auto;
-    min-height: 0;
+    min-height: 100%;
   }
 
   .app-shell--server .chat-panel.chat-panel--voice .voice-room-top {
@@ -5980,7 +5913,7 @@ input.theme-color-hex:disabled {
   /* Server view: rail fija a la izquierda; canales y chat a la derecha. */
   .app-shell:not(.dashboard-shell) {
     grid-template-columns: 56px minmax(0, 1fr);
-    grid-template-rows: minmax(0, min(46vh, 340px)) minmax(0, 1fr);
+    grid-template-rows: minmax(0, min(40vh, 300px)) minmax(0, 1fr);
     grid-template-areas:
       'rail channels'
       'rail chat';
@@ -5988,10 +5921,6 @@ input.theme-color-hex:disabled {
     min-height: calc(100vh - 62px);
     width: 100%;
     max-width: 100%;
-  }
-
-  .app-shell--server:has(.chat-panel--voice) {
-    grid-template-rows: minmax(148px, min(52vh, 380px)) minmax(0, 1fr);
   }
 
   .app-shell:not(.dashboard-shell) > .rail {
