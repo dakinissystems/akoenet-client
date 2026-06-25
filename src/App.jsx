@@ -175,6 +175,8 @@ export default function App() {
           <Route path="/auth/twitch/callback" element={<TwitchCallback />} />
           <Route path="/legal/dmca" element={<DmcaPage />} />
           <Route path="/legal/dpo" element={<DpoPage />} />
+          <Route path="/legal/privacidad-solicitudes" element={<Navigate to="/legal/dpo" replace />} />
+          <Route path="/legal/privacy-requests" element={<Navigate to="/legal/dpo" replace />} />
           <Route path="/legal/:slug" element={<LegalDocPage />} />
           <Route path="/invite/:token" element={<InvitePage />} />
           <Route path="/status" element={<SystemStatus />} />

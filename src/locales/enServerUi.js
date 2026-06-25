@@ -776,7 +776,7 @@ export default {
   },
   serverAutomations: {
     errLoad: 'Could not load server automations.',
-    errReservedName: 'That name is reserved (!schedule / !next / !commands).',
+    errReservedName: 'That name is reserved (!schedule / !next / !commands / dice !d4–!d100 / !roll).',
     errNameTaken: 'That command name already exists.',
     errBlocked: 'Content blocked by filters.',
     errSaveCommand: 'Could not save command.',
@@ -793,7 +793,7 @@ export default {
     errPublish: 'Could not publish announcement.',
     commandsTitle: 'Custom commands',
     commandsLead:
-      'Members type !name in text chat; the bot replies with your text. Names must be 2–32 characters (a-z, 0-9, _). Built-in !schedule / !next / !commands stay reserved.',
+      'Members type !name in text chat; the bot replies with your text. Names must be 2–32 characters (a-z, 0-9, _). Built-in !schedule / !next / !commands and dice (!d20, !roll…) stay reserved.',
     noCommandsYet: 'No custom commands yet.',
     remove: 'Remove',
     newCommandLabel: 'New command (without !)',

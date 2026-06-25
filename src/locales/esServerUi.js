@@ -782,7 +782,7 @@ export default {
   },
   serverAutomations: {
     errLoad: 'No se pudieron cargar las automatizaciones del servidor.',
-    errReservedName: 'Ese nombre está reservado (!schedule / !next / !commands).',
+    errReservedName: 'Ese nombre está reservado (!schedule / !next / !commands / dados !d4–!d100 / !roll).',
     errNameTaken: 'Ese nombre de comando ya existe.',
     errBlocked: 'Contenido bloqueado por los filtros.',
     errSaveCommand: 'No se pudo guardar el comando.',
@@ -799,7 +799,7 @@ export default {
     errPublish: 'No se pudo publicar el anuncio.',
     commandsTitle: 'Comandos personalizados',
     commandsLead:
-      'Los miembros escriben !name en el chat de texto; el bot responde con tu texto. El nombre debe tener 2–32 caracteres (a-z, 0-9, _). !schedule, !next y !commands siguen reservados.',
+      'Los miembros escriben !name en el chat de texto; el bot responde con tu texto. El nombre debe tener 2–32 caracteres (a-z, 0-9, _). !schedule, !next, !commands y los dados (!d20, !roll…) siguen reservados.',
     noCommandsYet: 'Aún no hay comandos personalizados.',
     remove: 'Quitar',
     newCommandLabel: 'Nuevo comando (sin !)',

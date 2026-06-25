@@ -25,6 +25,8 @@ export default function SiteFooter({ className = '' }) {
     { to: '/legal/dpo', label: f.dpo },
     { to: '/legal/cookies', label: f.cookies },
     { to: '/legal/moderacion', label: f.moderation },
+    { to: '/legal/seguridad', label: f.security },
+    { to: '/legal/transparencia', label: f.transparency },
   ]
 
   return (

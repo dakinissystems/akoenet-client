@@ -427,6 +427,9 @@ export default function Chat({
             if (ack.scheduler_reply && !next.some((m) => m.id === ack.scheduler_reply.id)) {
               next = [...next, { ...ack.scheduler_reply, reactions: ack.scheduler_reply.reactions || [] }]
             }
+            if (ack.dice_reply && !next.some((m) => m.id === ack.dice_reply.id)) {
+              next = [...next, { ...ack.dice_reply, reactions: ack.dice_reply.reactions || [] }]
+            }
             return next
           })
         }
