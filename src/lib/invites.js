@@ -157,7 +157,7 @@ export function inviteLandingPath(token) {
 }
 
 /**
- * Full URL to paste / share. Uses home + query so it works on static hosts (Render, etc.)
+ * Full URL to paste / share. Uses home + query so it works on static hosts (Railway, Netlify, etc.).
  * without `/* → /index.html`. Route `/invite/:token` remains for bookmarks after SPA load.
  */
 export function inviteFullUrl(origin, token) {

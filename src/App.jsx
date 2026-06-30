@@ -24,6 +24,8 @@ const pushTokenSent = new Set()
 const pushTokenRetryAfter = new Map()
 
 const RegisterComplete = lazy(() => import('./pages/RegisterComplete'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const PasswordResetComplete = lazy(() => import('./pages/PasswordResetComplete'))
 const Messages = lazy(() => import('./pages/Messages'))
 const ServerView = lazy(() => import('./pages/ServerView'))
 const TwitchCallback = lazy(() => import('./pages/TwitchCallback'))
@@ -170,6 +172,8 @@ export default function App() {
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/login/forgot" element={<ForgotPassword />} />
+          <Route path="/login/reset" element={<PasswordResetComplete />} />
           <Route path="/register" element={<Register />} />
           <Route path="/register/complete" element={<RegisterComplete />} />
           <Route path="/auth/twitch/callback" element={<TwitchCallback />} />

@@ -1,3 +1,3 @@
-# Netlify / algunos hosts: todas las rutas sirven la SPA (React Router).
-# En Render configura también un Rewrite en el panel: /* -> /index.html (200).
+# Netlify / Cloudflare / Railway: todas las rutas sirven la SPA (React Router).
+# Si el host no reescribe /* → index.html, compila con VITE_USE_HASH_ROUTER=true.
 /*    /index.html   200

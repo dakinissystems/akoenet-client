@@ -45,7 +45,7 @@ function isUnreachableApiError(err) {
   return !err.response
 }
 
-/** 5xx / rate-limit: no borrar tokens; el backend puede estar frío (p. ej. Render) o saturado. */
+/** 5xx / rate-limit: no borrar tokens; el backend puede estar frío o saturado. */
 function isTransientServerError(err) {
   const s = err?.response?.status
   if (s == null) return false
@@ -349,6 +349,19 @@ export function AuthProvider({ children }) {
     [login]
   )
 
+  const passwordResetStart = useCallback(async (email) => {
+    const { data } = await api.post('/auth/password-reset/start', { email })
+    return { data }
+  }, [])
+
+  const passwordResetComplete = useCallback(
+    async (token, password) => {
+      const { data } = await api.post('/auth/password-reset/complete', { token, password })
+      return login(data.email, password)
+    },
+    [login]
+  )
+
   const updateCurrentUser = useCallback((partial) => {
     setUser((prev) => {
       if (!prev) return prev
@@ -366,6 +379,8 @@ export function AuthProvider({ children }) {
       loginWithToken,
       registerStart,
       registerComplete,
+      passwordResetStart,
+      passwordResetComplete,
       logout,
       logoutAllDevices,
       refreshUser,
@@ -381,6 +396,8 @@ export function AuthProvider({ children }) {
       loginWithToken,
       registerStart,
       registerComplete,
+      passwordResetStart,
+      passwordResetComplete,
       logout,
       logoutAllDevices,
       refreshUser,

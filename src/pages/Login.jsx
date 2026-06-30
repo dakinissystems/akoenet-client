@@ -93,7 +93,7 @@ export default function Login() {
         clearTimeout(timer)
         if (!cancelled) {
           setTwitchGate('unreachable')
-          // Debug para Android Studio / WebView cuando Render está dormido o CORS bloquea.
+          // Debug para Android Studio / WebView cuando el hosting entra en reposo o CORS bloquea.
           console.error('[login:twitch-status] unreachable', {
             apiBase,
             endpoint: `${apiBase}/auth/twitch/status`,
@@ -258,6 +258,9 @@ export default function Login() {
               autoComplete="current-password"
             />
           </label>
+          <p className="muted small" style={{ margin: '-0.25rem 0 0.5rem', textAlign: 'right' }}>
+            <Link to="/login/forgot">{t('login.forgotPassword')}</Link>
+          </p>
           <button type="submit" className="btn primary" disabled={busy}>
             {busy ? t('login.signingIn') : t('login.signIn')}
           </button>
