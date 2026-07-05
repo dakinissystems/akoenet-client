@@ -15,6 +15,9 @@ export default {
     apiOfflineBodyAdmin:
       'Arranca o reinicia el backend y reintenta. El token de sesión sigue almacenado en este dispositivo.',
     tryAgain: 'Reintentar',
+    hubSsoLoading: 'Entrando con tu cuenta Dakinis…',
+    hubSsoMissingToken: 'No se recibió token de sesión desde Dakinis Hub.',
+    hubSsoFailed: 'No se pudo completar el inicio de sesión desde el Hub.',
   },
   login: {
     title: 'Iniciar sesión',

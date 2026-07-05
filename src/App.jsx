@@ -9,6 +9,7 @@ import { useEffect } from 'react'
 import api from './services/api'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import HubSsoPage from './pages/HubSsoPage'
 import Register from './pages/Register'
 import DashboardAdmin from './pages/DashboardAdmin'
 import InvitePage from './pages/InvitePage'
@@ -172,6 +173,7 @@ export default function App() {
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/hub-sso" element={<HubSsoPage />} />
           <Route path="/login/forgot" element={<ForgotPassword />} />
           <Route path="/login/reset" element={<PasswordResetComplete />} />
           <Route path="/register" element={<Register />} />
