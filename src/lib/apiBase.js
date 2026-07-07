@@ -60,3 +60,13 @@ export function getApiBaseUrl() {
 
   return url
 }
+
+/** Socket.IO uses URL origin only — a path like `/akoenet` becomes a namespace, not the REST prefix. */
+export function getSocketIoOrigin() {
+  const base = getApiBaseUrl()
+  try {
+    return new URL(base).origin
+  } catch {
+    return stripTrailingSlash(base).replace(/\/akoenet$/i, '')
+  }
+}

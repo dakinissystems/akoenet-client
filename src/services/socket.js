@@ -1,8 +1,6 @@
 import { io } from 'socket.io-client'
-import { getApiBaseUrl } from '../lib/apiBase'
+import { getSocketIoOrigin } from '../lib/apiBase'
 import { getAccessToken, setAccessToken } from './session-store'
-
-const baseURL = getApiBaseUrl()
 
 let socket = null
 
@@ -13,7 +11,8 @@ export function connectAkoeNet(token) {
   if (typeof token === 'string' && token) {
     setAccessToken(token)
   }
-  socket = io(baseURL, {
+  socket = io(getSocketIoOrigin(), {
+    path: '/socket.io/',
     auth: (cb) => {
       cb({ token: getAccessToken() || '' })
     },

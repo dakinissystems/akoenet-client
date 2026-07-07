@@ -67,6 +67,21 @@ function waitForSocketConnected(socket, timeoutMs = VOICE_JOIN_ACK_MS) {
   })
 }
 
+function voiceJoinErrorMessage(tr, err) {
+  switch (err) {
+    case 'voice_full':
+      return tr('voiceRoom.errVoiceFull')
+    case 'forbidden':
+      return tr('voiceRoom.errJoinForbidden')
+    case 'timeout':
+      return tr('voiceRoom.errJoinTimeout')
+    case 'server_error':
+      return tr('voiceRoom.errJoinServer')
+    default:
+      return tr('voiceRoom.errJoinVoice')
+  }
+}
+
 export function useVoiceRoom({
   channelId,
   user,
@@ -946,7 +961,7 @@ export function useVoiceRoom({
       const connected = await waitForSocketConnected(socket)
       if (isStale()) return
       if (!connected) {
-        setError(tr('voiceRoom.errJoinVoice'))
+        setError(tr('voiceRoom.errJoinSocket'))
         return
       }
 
@@ -1045,9 +1060,8 @@ export function useVoiceRoom({
       joinInProgressRef.current = false
       if (!ack?.ok) {
         const err = ack?.error
-        setError(
-          err === 'voice_full' ? tr('voiceRoom.errVoiceFull') : tr('voiceRoom.errJoinVoice')
-        )
+        reportError('voice.join', new Error(String(err || 'join_failed')))
+        setError(voiceJoinErrorMessage(tr, err))
         teardownVoiceOutgoingProcessing()
         stream.getTracks().forEach((t) => t.stop())
         localStreamRef.current = null
