@@ -47,6 +47,25 @@ import {
 import { VOICE_SESSION_IDLE, voiceSessionReducer } from '../lib/voiceRoomSession'
 
 const rtcConfig = getRtcConfig()
+const VOICE_JOIN_ACK_MS = 20_000
+
+function waitForSocketConnected(socket, timeoutMs = VOICE_JOIN_ACK_MS) {
+  if (!socket) return Promise.resolve(false)
+  if (socket.connected) return Promise.resolve(true)
+  return new Promise((resolve) => {
+    let settled = false
+    const finish = (ok) => {
+      if (settled) return
+      settled = true
+      socket.off('connect', onConnect)
+      window.clearTimeout(timer)
+      resolve(ok)
+    }
+    const onConnect = () => finish(true)
+    const timer = window.setTimeout(() => finish(false), timeoutMs)
+    socket.on('connect', onConnect)
+  })
+}
 
 export function useVoiceRoom({
   channelId,
@@ -137,6 +156,7 @@ export function useVoiceRoom({
     [patchVoiceSession]
   )
   const [testingMic, setTestingMic] = useState(false)
+  const [joining, setJoining] = useState(false)
   const [error, setError] = useState('')
   const [micLevel, setMicLevel] = useState(0)
   const [remoteVolumes, setRemoteVolumes] = useState({})
@@ -171,6 +191,7 @@ export function useVoiceRoom({
   const micGainRef = useRef(100)
   const voiceJoinedChannelRef = useRef(null)
   const joinInProgressRef = useRef(false)
+  const joinGenerationRef = useRef(0)
   const lastScreenShareIdsKeyRef = useRef('')
   const rawVoiceStreamRef = useRef(null)
   const outgoingGainNodeRef = useRef(null)
@@ -900,20 +921,40 @@ export function useVoiceRoom({
     const discordStyle = Boolean(opts.discordStyle)
     const socket = getSocket()
     if (!socket || !channelId) return
-    if (voiceJoinedChannelRef.current === channelId && localStreamRef.current) return
+    if (voiceJoinedChannelRef.current === channelId && localStreamRef.current) {
+      if (!joined) {
+        setJoined(true)
+        requestAnimationFrame(refreshVoiceMediaElements)
+      }
+      setJoining(false)
+      return
+    }
     if (joinInProgressRef.current) return
+
+    const gen = ++joinGenerationRef.current
+    const isStale = () => gen !== joinGenerationRef.current
+
     if (testingMic) {
       stopMicTest()
     }
     setError('')
+    setJoining(true)
     joinInProgressRef.current = true
+
+    let stream = null
     try {
+      const connected = await waitForSocketConnected(socket)
+      if (isStale()) return
+      if (!connected) {
+        setError(tr('voiceRoom.errJoinVoice'))
+        return
+      }
+
       const settings = getSavedVoiceSettings(user?.id)
       micGainRef.current = settings.micGain
       const wantVideo = Boolean(settings.startWithCamera)
       const startDeafened = Boolean(settings.startDeafened)
       const startMuted = startDeafened || Boolean(settings.startMuted)
-      let stream
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           audio: getVoiceChannelAudioConstraints(),
@@ -934,6 +975,11 @@ export function useVoiceRoom({
           throw firstErr
         }
       }
+      if (isStale()) {
+        stream.getTracks().forEach((t) => t.stop())
+        return
+      }
+
       rawVoiceStreamRef.current = stream
       if (pendingAudioCtxCloseRef.current) {
         clearTimeout(pendingAudioCtxCloseRef.current)
@@ -941,13 +987,18 @@ export function useVoiceRoom({
       }
       const ctx = ensureAudioContext()
       if (!ctx) {
-        joinInProgressRef.current = false
         stream.getTracks().forEach((t) => t.stop())
         rawVoiceStreamRef.current = null
         setError(tr('voiceRoom.errNoAudio'))
         return
       }
       await ctx.resume()
+      if (isStale()) {
+        stream.getTracks().forEach((t) => t.stop())
+        rawVoiceStreamRef.current = null
+        return
+      }
+
       const mediaSource = ctx.createMediaStreamSource(stream)
       const graph = buildVoiceOutgoingGraph(ctx, mediaSource, {
         micGainPercent: micGainRef.current,
@@ -963,7 +1014,6 @@ export function useVoiceRoom({
         teardownVoiceOutgoingProcessing()
         stream.getTracks().forEach((t) => t.stop())
         rawVoiceStreamRef.current = null
-        joinInProgressRef.current = false
         setError(tr('voiceRoom.errMicProcess'))
         return
       }
@@ -977,41 +1027,64 @@ export function useVoiceRoom({
       })
       setMuted(startMuted)
       setDeafened(startDeafened)
-      socket.emit('voice:join', { channelId, username: user?.username }, (ack) => {
-        joinInProgressRef.current = false
-        if (!ack?.ok) {
-          const err = ack?.error
-          setError(
-            err === 'voice_full' ? tr('voiceRoom.errVoiceFull') : tr('voiceRoom.errJoinVoice')
-          )
-          teardownVoiceOutgoingProcessing()
-          stream.getTracks().forEach((t) => t.stop())
-          localStreamRef.current = null
-          rawVoiceStreamRef.current = null
-          voiceJoinedChannelRef.current = null
-          clearLocalMeter()
-          return
+
+      const ack = await new Promise((resolve) => {
+        let settled = false
+        const finish = (result) => {
+          if (settled) return
+          settled = true
+          window.clearTimeout(timeoutId)
+          resolve(result)
         }
-        voiceJoinedChannelRef.current = channelId
-        setJoined(true)
-        onVoiceSessionChange?.({ joined: true, channelId })
-        setParticipants(ack.participants || [])
-        requestAnimationFrame(refreshVoiceMediaElements)
-        for (const p of ack.participants || []) {
-          if (p.socketId === socket.id) continue
-          createPeer(p.socketId, true)
-        }
+        const timeoutId = window.setTimeout(() => finish({ error: 'timeout' }), VOICE_JOIN_ACK_MS)
+        socket.emit('voice:join', { channelId, username: user?.username }, finish)
       })
-    } catch {
+
+      if (isStale()) return
+
       joinInProgressRef.current = false
-      teardownVoiceOutgoingProcessing()
-      if (rawVoiceStreamRef.current) {
-        rawVoiceStreamRef.current.getTracks().forEach((t) => t.stop())
+      if (!ack?.ok) {
+        const err = ack?.error
+        setError(
+          err === 'voice_full' ? tr('voiceRoom.errVoiceFull') : tr('voiceRoom.errJoinVoice')
+        )
+        teardownVoiceOutgoingProcessing()
+        stream.getTracks().forEach((t) => t.stop())
+        localStreamRef.current = null
         rawVoiceStreamRef.current = null
+        voiceJoinedChannelRef.current = null
+        clearLocalMeter()
+        return
       }
-      localStreamRef.current = null
-      clearLocalMeter()
-      setError(discordStyle ? tr('voiceRoom.errNoMicCamera') : tr('voiceRoom.errNoMic'))
+
+      voiceJoinedChannelRef.current = channelId
+      setJoined(true)
+      setJoining(false)
+      onVoiceSessionChange?.({ joined: true, channelId })
+      setParticipants(ack.participants || [])
+      requestAnimationFrame(refreshVoiceMediaElements)
+      for (const p of ack.participants || []) {
+        if (p.socketId === socket.id) continue
+        createPeer(p.socketId, true)
+      }
+    } catch {
+      if (!isStale()) {
+        teardownVoiceOutgoingProcessing()
+        if (rawVoiceStreamRef.current) {
+          rawVoiceStreamRef.current.getTracks().forEach((t) => t.stop())
+          rawVoiceStreamRef.current = null
+        }
+        localStreamRef.current = null
+        clearLocalMeter()
+        setError(discordStyle ? tr('voiceRoom.errNoMicCamera') : tr('voiceRoom.errNoMic'))
+      }
+    } finally {
+      if (!isStale()) {
+        joinInProgressRef.current = false
+        if (voiceJoinedChannelRef.current !== channelId) {
+          setJoining(false)
+        }
+      }
     }
   }
   joinVoiceRef.current = joinVoice
@@ -1019,21 +1092,38 @@ export function useVoiceRoom({
   useEffect(() => {
     if (!autoJoin || !channelId) return undefined
     let cancelled = false
-    const id = window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
+    let innerRaf = 0
+    const outerRaf = window.requestAnimationFrame(() => {
+      innerRaf = window.requestAnimationFrame(() => {
         if (cancelled) return
-        joinVoiceRef.current({ discordStyle: true })
+        void joinVoiceRef.current({ discordStyle: true })
       })
     })
     return () => {
       cancelled = true
-      window.cancelAnimationFrame(id)
+      window.cancelAnimationFrame(outerRaf)
+      if (innerRaf) window.cancelAnimationFrame(innerRaf)
+    }
+  }, [channelId, autoJoin])
+
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket || !autoJoin || !channelId) return undefined
+    const retryJoin = () => {
+      if (joinInProgressRef.current || voiceJoinedChannelRef.current === channelId) return
+      void joinVoiceRef.current({ discordStyle: true })
+    }
+    socket.on('connect', retryJoin)
+    return () => {
+      socket.off('connect', retryJoin)
     }
   }, [channelId, autoJoin])
 
   function leaveVoice() {
     const hadServerSession = voiceJoinedChannelRef.current != null
+    joinGenerationRef.current += 1
     joinInProgressRef.current = false
+    setJoining(false)
     cleanupScreenShareOnLeave()
     voiceJoinedChannelRef.current = null
     const socket = getSocket()
@@ -1293,6 +1383,7 @@ export function useVoiceRoom({
     localScreenStream,
     remoteScreenAudioMuted,
     testingMic,
+    joining,
     error,
     micLevel,
     remoteVolumes,

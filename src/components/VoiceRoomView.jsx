@@ -20,7 +20,7 @@ export default function VoiceRoomView(props) {
     muted,
     cameraOn,
     screenSharing,
-    autoJoin,
+    joining,
     displayTitle,
     showVoiceCap,
     voiceCap,
@@ -79,7 +79,7 @@ export default function VoiceRoomView(props) {
                   </span>
                 </span>
               </>
-            ) : autoJoin ? (
+            ) : joining ? (
               <>
                 <span className="voice-status-chip voice-status-chip--pulse" title={tr('voiceRoom.connectingTitle')}>
                   <IconMic /> {tr('voiceRoom.connectingLabel')}
