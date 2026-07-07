@@ -250,19 +250,21 @@ export function useServerView() {
     }
   }, [])
 
-  const [serverIdSync, setServerIdSync] = useState(id)
-  const [activityMembersSync, setActivityMembersSync] = useState(members)
+  const memberIdsKeyRef = useRef('')
 
-  if (id !== serverIdSync) {
-    setServerIdSync(id)
+  useEffect(() => {
+    memberIdsKeyRef.current = ''
     setVoicePersistChannelId(null)
     setVoiceScreenSharingUserIds([])
-    setActivityMembersSync(members)
     setActivityRealtime({})
-  } else if (members !== activityMembersSync) {
-    setActivityMembersSync(members)
+  }, [id])
+
+  useEffect(() => {
+    const memberIdsKey = members.map((m) => m?.id).join(',')
+    if (memberIdsKey === memberIdsKeyRef.current) return
+    memberIdsKeyRef.current = memberIdsKey
     setActivityRealtime({})
-  }
+  }, [members])
 
   useEffect(() => {
     appliedChannelFromQuery.current = false

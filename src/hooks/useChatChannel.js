@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useReducer, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../services/api'
 import { getSocket } from '../services/socket'
@@ -64,7 +64,6 @@ export function useChatChannel({
   const [failedAvatarKeys, setFailedAvatarKeys] = useState(() => new Set())
   const loadMessagesGenRef = useRef(0)
   const [searchBusy, setSearchBusy] = useState(false)
-  const [channelIdSync, setChannelIdSync] = useState(channelId)
 
   async function loadChannelMessages(nextChannelId, nextThreadRootId) {
     if (!nextChannelId) return
@@ -100,18 +99,17 @@ export function useChatChannel({
     void loadChannelMessages(channelId, null)
   }
 
-  if (channelId !== channelIdSync) {
-    setChannelIdSync(channelId)
+  useLayoutEffect(() => {
     dispatchChannelUi({ type: 'reset-for-channel' })
     threadRootIdRef.current = null
     if (!channelId) {
       loadMessagesGenRef.current += 1
       setMessages([])
       setFailedAvatarKeys(new Set())
-    } else {
-      void loadChannelMessages(channelId, null)
+      return
     }
-  }
+    void loadChannelMessages(channelId, null)
+  }, [channelId])
 
   useEffect(() => {
     currentUserIdRef.current = user?.id != null ? Number(user.id) : null
