@@ -2,11 +2,12 @@
  * Print the public key from a Tauri signer keypair for tauri.conf.json / updater.pubkey.
  *
  * Usage:
- *   npm run updater:pubkey -- path/to/tauri-signer.key
+ *   node scripts/print-updater-pubkey-for-tauri-conf.mjs path/to/tauri-signer.key
  *   npm run updater:pubkey -- path/to/tauri-signer.key.pub
  */
 import { existsSync, readFileSync } from 'node:fs'
 import process from 'node:process'
+import { isValidUpdaterPubkey, normalizeUpdaterPubkey } from './lib/updater-pubkey.mjs'
 
 const inputPath = process.argv[2] || process.env.TAURI_SIGNER_KEY_PATH || ''
 if (!inputPath) {
@@ -23,8 +24,8 @@ function pubCandidates(input) {
 
 for (const path of pubCandidates(inputPath)) {
   if (!existsSync(path)) continue
-  const pubkey = readFileSync(path, 'utf8').trim()
-  if (pubkey) {
+  const pubkey = normalizeUpdaterPubkey(readFileSync(path, 'utf8'))
+  if (isValidUpdaterPubkey(pubkey)) {
     console.log(pubkey)
     process.exit(0)
   }

@@ -2,6 +2,7 @@
  * Fail if derived version files drift from package.json (CI + prebuild guard).
  */
 import process from 'node:process'
+import { readFileSync } from 'node:fs'
 import {
   readAndroidVersion,
   readCargoVersion,
@@ -10,6 +11,7 @@ import {
   readTauriVersion,
   versionCodeFromSemver,
 } from './lib/version.mjs'
+import { isValidUpdaterPubkey, readUpdaterPubkeyFromFile } from './lib/updater-pubkey.mjs'
 
 const expected = readPackageVersion()
 const expectedCode = versionCodeFromSemver(expected)
@@ -54,6 +56,24 @@ try {
   }
 } catch {
   /* package-lock optional in some contexts */
+}
+
+try {
+  const conf = JSON.parse(readFileSync('src-tauri/tauri.conf.json', 'utf8'))
+  const confPub = conf?.plugins?.updater?.pubkey || ''
+  const filePub = readUpdaterPubkeyFromFile('src-tauri/updater.pubkey')
+  if (conf?.plugins?.updater?.active && !isValidUpdaterPubkey(confPub)) {
+    errors.push('tauri.conf.json updater.pubkey is missing or invalid — run: npm run updater:setup')
+  }
+  if (filePub && confPub && normalizePubkeys(confPub) !== normalizePubkeys(filePub)) {
+    errors.push('updater.pubkey ≠ tauri.conf.json pubkey — run: npm run sync-versions')
+  }
+} catch (err) {
+  errors.push(String(err.message || err))
+}
+
+function normalizePubkeys(value) {
+  return String(value || '').replace(/\s+/g, '')
 }
 
 if (errors.length) {

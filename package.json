@@ -33,7 +33,9 @@
     "release:android": "npm run mobile:bundle:release",
     "updater:pubkey": "node scripts/print-updater-pubkey-for-tauri-conf.mjs",
     "updater:manifest": "node scripts/generate-desktop-updater-manifest.mjs",
-    "updater:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-tauri-updater.ps1"
+    "updater:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-tauri-updater.ps1",
+    "cleanup": "node scripts/cleanup-workspace.mjs",
+    "cleanup:dry": "node scripts/cleanup-workspace.mjs --dry-run"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",

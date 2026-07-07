@@ -3,16 +3,16 @@
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { isValidUpdaterPubkey, normalizeUpdaterPubkey, readUpdaterPubkeyFromFile } from './lib/updater-pubkey.mjs'
 
 const confPath = join('src-tauri', 'tauri.conf.json')
 const pubkeyFile = join('src-tauri', 'updater.pubkey')
 
 function readPubkey() {
-  const fromEnv = String(process.env.TAURI_UPDATER_PUBKEY || '').trim()
-  if (fromEnv) return fromEnv
-  if (existsSync(pubkeyFile)) {
-    return readFileSync(pubkeyFile, 'utf8').trim()
-  }
+  const fromEnv = normalizeUpdaterPubkey(process.env.TAURI_UPDATER_PUBKEY || '')
+  if (isValidUpdaterPubkey(fromEnv)) return fromEnv
+  const fromFile = readUpdaterPubkeyFromFile(pubkeyFile)
+  if (isValidUpdaterPubkey(fromFile)) return fromFile
   return ''
 }
 
