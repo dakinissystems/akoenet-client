@@ -182,6 +182,7 @@ export function useVoiceRoom({
   const upsertParticipantRef = useRef(() => {})
   const removeParticipantRef = useRef(() => {})
   const playVoiceJoinChimeRef = useRef(() => {})
+  const handleSignalRef = useRef(() => {})
 
   const ensureAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
