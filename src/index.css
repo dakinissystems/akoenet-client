@@ -1590,6 +1590,20 @@ textarea {
   flex: 1;
 }
 
+.channel-item-select {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
 .channel-icon {
   flex-shrink: 0;
   display: inline-flex;
@@ -1681,21 +1695,38 @@ textarea {
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-width: 0;
   margin-bottom: 2px;
+}
+
+.voice-channel-discord-wrap--active .channel-item-discord--voice-header {
+  background: var(--dc-channel-active);
+  color: var(--nexora-text);
+}
+
+.voice-channel-discord-wrap--active .channel-item-discord--voice-header .channel-icon {
+  color: var(--nexora-strong);
 }
 
 .channel-item-discord--voice-header {
   margin-bottom: 0;
   border-radius: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.voice-channel-discord-wrap--has-users .channel-item-discord--voice-header {
+  padding-bottom: 0.2rem;
 }
 
 .voice-channel-connected {
   list-style: none;
-  margin: 0;
-  padding: 0.1rem 0.5rem 0.35rem 2.05rem;
+  margin: 0 0 0.1rem 1.05rem;
+  padding: 0.05rem 0.35rem 0.3rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
+  border-left: 2px solid rgba(79, 84, 92, 0.65);
 }
 
 .voice-channel-connected:empty {
@@ -1705,16 +1736,41 @@ textarea {
 }
 
 .voice-channel-connected-user {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.2rem 0.35rem 0.2rem 0.25rem;
-  margin: 0 -0.15rem;
+  gap: 0.4rem;
+  padding: 0.18rem 0.3rem 0.18rem 0.15rem;
+  margin: 0 -0.1rem;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--nexora-muted);
+  color: #b5bac1;
   line-height: 1.2;
+}
+
+.voice-channel-connected-user::before {
+  content: '';
+  position: absolute;
+  left: -0.75rem;
+  top: 50%;
+  width: 0.55rem;
+  height: 2px;
+  background: rgba(79, 84, 92, 0.65);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.voice-channel-connected-user--self {
+  color: var(--nexora-text);
+}
+
+.voice-channel-connected-user--muted:not(.voice-channel-connected-user--self) {
+  color: #949ba4;
+}
+
+.voice-channel-connected-user--deaf .voice-channel-connected-name {
+  opacity: 0.72;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1726,8 +1782,8 @@ textarea {
 
 .voice-channel-connected-avatar,
 .voice-channel-connected-avatar-img {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -1754,6 +1810,12 @@ textarea {
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
+}
+
+.voice-channel-connected-you {
+  font-weight: 500;
+  color: #949ba4;
+  font-size: 0.75rem;
 }
 
 .voice-channel-audio-badges {
@@ -1797,8 +1859,9 @@ textarea {
 .channel-row-tools {
   display: inline-flex;
   align-items: center;
-  gap: 0.05rem;
+  gap: 0;
   flex-shrink: 0;
+  margin-left: 0.1rem;
 }
 
 .channel-row-action,
@@ -5864,6 +5927,19 @@ input.theme-color-hex:disabled {
   .app-shell--server .channel-item-discord.active {
     background: rgba(255, 255, 255, 0.09);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  .app-shell--server .voice-channel-discord-wrap--active .channel-item-discord--voice-header {
+    background: rgba(255, 255, 255, 0.09);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  .app-shell--server .voice-channel-connected {
+    border-left-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .app-shell--server .voice-channel-connected-user::before {
+    background: rgba(255, 255, 255, 0.12);
   }
 
   .app-shell--server .chat-panel.chat-panel--voice .message-list {

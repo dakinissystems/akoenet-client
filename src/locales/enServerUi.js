@@ -99,6 +99,7 @@ export default {
     voiceConnectedTitle: 'Connected: {{count}}',
     voiceConnectedMax: 'Connected / max: {{count}} / {{max}}',
     voiceConnectedAria: 'Connected in {{name}}',
+    voiceYouSuffix: ' (you)',
     micMutedTitle: 'Microphone muted',
     deafenedTitle: 'Deafened (cannot hear the channel)',
     screenShareTitle: 'Screen sharing',

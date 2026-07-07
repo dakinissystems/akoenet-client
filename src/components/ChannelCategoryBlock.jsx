@@ -28,6 +28,7 @@ export default function ChannelCategoryBlock({
   isVoiceScreenSharingUser,
   voiceAvatarFailed,
   setVoiceAvatarFailed,
+  currentUserId = null,
 }) {
   return (
     <li
@@ -143,6 +144,7 @@ export default function ChannelCategoryBlock({
             isVoiceScreenSharingUser={isVoiceScreenSharingUser}
             voiceAvatarFailed={voiceAvatarFailed}
             setVoiceAvatarFailed={setVoiceAvatarFailed}
+            currentUserId={currentUserId}
           />
         ))}
       </ul>

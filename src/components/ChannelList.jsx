@@ -148,6 +148,7 @@ export default function ChannelList({
     isVoiceScreenSharingUser,
     voiceAvatarFailed,
     setVoiceAvatarFailed,
+    currentUserId: user?.id ?? null,
   }
 
   return (
@@ -246,6 +247,7 @@ export default function ChannelList({
               isVoiceScreenSharingUser={isVoiceScreenSharingUser}
               voiceAvatarFailed={voiceAvatarFailed}
               setVoiceAvatarFailed={setVoiceAvatarFailed}
+              currentUserId={user?.id ?? null}
             />
           ))}
         </ul>

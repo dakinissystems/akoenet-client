@@ -26,13 +26,16 @@ export default function ChannelListRow({
   isVoiceScreenSharingUser,
   voiceAvatarFailed,
   setVoiceAvatarFailed,
+  currentUserId = null,
 }) {
   const besideOpen = createUI?.type === 'beside' && createUI.channelId === c.id
   const vCount = c.type === 'voice' ? voiceUsersForChannel(c.id).length : 0
   const vMax = c.type === 'voice' ? voiceChannelUserMax(c) : null
   const vSorted = c.type === 'voice' ? sortedVoiceUsersForChannel(c.id) : []
-  const showVoiceXy = c.type === 'voice' && (vMax != null || vCount > 0)
+  const hasConnectedUsers = vSorted.length > 0
   const voiceXyFull = c.type === 'voice' && vMax != null && vCount >= vMax
+  const showVoiceXy = c.type === 'voice' && vMax != null && voiceXyFull
+  const isActiveVoice = c.type === 'voice' && activeChannelId === c.id
 
   return (
     <li
@@ -54,9 +57,17 @@ export default function ChannelListRow({
       }}
     >
       {c.type === 'voice' ? (
-        <div className="voice-channel-discord-wrap">
+        <div
+          className={[
+            'voice-channel-discord-wrap',
+            isActiveVoice ? 'voice-channel-discord-wrap--active' : '',
+            hasConnectedUsers ? 'voice-channel-discord-wrap--has-users' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           <div
-            className={`channel-item channel-item-discord channel-item-discord--voice-header ${activeChannelId === c.id ? 'active' : ''}`}
+            className={`channel-item channel-item-discord channel-item-discord--voice-header ${isActiveVoice ? 'active' : ''}`}
           >
             <button
               type="button"
@@ -79,7 +90,7 @@ export default function ChannelListRow({
                       : t('channelList.voiceConnectedTitle', { count: vCount })
                   }
                 >
-                  {vMax != null ? `(${vCount}/${vMax})` : `(${vCount})`}
+                  {`(${vCount}/${vMax})`}
                 </span>
               )}
             </button>
@@ -105,10 +116,23 @@ export default function ChannelListRow({
           <ul className="voice-channel-connected" aria-label={t('channelList.voiceConnectedAria', { name: c.name })}>
             {vSorted.map((p) => {
               const uidKey = p.userId != null ? String(p.userId) : ''
+              const isSelf =
+                currentUserId != null && p.userId != null && String(p.userId) === String(currentUserId)
               const showImg = p.avatar_url && !voiceAvatarFailed.has(uidKey)
               const liveSharing = isVoiceScreenSharingUser(p.userId)
+              const displayName = p.username || `User ${p.userId}`
               return (
-                <li key={`${c.id}-${p.userId}`} className="voice-channel-connected-user">
+                <li
+                  key={`${c.id}-${p.userId}`}
+                  className={[
+                    'voice-channel-connected-user',
+                    isSelf ? 'voice-channel-connected-user--self' : '',
+                    p.mic_muted ? 'voice-channel-connected-user--muted' : '',
+                    p.deafened ? 'voice-channel-connected-user--deaf' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
                   {showImg ? (
                     <img
                       className="voice-channel-connected-avatar-img"
@@ -123,7 +147,12 @@ export default function ChannelListRow({
                       {(p.username || '?').slice(0, 1).toUpperCase()}
                     </span>
                   )}
-                  <span className="voice-channel-connected-name">{p.username || `User ${p.userId}`}</span>
+                  <span className="voice-channel-connected-name" title={displayName}>
+                    {displayName}
+                    {isSelf ? (
+                      <span className="voice-channel-connected-you">{t('channelList.voiceYouSuffix')}</span>
+                    ) : null}
+                  </span>
                   <span className="voice-channel-audio-badges" aria-hidden>
                     {p.mic_muted ? (
                       <span className="voice-channel-audio-badge voice-channel-audio-badge--mute" title={t('channelList.micMutedTitle')}>

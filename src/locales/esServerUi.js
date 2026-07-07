@@ -100,6 +100,7 @@ export default {
     voiceConnectedTitle: 'Conectados: {{count}}',
     voiceConnectedMax: 'Conectados / máximo: {{count}} / {{max}}',
     voiceConnectedAria: 'Conectados en {{name}}',
+    voiceYouSuffix: ' (tú)',
     micMutedTitle: 'Micrófono silenciado',
     deafenedTitle: 'Sordina (no oye el canal)',
     screenShareTitle: 'Compartiendo pantalla',
