@@ -38,6 +38,7 @@ export default function WelcomeOnboardingModal({ open, onClose }) {
       ref={dialogRef}
       className="welcome-onboarding-overlay"
       aria-labelledby="welcome-onboarding-title"
+      onClose={() => closeOnboarding(onClose)}
     >
       <button
         type="button"
@@ -46,7 +47,16 @@ export default function WelcomeOnboardingModal({ open, onClose }) {
         onClick={() => closeOnboarding(onClose)}
       />
       <div className="welcome-onboarding-card card">
-        <h2 id="welcome-onboarding-title">{t('onboarding.title')}</h2>
+        <div className="welcome-onboarding-head">
+          <h2 id="welcome-onboarding-title">{t('onboarding.title')}</h2>
+          <button
+            type="button"
+            className="btn ghost small"
+            onClick={() => closeOnboarding(onClose)}
+          >
+            {t('common.close')}
+          </button>
+        </div>
         <p className="muted small">
           <Trans
             i18nKey="onboarding.lead"

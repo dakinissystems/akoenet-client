@@ -38,6 +38,12 @@ export default function Dashboard() {
   const [userAvatarFailed, setUserAvatarFailed] = useState(false)
   const [welcomeOpen, setWelcomeOpen] = useState(() => !hasSeenOnboarding())
   const closeUserMenu = useCallback(() => setUserMenuOpen(false), [])
+
+  useEffect(() => {
+    if (!welcomeOpen) return
+    setUserSettingsOpen(false)
+    window.dispatchEvent(new CustomEvent('akoenet-close-global-search'))
+  }, [welcomeOpen])
   const userMenuRef = useDismissiblePopover(userMenuOpen, closeUserMenu)
   const avatarInitial = String(user?.username || 'U').trim().charAt(0).toUpperCase() || 'U'
 

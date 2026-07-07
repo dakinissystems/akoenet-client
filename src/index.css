@@ -4822,14 +4822,18 @@ dialog.members-drawer.members-drawer-native::backdrop {
   position: fixed;
   inset: 0;
   background: var(--nexora-overlay-scrim);
-  display: grid;
-  place-items: center;
   z-index: 80;
   padding: 1rem;
   overflow-y: auto;
 }
 
-dialog.modal-backdrop.modal-dialog-native {
+dialog.modal-backdrop.modal-dialog-native:not([open]) {
+  display: none;
+}
+
+dialog.modal-backdrop.modal-dialog-native[open] {
+  display: grid;
+  place-items: center;
   width: 100%;
   max-width: none;
   height: 100%;
@@ -7711,7 +7715,11 @@ dialog.cookie-banner::backdrop {
   text-overflow: ellipsis;
 }
 
-.global-search-overlay {
+dialog.global-search-overlay:not([open]) {
+  display: none;
+}
+
+dialog.global-search-overlay[open] {
   position: fixed;
   inset: 0;
   z-index: 210;
@@ -7832,7 +7840,11 @@ dialog.global-search-overlay::backdrop {
   font-size: 1.05rem;
 }
 
-.welcome-onboarding-overlay {
+dialog.welcome-onboarding-overlay:not([open]) {
+  display: none;
+}
+
+dialog.welcome-onboarding-overlay[open] {
   position: fixed;
   inset: 0;
   z-index: 220;
@@ -7872,6 +7884,19 @@ dialog.welcome-onboarding-overlay::backdrop {
   background: var(--nexora-panel);
   border: 1px solid var(--nexora-border);
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+}
+
+.welcome-onboarding-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.welcome-onboarding-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
 }
 
 .welcome-onboarding-list {

@@ -42,6 +42,7 @@ export default function ModalDialog({
       className="modal-backdrop modal-dialog-native"
       aria-labelledby={ariaLabelledby}
       aria-label={ariaLabel}
+      onClose={onClose}
     >
       <button
         type="button"

@@ -75,8 +75,15 @@ export default function GlobalSearchModal() {
     function onOpenEvent() {
       dispatch({ type: 'open' })
     }
+    function onForceClose() {
+      dispatch({ type: 'close' })
+    }
     window.addEventListener('akoenet-open-global-search', onOpenEvent)
-    return () => window.removeEventListener('akoenet-open-global-search', onOpenEvent)
+    window.addEventListener('akoenet-close-global-search', onForceClose)
+    return () => {
+      window.removeEventListener('akoenet-open-global-search', onOpenEvent)
+      window.removeEventListener('akoenet-close-global-search', onForceClose)
+    }
   }, [])
 
   useEffect(() => {
@@ -104,6 +111,7 @@ export default function GlobalSearchModal() {
       ref={dialogRef}
       className="global-search-overlay"
       aria-label={t('globalSearch.ariaDialog')}
+      onClose={closeModal}
     >
       <button
         type="button"
