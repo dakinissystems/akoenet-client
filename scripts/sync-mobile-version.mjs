@@ -3,12 +3,10 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { readPackageVersion, versionCodeFromSemver } from './lib/version.mjs'
 
-const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
-const versionName = String(pkg.version || '1.0.0')
-const parts = versionName.split('.').map((n) => parseInt(n, 10) || 0)
-const [major = 1, minor = 0, patch = 0] = parts
-const versionCode = major * 10000 + minor * 100 + patch
+const versionName = readPackageVersion()
+const versionCode = versionCodeFromSemver(versionName)
 
 const gradlePath = join('android', 'app', 'build.gradle')
 let gradle = readFileSync(gradlePath, 'utf8')

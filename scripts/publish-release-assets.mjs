@@ -4,9 +4,9 @@
  */
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { readFileSync } from 'node:fs'
+import { readPackageVersion } from './lib/version.mjs'
 
-const version = String(JSON.parse(readFileSync('package.json', 'utf8')).version || '1.0.0')
+const version = readPackageVersion()
 const publicRoot = join('public', 'releases')
 
 function copyIfExists(src, dest) {
@@ -27,11 +27,17 @@ copyIfExists(
 
 const desktopDir = join('releases', 'desktop', version)
 if (existsSync(desktopDir)) {
+  const versionToken = `_${version}_`
   for (const name of readdirSync(desktopDir)) {
     const full = join(desktopDir, name)
     if (!statSync(full).isFile()) continue
-    if (/\.(msi|exe|dmg|AppImage)$/i.test(name)) {
-      copyIfExists(full, join(publicRoot, 'desktop', name))
-    }
+    if (!/\.(msi|exe|dmg|AppImage|sig)$/i.test(name)) continue
+    if (!name.includes(versionToken) && !name.includes(`_${version}.`)) continue
+    copyIfExists(full, join(publicRoot, 'desktop', name))
   }
+}
+
+const latestJson = join(publicRoot, 'desktop', 'latest.json')
+if (existsSync(latestJson)) {
+  console.log('[publish-release-assets] desktop updater manifest present')
 }

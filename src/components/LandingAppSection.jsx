@@ -7,7 +7,7 @@ import {
 } from '../lib/landingDevice'
 import { isCapacitorNative } from '../lib/mobile-runtime'
 
-const appVersion = typeof __APP_VERSION__ !== 'undefined' ? String(__APP_VERSION__) : '1.5.12'
+const appVersion = typeof __APP_VERSION__ !== 'undefined' ? String(__APP_VERSION__) : ''
 
 const desktopInstallerUrl =
   String(import.meta.env.VITE_DESKTOP_INSTALLER_URL || '').trim() ||

@@ -146,9 +146,15 @@ vite.config.ts.timestamp-*
 # Release binaries (web downloads only — never bundle into Capacitor)
 public/releases/android/*.aab
 public/releases/desktop/*
+!public/releases/desktop/.gitkeep
+!public/releases/desktop/latest.json
 public/releases/*.exe
 public/releases/*.sig
 releases/android/*.aab
+
+# Tauri updater signing (private key only — commit updater.pubkey public key)
+src-tauri/*-signer.key
+src-tauri/.updater-private*
 
 # Native build outputs (keep releases/android/*.aab when tagged)
 android/app/build/

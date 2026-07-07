@@ -1,6 +1,6 @@
 [package]
 name = "akoenet-desktop"
-version = "1.5.13"
+version = "1.5.19"
 description = "AkoeNet desktop"
 authors = ["Dakinis Systems"]
 edition = "2021"
