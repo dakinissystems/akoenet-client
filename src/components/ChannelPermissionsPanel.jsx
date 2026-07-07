@@ -15,7 +15,6 @@ export default function ChannelPermissionsPanel({
   onUpdateChannel,
 }) {
   const { t } = useTranslation()
-  const voiceLimitHintId = useId()
   const isVoice = channelType === 'voice'
 
   if (!permissions?.length) {
