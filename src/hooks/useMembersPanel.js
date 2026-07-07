@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import api from '../services/api'
+import { getAccessToken } from '../services/session-store'
 import { normalizedRoles, resolveDisplayRole, ROLE_ORDER, sortServerRoleNames } from '../lib/serverRoles'
 import { isMemberOnline } from '../lib/memberUtils'
 
@@ -51,6 +52,10 @@ export function useMembersPanel({
   )
 
   const refreshFriendships = useCallback(async () => {
+    if (!getAccessToken()) {
+      setFriendships([])
+      return
+    }
     try {
       const { data } = await api.get('/social/friends')
       setFriendships(Array.isArray(data) ? data : [])
@@ -64,7 +69,7 @@ export function useMembersPanel({
   }, [refreshFriendships])
 
   useEffect(() => {
-    if (!serverId || !canManageMemberRoles) {
+    if (!serverId || !canManageMemberRoles || !getAccessToken()) {
       setRoleDefinitions([])
       return undefined
     }

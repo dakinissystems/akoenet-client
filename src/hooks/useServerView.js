@@ -216,8 +216,9 @@ export function useServerView() {
   )
   /** Voice channel id kept while user reads text channels (stay connected). Cleared on leave / server change. */
   const [voicePersistChannelId, setVoicePersistChannelId] = useState(null)
-  /** Stops HTTP voice-presence polling after 404/401 (old API, wrong base URL, or missing session) */
+  /** Stops HTTP voice-presence polling after auth/404 errors or when socket is live */
   const voicePresencePollStoppedHttp = useRef(false)
+  const voicePresencePollServerId = useRef(null)
   /** Avoid re-applying `?channel=` from the URL on every searchParams change after first apply. */
   const appliedChannelFromQuery = useRef(false)
 
@@ -330,6 +331,7 @@ export function useServerView() {
 
   useEffect(() => {
     if (Number.isNaN(id)) return
+    if (!getAccessToken()) return
     dispatchWorkspace({ type: 'reset-for-server' })
     ;(async () => {
       try {
@@ -401,33 +403,62 @@ export function useServerView() {
 
   useEffect(() => {
     if (Number.isNaN(id) || !user?.id) return undefined
-    voicePresencePollStoppedHttp.current = false
+    if (voicePresencePollServerId.current !== id) {
+      voicePresencePollServerId.current = id
+      voicePresencePollStoppedHttp.current = false
+    }
     let cancelled = false
     let intervalId = null
+
+    function stopVoicePresencePoll() {
+      voicePresencePollStoppedHttp.current = true
+      if (intervalId != null) {
+        window.clearInterval(intervalId)
+        intervalId = null
+      }
+    }
+
     async function fetchVoicePresence() {
-      if (voicePresencePollStoppedHttp.current) return
-      if (!getAccessToken()) return
+      if (cancelled || voicePresencePollStoppedHttp.current) return
+      if (!getAccessToken()) {
+        stopVoicePresencePoll()
+        return
+      }
+      const socket = getSocket()
+      if (socket?.connected) {
+        stopVoicePresencePoll()
+        return
+      }
       try {
         const { data } = await api.get(`/servers/${id}/voice-presence`)
         if (cancelled) return
         setVoicePresence(normalizeVoicePresencePayload(data))
       } catch (e) {
         const status = e?.response?.status
-        if (!cancelled && (status === 404 || status === 401)) {
-          voicePresencePollStoppedHttp.current = true
-          if (intervalId != null) window.clearInterval(intervalId)
+        if (!cancelled && (status === 404 || status === 401 || status === 403)) {
+          stopVoicePresencePoll()
         }
         /* other errors ignored — socket may still update */
       }
     }
+
+    const onSocketConnect = () => {
+      stopVoicePresencePoll()
+    }
+
+    const socket = getSocket()
+    socket?.on('connect', onSocketConnect)
+
     ;(async () => {
       if (!getAccessToken()) return
       await fetchVoicePresence()
       if (cancelled || voicePresencePollStoppedHttp.current) return
       intervalId = window.setInterval(fetchVoicePresence, 5000)
     })()
+
     return () => {
       cancelled = true
+      socket?.off('connect', onSocketConnect)
       if (intervalId != null) window.clearInterval(intervalId)
     }
   }, [id, user?.id])
@@ -551,7 +582,7 @@ export function useServerView() {
   }
 
   useEffect(() => {
-    if (!activeChannelId) {
+    if (!activeChannelId || !getAccessToken()) {
       setChannelPermissions([])
       setUserPermissions([])
       return

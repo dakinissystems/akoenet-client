@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../services/api'
+import { getAccessToken } from '../services/session-store'
 import { getSocket } from '../services/socket'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { pickImageFileFromDevice } from '../services/mobile-media'
@@ -66,7 +67,10 @@ export function useChatChannel({
   const [searchBusy, setSearchBusy] = useState(false)
 
   async function loadChannelMessages(nextChannelId, nextThreadRootId) {
-    if (!nextChannelId) return
+    if (!nextChannelId || !getAccessToken()) {
+      setMessages([])
+      return
+    }
     const gen = ++loadMessagesGenRef.current
     try {
       const params = nextThreadRootId ? { thread_root: nextThreadRootId } : {}

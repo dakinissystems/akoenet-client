@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { getApiBaseUrl } from '../lib/apiBase'
+import { disconnectAkoeNet } from './socket'
 import {
   clearSessionTokens,
   getAccessToken,
@@ -7,6 +8,25 @@ import {
   setAccessToken,
   setRefreshToken,
 } from './session-store'
+
+const SESSION_NOTICE_KEY = 'akoenet_session_notice'
+
+function notifyApiSessionLost({ noticeExpired = false } = {}) {
+  if (noticeExpired) {
+    try {
+      localStorage.setItem(
+        SESSION_NOTICE_KEY,
+        'Your session expired due to a security update. Please sign in again.'
+      )
+    } catch {
+      /* ignore */
+    }
+  }
+  stopSessionKeepAlive()
+  clearSessionTokens()
+  disconnectAkoeNet()
+  window.dispatchEvent(new CustomEvent('akoenet:session-lost'))
+}
 
 const baseURL = getApiBaseUrl()
 
@@ -83,9 +103,7 @@ export function startSessionKeepAlive() {
     keepAliveTimer = null
     const ok = await refreshAccessTokenSilently()
     if (!ok) {
-      stopSessionKeepAlive()
-      clearSessionTokens()
-      window.dispatchEvent(new CustomEvent('akoenet:session-lost'))
+      notifyApiSessionLost({ noticeExpired: true })
     }
   }, delay)
 }
@@ -122,25 +140,34 @@ api.interceptors.response.use(
       window.dispatchEvent(new CustomEvent('akoenet:terms-required'))
     }
     const cfg = err.config
+    const url = String(cfg?.url || '')
     if (
-      status !== 401 ||
       !cfg ||
-      cfg._retry ||
-      String(cfg.url || '').includes('/auth/refresh') ||
-      String(cfg.url || '').includes('/auth/login')
+      url.includes('/auth/refresh') ||
+      url.includes('/auth/login') ||
+      url.includes('/auth/exchange')
     ) {
       return Promise.reject(err)
     }
+    if (status === 401 && cfg._retry) {
+      notifyApiSessionLost({ noticeExpired: true })
+      return Promise.reject(err)
+    }
+    if (status !== 401) {
+      return Promise.reject(err)
+    }
     const refresh = getRefreshToken()
-    if (!refresh) return Promise.reject(err)
+    if (!refresh) {
+      notifyApiSessionLost({ noticeExpired: true })
+      return Promise.reject(err)
+    }
     cfg._retry = true
     try {
       const data = await sharedRefresh()
       cfg.headers.Authorization = `Bearer ${data.token}`
       return api(cfg)
     } catch (e) {
-      stopSessionKeepAlive()
-      clearSessionTokens()
+      notifyApiSessionLost({ noticeExpired: true })
       return Promise.reject(e)
     }
   }
