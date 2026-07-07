@@ -11,6 +11,7 @@ import {
 } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import api from '../services/api'
+import { getAccessToken } from '../services/session-store'
 import { getSocket } from '../services/socket'
 import { useAuth } from '../context/AuthContext'
 import { useAuthLogout } from '../hooks/useAuthLogout'
@@ -215,8 +216,8 @@ export function useServerView() {
   )
   /** Voice channel id kept while user reads text channels (stay connected). Cleared on leave / server change. */
   const [voicePersistChannelId, setVoicePersistChannelId] = useState(null)
-  /** Stops HTTP voice-presence polling after 404 (old API / wrong base URL) to avoid console spam */
-  const voicePresencePollStopped404 = useRef(false)
+  /** Stops HTTP voice-presence polling after 404/401 (old API, wrong base URL, or missing session) */
+  const voicePresencePollStoppedHttp = useRef(false)
   /** Avoid re-applying `?channel=` from the URL on every searchParams change after first apply. */
   const appliedChannelFromQuery = useRef(false)
 
@@ -399,34 +400,37 @@ export function useServerView() {
   }, [id, resetRealtimePresence])
 
   useEffect(() => {
-    if (Number.isNaN(id)) return undefined
-    voicePresencePollStopped404.current = false
+    if (Number.isNaN(id) || !user?.id) return undefined
+    voicePresencePollStoppedHttp.current = false
     let cancelled = false
     let intervalId = null
     async function fetchVoicePresence() {
-      if (voicePresencePollStopped404.current) return
+      if (voicePresencePollStoppedHttp.current) return
+      if (!getAccessToken()) return
       try {
         const { data } = await api.get(`/servers/${id}/voice-presence`)
         if (cancelled) return
         setVoicePresence(normalizeVoicePresencePayload(data))
       } catch (e) {
-        if (!cancelled && e?.response?.status === 404) {
-          voicePresencePollStopped404.current = true
+        const status = e?.response?.status
+        if (!cancelled && (status === 404 || status === 401)) {
+          voicePresencePollStoppedHttp.current = true
           if (intervalId != null) window.clearInterval(intervalId)
         }
         /* other errors ignored — socket may still update */
       }
     }
     ;(async () => {
+      if (!getAccessToken()) return
       await fetchVoicePresence()
-      if (cancelled || voicePresencePollStopped404.current) return
+      if (cancelled || voicePresencePollStoppedHttp.current) return
       intervalId = window.setInterval(fetchVoicePresence, 5000)
     })()
     return () => {
       cancelled = true
       if (intervalId != null) window.clearInterval(intervalId)
     }
-  }, [id])
+  }, [id, user?.id])
 
   useEffect(() => {
     const s = getSocket()
