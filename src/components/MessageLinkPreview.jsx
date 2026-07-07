@@ -1,12 +1,10 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { getApiBaseUrl } from '../lib/apiBase'
 import { urlHasVideoEmbed } from '../lib/videoEmbedUrls'
-import { useExternalPoll } from '../hooks/useExternalPoll'
 
 const previewCaches = new Map()
 
-function getLinkPreviewCache(url) {
-  if (!previewCaches.has(url)) {
+function getLinkPreviewCache(url) {  if (!previewCaches.has(url)) {
     let snapshot = { data: null, status: 'idle' }
     const listeners = new Set()
     let inflight = false
@@ -51,13 +49,9 @@ function getLinkPreviewCache(url) {
   return previewCaches.get(url)
 }
 
-function useLinkPreview(url, enabled) {
-  const cache = enabled && url ? getLinkPreviewCache(url) : null
-  const snapshot = useSyncExternalStore(
-    cache ? cache.subscribe : () => () => {},
-    cache ? cache.getSnapshot : () => ({ data: null, status: 'idle' }),
-    cache ? cache.getSnapshot : () => ({ data: null, status: 'idle' })
-  )
+function useLinkPreview(url) {
+  const cache = getLinkPreviewCache(url)
+  const snapshot = useSyncExternalStore(cache.subscribe, cache.getSnapshot, cache.getSnapshot)
   return snapshot.data
 }
 
@@ -72,10 +66,15 @@ export default function MessageLinkPreview({ content }) {
     return m[0].replace(/[.,;:!?)\]]+$/u, '')
   }, [content])
 
-  const skipForVideoEmbed = url ? urlHasVideoEmbed(url) : false
-  const data = useLinkPreview(url, Boolean(url && !skipForVideoEmbed))
+  if (!url || urlHasVideoEmbed(url)) return null
 
-  if (!url || skipForVideoEmbed || !data) return null
+  return <MessageLinkPreviewCard url={url} />
+}
+
+function MessageLinkPreviewCard({ url }) {
+  const data = useLinkPreview(url)
+
+  if (!data) return null
 
   return (
     <a
