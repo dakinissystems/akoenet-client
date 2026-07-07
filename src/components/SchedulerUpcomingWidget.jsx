@@ -186,7 +186,7 @@ export default function SchedulerUpcomingWidget({ streamerUsername: streamerUser
               ? new Date(start).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
               : ''
             return (
-              <li key={`sched-ev-${i}`} className="scheduler-widget-event">
+              <li key={ev.id ?? ev.event_id ?? `${start ?? 'na'}-${title}`} className="scheduler-widget-event">
                 <div className="scheduler-widget-event-title">{title}</div>
                 {when ? <div className="scheduler-widget-event-when muted small">{when}</div> : null}
                 {link ? (

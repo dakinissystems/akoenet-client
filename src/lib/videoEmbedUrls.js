@@ -9,7 +9,7 @@ const URL_IN_TEXT = /https?:\/\/[^\s<>"'()[\]{}]+/gi
  * @param {string} text
  * @returns {string[]}
  */
-export function extractHttpUrlsFromText(text) {
+function extractHttpUrlsFromText(text) {
   const s = String(text || '')
   const out = []
   let m
@@ -33,7 +33,7 @@ export function urlHasVideoEmbed(url) {
  * @param {string} url
  * @returns {{ kind: string, originalUrl: string, embedUrl: string, clipSlug?: string, videoId?: string } | null}
  */
-export function toVideoEmbedSpec(url) {
+function toVideoEmbedSpec(url) {
   const raw = String(url || '').trim()
   if (!raw) return null
   let u = raw

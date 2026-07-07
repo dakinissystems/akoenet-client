@@ -78,10 +78,12 @@ export async function initMobileIntegrations(navigate) {
         perm = await PushNotifications.requestPermissions()
       }
       if (perm.receive === 'granted') {
-        const regHandle = await PushNotifications.addListener('registration', (token) => {
-          void dispatchPushToken(token?.value)
-        })
-        const regErrHandle = await PushNotifications.addListener('registrationError', () => {})
+        const [regHandle, regErrHandle] = await Promise.all([
+          PushNotifications.addListener('registration', (token) => {
+            void dispatchPushToken(token?.value)
+          }),
+          PushNotifications.addListener('registrationError', () => {}),
+        ])
         await registerPush()
         if (App?.addListener) {
           const stateHandle = await App.addListener('appStateChange', ({ isActive }) => {

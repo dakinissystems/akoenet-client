@@ -1,5 +1,5 @@
 /** Lowercase executable name → display name + store/platform label (heuristic). */
-export const GAME_PROCESS_MAP = {
+const GAME_PROCESS_MAP = {
   'eldenring.exe': { name: 'Elden Ring', platform: 'Steam' },
   'cs2.exe': { name: 'Counter-Strike 2', platform: 'Steam' },
   'fortniteclient-win64-shipping.exe': { name: 'Fortnite', platform: 'Epic' },

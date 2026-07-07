@@ -17,10 +17,9 @@ import {
   setAccessToken,
   setRefreshToken,
 } from './services/session-store.js'
+import { AKOENET_LS_TWITCH_OAUTH_ERROR } from './lib/storageKeys.js'
 
 const AppRouter = __SPA_HASH_ROUTER__ ? HashRouter : BrowserRouter
-
-const TWITCH_OAUTH_ERR_KEY = 'akoenet_twitch_oauth_error'
 
 /** Runs before React so /?twitch_token= or /#/?twitch_token= (HashRouter) works on static hosts. */
 function consumeTwitchOAuthFromUrl() {
@@ -42,7 +41,7 @@ function consumeTwitchOAuthFromUrl() {
     if (err) {
       const detail = params.get('twitch_detail')
       sessionStorage.setItem(
-        TWITCH_OAUTH_ERR_KEY,
+        AKOENET_LS_TWITCH_OAUTH_ERROR,
         detail ? `${err}:${detail}` : err
       )
     }

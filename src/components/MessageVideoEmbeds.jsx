@@ -11,27 +11,26 @@ export default function MessageVideoEmbeds({ content }) {
   const parentHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
 
   const frames = useMemo(() => {
-    return specs
-      .map((spec) => {
-        let src = spec.embedUrl
-        if (spec.kind === 'twitch_clip' || spec.kind === 'twitch_vod') {
-          src = resolveTwitchEmbedUrl(spec, parentHost)
-        }
-        return src ? { src, originalUrl: spec.originalUrl, kind: spec.kind } : null
-      })
-      .filter(Boolean)
+    return specs.flatMap((spec) => {
+      let src = spec.embedUrl
+      if (spec.kind === 'twitch_clip' || spec.kind === 'twitch_vod') {
+        src = resolveTwitchEmbedUrl(spec, parentHost)
+      }
+      return src ? [{ src, originalUrl: spec.originalUrl, kind: spec.kind }] : []
+    })
   }, [specs, parentHost])
 
   if (!frames.length) return null
 
   return (
     <div className="message-video-embeds">
-      {frames.map((f, i) => (
-        <div key={`${f.src}-${i}`} className="message-video-embed-frame-wrap">
+      {frames.map((f) => (
+        <div key={f.src} className="message-video-embed-frame-wrap">
           <iframe
             title="Video"
             src={f.src}
             className="message-video-embed-frame"
+            sandbox="allow-scripts allow-presentation allow-popups allow-forms"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
             allowFullScreen
             loading="lazy"

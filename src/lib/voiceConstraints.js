@@ -1,7 +1,7 @@
 /**
  * Constraints tuned for voice chat: mono, wideband-friendly, browser DSP on.
  */
-export function getVoiceAudioConstraints() {
+function getVoiceAudioConstraints() {
   return {
     echoCancellation: true,
     noiseSuppression: true,
@@ -51,7 +51,7 @@ export function getVoiceChannelAudioConstraints() {
 /**
  * Target loudness at 100% mic slider ≈ previous “200%” monitor level; 200% adds a little headroom.
  */
-export const MIC_MONITOR_OUTPUT_GAIN = 2.2
+const MIC_MONITOR_OUTPUT_GAIN = 2.2
 
 /** Ceiling for mic test monitor (linear gain product to destination). */
 const MIC_MONITOR_MAX_LINEAR = 2.65
@@ -243,7 +243,7 @@ export function getScreenShareConstraints() {
 }
 
 /** Heuristic: audio track from display/tab capture (vs microphone). */
-export function isScreenCaptureAudioTrack(track) {
+function isScreenCaptureAudioTrack(track) {
   if (!track || track.kind !== 'audio') return false
   const l = (track.label || '').toLowerCase()
   if (

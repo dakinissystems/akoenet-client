@@ -1,39 +1,50 @@
+import { useEffect, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
-const STORAGE_KEY = 'akoenet_onboarding_v1'
+import { dismissOnboarding } from '../lib/onboarding'
 
-export function hasSeenOnboarding() {
-  try {
-    return Boolean(localStorage.getItem(STORAGE_KEY))
-  } catch {
-    return true
-  }
-}
-
-export function dismissOnboarding() {
-  try {
-    localStorage.setItem(STORAGE_KEY, '1')
-  } catch {
-    /* ignore */
-  }
+function closeOnboarding(onClose) {
+  dismissOnboarding()
+  onClose()
 }
 
 export default function WelcomeOnboardingModal({ open, onClose }) {
   const { t } = useTranslation()
-  if (!open) return null
+  const dialogRef = useRef(null)
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    if (open) {
+      if (!dialog.open) dialog.showModal()
+    } else if (dialog.open) {
+      dialog.close()
+    }
+  }, [open])
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    function onCancel(e) {
+      e.preventDefault()
+      closeOnboarding(onClose)
+    }
+    dialog.addEventListener('cancel', onCancel)
+    return () => dialog.removeEventListener('cancel', onCancel)
+  }, [onClose])
+
   return (
-    <div
+    <dialog
+      ref={dialogRef}
       className="welcome-onboarding-overlay"
-      role="dialog"
-      aria-modal="true"
       aria-labelledby="welcome-onboarding-title"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
-          dismissOnboarding()
-          onClose()
-        }
-      }}
     >
+      <button
+        type="button"
+        className="welcome-onboarding-backdrop"
+        aria-label={t('common.close')}
+        onClick={() => closeOnboarding(onClose)}
+      />
       <div className="welcome-onboarding-card card">
         <h2 id="welcome-onboarding-title">{t('onboarding.title')}</h2>
         <p className="muted small">
@@ -84,15 +95,12 @@ export default function WelcomeOnboardingModal({ open, onClose }) {
           <button
             type="button"
             className="btn primary"
-            onClick={() => {
-              dismissOnboarding()
-              onClose()
-            }}
+            onClick={() => closeOnboarding(onClose)}
           >
             {t('onboarding.gotIt')}
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   )
 }

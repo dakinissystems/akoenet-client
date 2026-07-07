@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   getLandingDeviceKind,
   isAndroidBrowser,
@@ -132,10 +132,6 @@ export default function LandingAppSection({ t }) {
   const isMobile = kind === 'mobile' || kind === 'tablet'
   const mobileOs = isIosBrowser() ? 'ios' : isAndroidBrowser() ? 'android' : 'other'
   const showWindowsDownload = !isMobile && isWindowsBrowser()
-
-  useEffect(() => {
-    setKind(getLandingDeviceKind())
-  }, [])
 
   if (nativeMobileApp) return null
 

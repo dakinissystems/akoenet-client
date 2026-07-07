@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../services/api'
+import ServerCustomCommandsTab from './ServerCustomCommandsTab'
+import ServerCustomEventsTab from './ServerCustomEventsTab'
+import ServerCustomAnnouncementsTab from './ServerCustomAnnouncementsTab'
 
 function fromDatetimeLocalValue(s) {
   if (!s || !String(s).trim()) return null
@@ -219,250 +222,69 @@ export default function ServerCustomContentSettings({ serverId, canManage, tab }
       {localError ? <div className="error-banner inline">{localError}</div> : null}
 
       {tab === 'commands' ? (
-      <section
-        className={sectionClass}
-        aria-labelledby={`srv-settings-cmd-${sid}`}
-      >
-        <h2 id={`srv-settings-cmd-${sid}`} className="server-settings-panel-title">
-          {t('serverAutomations.commandsTitle')}
-        </h2>
-        <p className="muted small">{t('serverAutomations.commandsLead')}</p>
-        {commands.length === 0 ? (
-          <p className="muted small">{t('serverAutomations.noCommandsYet')}</p>
-        ) : (
-          <ul className="server-custom-list">
-            {commands.map((c) => (
-              <li key={c.id}>
-                <code className="inline-code">!{c.command_name}</code>
-                {canManage ? (
-                  <button
-                    type="button"
-                    className="btn small ghost"
-                    disabled={busy}
-                    onClick={() => removeCommand(c.id)}
-                  >
-                    {t('serverAutomations.remove')}
-                  </button>
-                ) : null}
-                <pre className="server-custom-preview">{c.response}</pre>
-                {c.action_type && c.action_type !== 'none' ? (
-                  <div className="muted small">
-                    Action: <code className="inline-code">{c.action_type}</code>
-                    {c.action_value ? ` (${c.action_value})` : ''}
-                  </div>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
-        {canManage ? (
-          <form className="form-stack server-custom-form" onSubmit={addCommand}>
-            <label htmlFor={`srv-cmd-name-${serverId}`}>{t('serverAutomations.newCommandLabel')}</label>
-            <input
-              id={`srv-cmd-name-${serverId}`}
-              name="command_name"
-              value={cmdName}
-              onChange={(e) => setCmdName(e.target.value)}
-              placeholder={t('serverAutomations.cmdNamePh')}
-              autoComplete="off"
-            />
-            <label htmlFor={`srv-cmd-resp-${serverId}`}>{t('serverAutomations.replyTextLabel')}</label>
-            <textarea
-              id={`srv-cmd-resp-${serverId}`}
-              name="command_response"
-              value={cmdResponse}
-              onChange={(e) => setCmdResponse(e.target.value)}
-              rows={4}
-              placeholder={t('serverAutomations.replyTextPh')}
-            />
-            <label htmlFor={`srv-cmd-action-${serverId}`}>Action</label>
-            <select
-              id={`srv-cmd-action-${serverId}`}
-              name="command_action"
-              value={cmdActionType}
-              onChange={(e) => setCmdActionType(e.target.value)}
-            >
-              <option value="none">none</option>
-              <option value="ban">ban first argument user</option>
-            </select>
-            <label htmlFor={`srv-cmd-action-value-${serverId}`}>Action value (optional)</label>
-            <input
-              id={`srv-cmd-action-value-${serverId}`}
-              name="command_action_value"
-              value={cmdActionValue}
-              onChange={(e) => setCmdActionValue(e.target.value)}
-              placeholder="Reason used by ban action"
-              autoComplete="off"
-            />
-            <button type="submit" className="btn primary small" disabled={busy}>
-              {t('serverAutomations.addCommand')}
-            </button>
-          </form>
-        ) : (
-          <p className="muted small">{t('serverAutomations.commandsReadOnly')}</p>
-        )}
-      </section>
+        <ServerCustomCommandsTab
+          serverId={serverId}
+          canManage={canManage}
+          commands={commands}
+          busy={busy}
+          cmdName={cmdName}
+          setCmdName={setCmdName}
+          cmdResponse={cmdResponse}
+          setCmdResponse={setCmdResponse}
+          cmdActionType={cmdActionType}
+          setCmdActionType={setCmdActionType}
+          cmdActionValue={cmdActionValue}
+          setCmdActionValue={setCmdActionValue}
+          addCommand={addCommand}
+          removeCommand={removeCommand}
+          t={t}
+          sectionClass={sectionClass}
+          sid={sid}
+        />
       ) : null}
 
       {tab === 'events' ? (
-      <section
-        className={sectionClass}
-        aria-labelledby={`srv-settings-events-${sid}`}
-      >
-        <h2 id={`srv-settings-events-${sid}`} className="server-settings-panel-title">
-          {t('serverAutomations.eventsTitle')}
-        </h2>
-        <p className="muted small">{t('serverAutomations.eventsLead')}</p>
-        {events.length === 0 ? (
-          <p className="muted small">{t('serverAutomations.noEvents')}</p>
-        ) : (
-          <ul className="server-custom-list">
-            {events.map((ev) => (
-              <li key={ev.id}>
-                <strong>{ev.title}</strong>
-                <span className="muted small server-custom-event-time">
-                  {new Date(ev.starts_at).toLocaleString()}
-                  {ev.ends_at ? ` — ${new Date(ev.ends_at).toLocaleString()}` : ''}
-                </span>
-                {canManage ? (
-                  <button
-                    type="button"
-                    className="btn small ghost"
-                    disabled={busy}
-                    onClick={() => removeEvent(ev.id)}
-                  >
-                    {t('serverAutomations.remove')}
-                  </button>
-                ) : null}
-                {ev.description ? <pre className="server-custom-preview">{ev.description}</pre> : null}
-              </li>
-            ))}
-          </ul>
-        )}
-        {canManage ? (
-          <form className="form-stack server-custom-form" onSubmit={addEvent}>
-            <label htmlFor={`srv-ev-title-${serverId}`}>{t('serverAutomations.titleLabel')}</label>
-            <input
-              id={`srv-ev-title-${serverId}`}
-              name="event_title"
-              value={evTitle}
-              onChange={(e) => setEvTitle(e.target.value)}
-            />
-            <label htmlFor={`srv-ev-desc-${serverId}`}>{t('serverAutomations.descOptional')}</label>
-            <textarea
-              id={`srv-ev-desc-${serverId}`}
-              name="event_description"
-              value={evDesc}
-              onChange={(e) => setEvDesc(e.target.value)}
-              rows={3}
-            />
-            <label htmlFor={`srv-ev-start-${serverId}`}>{t('serverAutomations.startsLabel')}</label>
-            <input
-              id={`srv-ev-start-${serverId}`}
-              name="event_starts"
-              type="datetime-local"
-              value={evStart}
-              onChange={(e) => setEvStart(e.target.value)}
-            />
-            <label htmlFor={`srv-ev-end-${serverId}`}>{t('serverAutomations.endsOptional')}</label>
-            <input
-              id={`srv-ev-end-${serverId}`}
-              name="event_ends"
-              type="datetime-local"
-              value={evEnd}
-              onChange={(e) => setEvEnd(e.target.value)}
-            />
-            <button type="submit" className="btn primary small" disabled={busy}>
-              {t('serverAutomations.addEvent')}
-            </button>
-          </form>
-        ) : (
-          <p className="muted small">{t('serverAutomations.eventsReadOnly')}</p>
-        )}
-      </section>
+        <ServerCustomEventsTab
+          serverId={serverId}
+          canManage={canManage}
+          events={events}
+          busy={busy}
+          evTitle={evTitle}
+          setEvTitle={setEvTitle}
+          evDesc={evDesc}
+          setEvDesc={setEvDesc}
+          evStart={evStart}
+          setEvStart={setEvStart}
+          evEnd={evEnd}
+          setEvEnd={setEvEnd}
+          addEvent={addEvent}
+          removeEvent={removeEvent}
+          t={t}
+          sectionClass={sectionClass}
+          sid={sid}
+        />
       ) : null}
 
       {tab === 'announcements' ? (
-      <section
-        className={sectionClass}
-        aria-labelledby={`srv-settings-ann-${sid}`}
-      >
-        <h2 id={`srv-settings-ann-${sid}`} className="server-settings-panel-title">
-          {t('serverAutomations.announcementsTitle')}
-        </h2>
-        <p className="muted small">{t('serverAutomations.announcementsLead')}</p>
-        {announcements.length === 0 ? (
-          <p className="muted small">{t('serverAutomations.noAnnouncements')}</p>
-        ) : (
-          <ul className="server-custom-list">
-            {announcements.map((an) => (
-              <li key={an.id}>
-                <strong>{an.title}</strong>
-                {canManage ? (
-                  <>
-                    <button
-                      type="button"
-                      className="btn small ghost"
-                      disabled={busy}
-                      onClick={() => removeAnnouncement(an.id)}
-                    >
-                      {t('serverAutomations.delete')}
-                    </button>
-                    <div className="server-custom-publish-row">
-                      <select
-                        aria-label={t('serverAutomations.channelForAnnouncement')}
-                        value={publishChannelId}
-                        onChange={(e) => setPublishChannelId(e.target.value)}
-                        className="select-inline"
-                      >
-                        <option value="">{t('serverAutomations.channelPlaceholder')}</option>
-                        {textChannels.map((ch) => (
-                          <option key={ch.id} value={String(ch.id)}>
-                            #{ch.name}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        className="btn small secondary"
-                        disabled={busy}
-                        onClick={() => publishAnnouncement(an.id)}
-                      >
-                        {t('serverAutomations.publish')}
-                      </button>
-                    </div>
-                  </>
-                ) : null}
-                <pre className="server-custom-preview">{an.body}</pre>
-              </li>
-            ))}
-          </ul>
-        )}
-        {canManage ? (
-          <form className="form-stack server-custom-form" onSubmit={addAnnouncement}>
-            <label htmlFor={`srv-ann-title-${serverId}`}>{t('serverAutomations.titleLabel')}</label>
-            <input
-              id={`srv-ann-title-${serverId}`}
-              name="announcement_title"
-              value={annTitle}
-              onChange={(e) => setAnnTitle(e.target.value)}
-            />
-            <label htmlFor={`srv-ann-body-${serverId}`}>{t('serverAutomations.bodyLabel')}</label>
-            <textarea
-              id={`srv-ann-body-${serverId}`}
-              name="announcement_body"
-              value={annBody}
-              onChange={(e) => setAnnBody(e.target.value)}
-              rows={4}
-            />
-            <button type="submit" className="btn primary small" disabled={busy}>
-              {t('serverAutomations.saveAnnouncement')}
-            </button>
-          </form>
-        ) : (
-          <p className="muted small">{t('serverAutomations.announcementsReadOnly')}</p>
-        )}
-      </section>
+        <ServerCustomAnnouncementsTab
+          serverId={serverId}
+          canManage={canManage}
+          announcements={announcements}
+          textChannels={textChannels}
+          busy={busy}
+          annTitle={annTitle}
+          setAnnTitle={setAnnTitle}
+          annBody={annBody}
+          setAnnBody={setAnnBody}
+          publishChannelId={publishChannelId}
+          setPublishChannelId={setPublishChannelId}
+          addAnnouncement={addAnnouncement}
+          removeAnnouncement={removeAnnouncement}
+          publishAnnouncement={publishAnnouncement}
+          t={t}
+          sectionClass={sectionClass}
+          sid={sid}
+        />
       ) : null}
     </div>
   )

@@ -1,8 +1,8 @@
-import { createElement, forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createElement, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-const EmojiPickerCustomElement = forwardRef(function EmojiPickerCustomElement(_props, ref) {
+function EmojiPickerCustomElement({ ref }) {
   return createElement('emoji-picker', { ref })
-})
+}
 
 let emojiPickerElementPromise = null
 let emojiPickerLibLoaded = false
@@ -18,12 +18,34 @@ function loadEmojiPickerElement() {
  * Unicode emoji picker (emoji-picker-element, Apache-2.0).
  * Inserts the chosen glyph into the composer at the caret position captured when opening.
  */
-export default function StandardEmojiPicker({ inputRef, text, setText, disabled }) {
+export default function StandardEmojiPicker({ inputRef, text, setText, disabled, triggerAriaLabel }) {
   const [open, setOpen] = useState(false)
   const [pickerLibReady, setPickerLibReady] = useState(false)
   const wrapRef = useRef(null)
   const pickerRef = useRef(null)
+  const dialogRef = useRef(null)
   const rangeRef = useRef({ start: 0, end: 0 })
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    if (open) {
+      if (!dialog.open) dialog.show()
+    } else if (dialog.open) {
+      dialog.close()
+    }
+  }, [open])
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    function onCancel(event) {
+      event.preventDefault()
+      setOpen(false)
+    }
+    dialog.addEventListener('cancel', onCancel)
+    return () => dialog.removeEventListener('cancel', onCancel)
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -120,6 +142,7 @@ export default function StandardEmojiPicker({ inputRef, text, setText, disabled 
         type="button"
         className="btn ghost small standard-emoji-picker-trigger"
         title="Emoji"
+        aria-label={triggerAriaLabel || 'Insert emoji'}
         aria-expanded={open}
         aria-haspopup="dialog"
         disabled={disabled}
@@ -127,11 +150,11 @@ export default function StandardEmojiPicker({ inputRef, text, setText, disabled 
       >
         ☺
       </button>
-      {open && (
-        <div className="standard-emoji-picker-panel" role="dialog" aria-label="Emoji picker">
+      {open ? (
+        <dialog ref={dialogRef} className="standard-emoji-picker-panel" aria-label="Emoji picker">
           {pickerLibReady ? <EmojiPickerCustomElement ref={pickerRef} /> : <p className="muted small">Loading…</p>}
-        </div>
-      )}
+        </dialog>
+      ) : null}
     </div>
   )
 }

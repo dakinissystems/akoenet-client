@@ -1,6 +1,65 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { getApiBaseUrl } from '../lib/apiBase'
 import { urlHasVideoEmbed } from '../lib/videoEmbedUrls'
+import { useExternalPoll } from '../hooks/useExternalPoll'
+
+const previewCaches = new Map()
+
+function getLinkPreviewCache(url) {
+  if (!previewCaches.has(url)) {
+    let snapshot = { data: null, status: 'idle' }
+    const listeners = new Set()
+    let inflight = false
+
+    const emit = () => {
+      listeners.forEach((listener) => listener())
+    }
+
+    const load = async () => {
+      if (inflight) return
+      inflight = true
+      snapshot = { data: null, status: 'loading' }
+      emit()
+      try {
+        const res = await fetch(`${getApiBaseUrl()}/link-preview?url=${encodeURIComponent(url)}`)
+        const json = await res.json()
+        if (json?.ok && (json.title || json.description || json.image)) {
+          snapshot = { data: json, status: 'ready' }
+        } else {
+          snapshot = { data: null, status: 'ready' }
+        }
+      } catch {
+        snapshot = { data: null, status: 'error' }
+      } finally {
+        inflight = false
+        emit()
+      }
+    }
+
+    const subscribe = (listener) => {
+      listeners.add(listener)
+      if (listeners.size === 1) load()
+      return () => {
+        listeners.delete(listener)
+        if (listeners.size === 0) previewCaches.delete(url)
+      }
+    }
+
+    const getSnapshot = () => snapshot
+    previewCaches.set(url, { subscribe, getSnapshot })
+  }
+  return previewCaches.get(url)
+}
+
+function useLinkPreview(url, enabled) {
+  const cache = enabled && url ? getLinkPreviewCache(url) : null
+  const snapshot = useSyncExternalStore(
+    cache ? cache.subscribe : () => () => {},
+    cache ? cache.getSnapshot : () => ({ data: null, status: 'idle' }),
+    cache ? cache.getSnapshot : () => ({ data: null, status: 'idle' })
+  )
+  return snapshot.data
+}
 
 /**
  * Fetches Open Graph data for the first http(s) URL in message text (server-side SSRF-safe fetch).
@@ -14,24 +73,7 @@ export default function MessageLinkPreview({ content }) {
   }, [content])
 
   const skipForVideoEmbed = url ? urlHasVideoEmbed(url) : false
-
-  const [data, setData] = useState(null)
-
-  useEffect(() => {
-    if (!url || skipForVideoEmbed) return undefined
-    let cancelled = false
-    setData(null)
-    fetch(`${getApiBaseUrl()}/link-preview?url=${encodeURIComponent(url)}`)
-      .then((r) => r.json())
-      .then((j) => {
-        if (cancelled || !j?.ok) return
-        if (j.title || j.description || j.image) setData(j)
-      })
-      .catch(() => {})
-    return () => {
-      cancelled = true
-    }
-  }, [url, skipForVideoEmbed])
+  const data = useLinkPreview(url, Boolean(url && !skipForVideoEmbed))
 
   if (!url || skipForVideoEmbed || !data) return null
 

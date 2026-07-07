@@ -15,7 +15,9 @@ function EmojiToken({ token, url }) {
   )
 }
 
-export default function EmojiText({ text, emojis = {} }) {
+const EMPTY_EMOJIS = {}
+
+export default function EmojiText({ text, emojis = EMPTY_EMOJIS }) {
   if (!text) return null
   const regex = /:([a-z0-9_]{2,32}):/g
   const chunks = []

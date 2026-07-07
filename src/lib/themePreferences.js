@@ -25,11 +25,11 @@ export const LIGHT_THEME = {
 }
 
 /** @deprecated use DARK_THEME */
-export const DEFAULT_THEME = DARK_THEME
+const DEFAULT_THEME = DARK_THEME
 
-export const COLOR_MODES = /** @type {const} */ (['dark', 'light', 'system'])
+const COLOR_MODES = /** @type {const} */ (['dark', 'light', 'system'])
 
-export function getThemeStorageKey(userId) {
+function getThemeStorageKey(userId) {
   return `akoenet_ui_theme_${userId || 'anon'}`
 }
 
@@ -46,7 +46,7 @@ function clampOpacity(n) {
 }
 
 /** Validates color fields; merges onto dark base. */
-export function sanitizeColors(partial) {
+function sanitizeColors(partial) {
   const t = { ...DARK_THEME }
   if (!partial || typeof partial !== 'object') return t
   for (const key of ['bg', 'panel', 'rail', 'text', 'muted', 'echonet', 'danger']) {
@@ -206,7 +206,7 @@ export function applyTheme(theme, opts = {}) {
   root.style.setProperty('--dc-embed-bg', isLight ? '#f8fafc' : '#14191f')
 }
 
-export function resetStoredTheme(userId) {
+function resetStoredTheme(userId) {
   try {
     localStorage.removeItem(getThemeStorageKey(userId))
   } catch {

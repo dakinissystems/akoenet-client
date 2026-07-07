@@ -35,7 +35,7 @@ export function isWindowsBrowser() {
   return /Windows/i.test(navigator.userAgent)
 }
 
-export function isStandalonePwa() {
+function isStandalonePwa() {
   if (typeof window === 'undefined') return false
   try {
     if (window.matchMedia('(display-mode: standalone)').matches) return true

@@ -45,7 +45,7 @@ export default function SiteFooter({ className = '' }) {
             v{v}
           </span>
         </div>
-        <div className="site-footer-links" role="navigation" aria-label={f.legalNav}>
+        <nav className="site-footer-links" aria-label={f.legalNav}>
           <div className="site-footer-link-group">
             <p className="site-footer-link-group-title muted small">{f.legalGroupPrimary}</p>
             <nav className="site-footer-nav" aria-label={f.legalGroupPrimary}>
@@ -76,7 +76,7 @@ export default function SiteFooter({ className = '' }) {
             ))}
             </nav>
           </div>
-        </div>
+        </nav>
         {legalContactEmail ? (
           <p className="site-footer-legal-contact muted small">
             <span className="site-footer-legal-contact-label">{f.legalContact}: </span>

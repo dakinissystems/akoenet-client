@@ -1,0 +1,547 @@
+﻿React Doctor v0.7.1
+
+  
+
+  ÔÜá Security: iframe missing sandbox attribute
+    Combining `allow-scripts` & `allow-same-origin` lets the
+    iframe remove its own sandbox, defeating the protection.
+    ÔåÆ Add `sandbox=""` or a curated value so embedded pages
+    cannot get full access to your site by default.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/iframe-missing-sandbox
+
+    src/components/MessageVideoEmbeds.jsx:33
+
+  ÔÜá Performance: Independent awaits run sequentially
+    These 3 sequential await statements run one after another
+    even though they look independent, so the page waits longer
+    than it needs to. Run them together with Promise.all()
+    instead
+    ÔåÆ Use `const [a, b] = await Promise.all([fetchA(),
+    fetchB()])` so independent calls run at the same time
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/async-parallel
+
+    src/services/mobile-integrations.js:81
+
+  ÔÜá Performance: await inside a loop ├ù3
+    This makes the for-loop slow because each await runs one
+    after another, so collect the independent calls & run them
+    together with `await Promise.all(items.map(...))`
+    ÔåÆ Collect the items, then use `await
+    Promise.all(items.map(...))` so independent work runs at
+    the same time
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/async-await-in-loop
+
+    src/context/AuthContext.jsx:134
+
+    src/lib/dakinis-client-logout.js:19
+
+    src/lib/dakinis-client-logout.js:29
+
+  ÔÜá Maintainability: Component rendered by inline function call ├ù2
+    "renderTopCreatePanel()" hides a component behind an inline
+    call, so pull it into its own component and render it as
+    JSX so React can track it.
+    ÔåÆ Make it a named component rendered as JSX so React can
+    track it and preserve its state.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-render-in-render
+
+    src/components/ChannelList.jsx:734
+
+    src/components/ChannelList.jsx:822
+
+  ÔÜá Bugs: Effects chained together ├ù7
+    Your screen redraws several times from a single action
+    because one useEffect changes "screenFocusId", which sets
+    off this one.
+    ÔåÆ Compute as much as possible during render (e.g. `const
+    isGameOver = round > 5`) and write all related state inside
+    the event handler that originally fires the chain. Each
+    effect link adds an extra render and makes the code rigid
+    as requirements evolve
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-effect-chain
+
+    src/components/VoiceRoom.jsx:721
+
+    src/components/VoiceRoom.jsx:740
+
+    src/components/VoiceRoom.jsx:1524
+
+    src/components/VoiceRoom.jsx:1540
+
+    src/components/VoiceRoom.jsx:1550
+
+    src/components/VoiceRoom.jsx:1638
+
+    src/components/VoiceRoom.jsx:1646
+
+  ÔÜá Accessibility: Control missing accessible label
+    Blind users can't tell what this control does because
+    screen readers find no label, so add visible text,
+    `aria-label`, or `aria-labelledby`.
+    ÔåÆ Give every interactive control a label screen readers can
+    read.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/control-has-associated-label
+
+    src/components/DirectMessagesPanel.jsx:1110
+
+  ÔÜá Bugs: Data fetching inside an effect ├ù2
+    fetch() inside useEffect can race, double-fire, or leak.
+    Use a data-fetching layer or Server Component instead.
+    ÔåÆ Use a data-fetching layer or Server Component so fetches
+    do not race, double-fire, or leak from `useEffect`.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-fetch-in-effect
+
+    src/components/MessageLinkPreview.jsx:26
+
+    src/pages/Login.jsx:72
+
+  ÔÜá Bugs: Effect re-subscribes on a changing callback
+    Your effect re-subscribes whenever "closeMembersPanel"
+    changes, even though it's only used inside
+    `addEventListener`.
+    ÔåÆ Wrap the callback with `useEffectEvent(callback)` (React
+    19+) and call it inside the sub-handler. An Effect Event
+    always sees the latest props and state but isn't a
+    dependency, so the effect won't re-subscribe every time the
+    parent redraws. See
+    https://react.dev/reference/react/useEffectEvent
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/prefer-use-effect-event
+
+    src/pages/ServerView.jsx:633
+
+  ÔÜá Bugs: Multiple setState calls in one effect ├ù6
+    4 setState calls in one useEffect redraw your screen each
+    time they run together.
+    ÔåÆ Combine related updates in `useReducer` so one effect
+    does not redraw the screen once per `setState` call.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-cascading-set-state
+
+    src/components/ChannelPermissionsPanel.jsx:26
+
+    src/components/Chat.jsx:187
+
+    src/components/DirectMessagesPanel.jsx:242
+
+    src/components/DirectMessagesPanel.jsx:263
+
+    src/pages/Dashboard.jsx:64
+
+    src/pages/ServerView.jsx:299
+
+  ÔÜá Bugs: Derived value copied into state ├ù4
+    Storing "editName" in state when you can derive it from
+    other values costs an extra render.
+    ÔåÆ Work out the value while rendering (or with useMemo if
+    it's expensive) instead of copying it into useState through
+    a useEffect. See
+    https://react.dev/learn/you-might-not-need-an-effect#updating-state-based-on-props-or-state
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-derived-state
+
+    src/components/ChannelPermissionsPanel.jsx:27-31
+
+  ÔÜá Bugs: Parent kept in sync with a callback effect
+    Your parent re-renders on every local state change because
+    this useEffect calls the prop "onVoiceSessionChange" just
+    to stay in sync.
+    ÔåÆ Move the shared state into a Provider so both sides read
+    the same value. Then you don't need a useEffect to keep
+    them in sync.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-prop-callback-in-effect
+
+    src/components/VoiceRoom.jsx:709
+
+  ÔÜá Accessibility: Role used instead of HTML tag ├ù4
+    Screen reader users get more reliable semantics from
+    `<button>` than `role="button"`, so use `<button>` instead.
+    ÔåÆ Use the matching HTML element when one exists so browsers
+    and assistive tech get native semantics.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/prefer-tag-over-role
+
+    src/components/ChannelList.jsx:224
+
+    src/components/ChannelList.jsx:324
+
+    src/components/SiteFooter.jsx:48
+
+    src/components/VoiceRoom.jsx:2070
+
+  ÔÜá Maintainability: deslop/unused-file
+    Unused file is not reachable from any entry point, so it
+    adds maintenance surface without shipping any code.
+    ÔåÆ Delete the file if it is truly unreachable, or import it
+    from an entry point.
+
+    src/context/LandingLocaleContext.jsx
+
+  ÔÜá Performance: Array lookup inside a loop
+    This scales poorly because `array.includes()` inside a loop
+    scans the whole list every time. Use a Set for
+    constant-time lookups.
+    ÔåÆ Use a `Set` or `Map` when you check for the same items
+    over and over. `Array.includes`/`find` scans the whole list
+    each time
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/js-set-map-lookups
+
+    src/lib/serverRoles.js:41
+
+  ÔÜá Performance: State only used in handlers ├ù5
+    Each update to "visible" redraws your component for nothing
+    because this useState is set but never shown on screen.
+    ÔåÆ Use useRef instead of useState when the value is only set
+    and never shown on screen. `ref.current = ...` updates it
+    without redrawing the component.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/rerender-state-only-in-handlers
+
+    src/components/CookieConsentBanner.jsx:22
+
+    src/components/GlobalSearchModal.jsx:10
+
+    src/pages/DashboardAdmin.jsx:93-95
+
+    src/pages/RegisterComplete.jsx:35
+
+  ÔÜá Accessibility: Media missing captions ├ù3
+    Deaf and hard-of-hearing users need captions for this
+    media. Add a `<track kind="captions">` inside the `<audio>`
+    or `<video>`.
+    ÔåÆ Add `<track kind="captions">` inside every `<audio>` /
+    `<video>`.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/media-has-caption
+
+    src/components/VoiceRoom.jsx:318
+
+    src/components/VoiceRoom.jsx:328
+
+    src/components/VoiceRoom.jsx:2192
+
+  ÔÜá Bugs: Event logic handled in an effect ├ù30
+    Faking an event handler with a prop plus a useEffect costs
+    an extra render & runs late.
+    ÔåÆ Run the side effect in the event handler that triggers
+    it, instead of watching its state from a useEffect. See
+    https://react.dev/learn/you-might-not-need-an-effect#sharing-logic-between-event-handlers
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-event-handler
+
+    src/components/Chat.jsx:142-143
+
+    src/components/Chat.jsx:147
+
+    src/components/Chat.jsx:158
+
+    src/components/DirectMessagesPanel.jsx:93-94
+
+    src/components/DirectMessagesPanel.jsx:98
+
+    src/components/DirectMessagesPanel.jsx:109
+
+    src/components/DirectMessagesPanel.jsx:164
+
+    src/components/VoiceRoom.jsx:300
+
+    src/components/VoiceRoom.jsx:663
+
+    src/components/VoiceRoom.jsx:668-670
+
+    src/components/VoiceRoom.jsx:690
+
+    src/components/VoiceRoom.jsx:697
+
+    src/components/VoiceRoom.jsx:702
+
+    src/components/VoiceRoom.jsx:724
+
+    src/components/VoiceRoom.jsx:743
+
+    src/components/VoiceRoom.jsx:1528-1529
+
+    src/components/VoiceRoom.jsx:1648
+
+    src/components/VoiceRoom.jsx:1655
+
+  ÔÜá Bugs: State updates chained through effects ├ù5
+    Chaining state updates triggers an extra render each step.
+    ÔåÆ Set all the related state together in the event handler
+    that starts it, instead of having one useEffect react to a
+    state change and set more state. See
+    https://react.dev/learn/you-might-not-need-an-effect#chains-of-computations
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-chain-state-updates
+
+    src/components/DirectMessagesPanel.jsx:164
+
+    src/components/VoiceRoom.jsx:680
+
+    src/pages/ServerView.jsx:211
+
+    src/pages/ServerView.jsx:519-520
+
+  ÔÜá Performance: Empty default prop breaks memo ├ù12
+    This keeps redrawing children that compare props because
+    default prop value {} makes a brand new object every
+    render, so move it to a constant at the top of the file
+    ÔåÆ Move it to the top of the file: `const EMPTY_ITEMS:
+    Item[] = []`, then use that as the default value
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/rerender-memo-with-default-value
+
+    src/components/ChannelList.jsx:96-97
+
+    src/components/Chat.jsx:40-41
+
+    src/components/EditHistoryModal.jsx:4
+
+    src/components/EmojiText.jsx:18
+
+    src/components/MembersPanel.jsx:24-28
+
+    src/components/RichMessageText.jsx:10
+
+    src/components/ServerRolesTab.jsx:21
+
+    src/components/ServerSettingsModal.jsx:21
+
+  ÔÜá Bugs: State initialized from a mount effect ├ù6
+    Your users see an extra render with empty "visible" because
+    a useEffect sets its starting value.
+    ÔåÆ Pass the initial value directly to useState() instead of
+    setting it from a mount-only useEffect. For SSR hydration,
+    prefer useSyncExternalStore().
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-initialize-state
+
+    src/components/CookieConsentBanner.jsx:30
+
+    src/components/CookieConsentBanner.jsx:37-42
+
+    src/components/LandingAppSection.jsx:137
+
+    src/pages/Login.jsx:60
+
+  ÔÜá Performance: useEffect setState flashes on mount
+    This flashes for your users because useEffect(setState, [])
+    runs after the first paint, so use useSyncExternalStore, or
+    add suppressHydrationWarning
+    ÔåÆ Use `useSyncExternalStore(subscribe, getSnapshot,
+    getServerSnapshot)` or add `suppressHydrationWarning` to
+    the element
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/rendering-hydration-no-flicker
+
+    src/components/LandingAppSection.jsx:136
+
+  ÔÜá Performance: Ref initializer runs on every render ├ù5
+    useRef(new Map()) rebuilds this value on every render &
+    throws it away.
+    ÔåÆ Initialize the ref lazily so expensive values are not
+    rebuilt and discarded on every render.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/rerender-lazy-ref-init
+
+    src/components/Chat.jsx:71
+
+    src/components/DirectMessagesPanel.jsx:62
+
+    src/components/VoiceRoom.jsx:610-611
+
+    src/components/VoiceRoom.jsx:615
+
+  ÔÜá Maintainability: deslop/unused-export ├ù23
+    Unused export: `default` is exported but no module imports
+    it, so it expands the public surface and can mislead
+    callers about supported API.
+    ÔåÆ Drop the `export` keyword (or remove the declaration) if
+    no other module uses this symbol.
+
+    src/components/VoiceSettingsModal.jsx:65
+
+    src/lib/copyright.js:6
+
+    src/lib/copyright.js:38
+
+    src/lib/gameProcessMap.js:2
+
+    src/lib/invites.js:4
+
+    src/lib/invites.js:9
+
+    src/lib/landingContent.js:316
+
+    src/lib/landingContent.js:333
+
+    src/lib/landingDevice.js:38
+
+    src/lib/landingLocale.js:4
+
+    src/lib/serverRoles.js:19
+
+    src/lib/themePreferences.js:28-32
+
+    src/lib/themePreferences.js:49
+
+    src/lib/themePreferences.js:209
+
+    src/lib/videoEmbedUrls.js:12
+
+    src/lib/videoEmbedUrls.js:36
+
+    src/lib/voiceConstraints.js:4
+
+    src/lib/voiceConstraints.js:54
+
+    src/lib/voiceConstraints.js:246
+
+    src/services/idp-auth.js:57
+
+    src/services/idp-auth.js:82
+
+  ÔÜá Maintainability: deslop/unused-dependency ├ù2
+    Unused dependency: `@capacitor/android`
+    Unused dependency: `@tauri-apps/plugin-notification`
+    ÔåÆ An unused dependency adds install time and supply-chain
+    surface without being used; remove it from package.json if
+    it is genuinely unused.
+
+  ÔÜá Maintainability: deslop/unused-dev-dependency
+    Unused devDependency: `globals`
+    ÔåÆ An unused devDependency adds install time and
+    supply-chain surface without being used; remove it from
+    package.json if it is genuinely unused.
+
+  ÔÜá Maintainability: Large component is hard to read and change ├ù15
+    Component "ChannelList" is 763 lines long, which is hard to
+    read & change. Split it into a few smaller components.
+    ÔåÆ Pull each section into its own component so the parent is
+    easier to read, test, and change.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-giant-component
+
+    src/components/ChannelList.jsx:74
+
+    src/components/ChannelPermissionsPanel.jsx:4
+
+    src/components/Chat.jsx:35
+
+    src/components/DirectMessagesPanel.jsx:33
+
+    src/components/MembersPanel.jsx:22
+
+    src/components/ServerCustomContentSettings.jsx:12
+
+    src/components/ServerRolesTab.jsx:19
+
+    src/components/ServerSettingsModal.jsx:15
+
+    src/components/UserSettingsModal.jsx:43
+
+    src/components/VoiceRoom.jsx:566
+
+    src/context/AuthContext.jsx:57
+
+    src/pages/Dashboard.jsx:20
+
+    src/pages/DashboardAdmin.jsx:67
+
+    src/pages/Login.jsx:27
+
+    src/pages/ServerView.jsx:65
+
+  ÔÜá Performance: Chained array iterations ├ù2
+    This loops over your list twice because .filter().forEach()
+    makes two passes, so do it in one pass with .reduce() or a
+    for...of loop
+    ÔåÆ Combine `.map().filter()` style chains into one pass with
+    `.reduce()` or a `for...of` loop, so you only loop over the
+    list once
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/js-combine-iterations
+
+    src/components/VoiceRoom.jsx:1313
+
+    src/components/VoiceRoom.jsx:1934
+
+  ÔÜá Maintainability: React 19 API migration can break callers ├ù3
+    forwardRef is dead weight in React 19, since ref is a
+    normal prop now, so drop it & pass ref straight through.
+    ÔåÆ Pass `ref` as a normal prop on function components, since
+    `forwardRef` isn't needed in React 19. Replace
+    `useContext(X)` with `use(X)`. Only runs on React 19+
+    projects.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/no-react19-deprecated-apis
+
+    src/components/StandardEmojiPicker.jsx:1
+
+    src/context/AuthContext.jsx:4
+
+    src/hooks/useLandingLocale.js:1
+
+  ÔÜá Bugs: Many related useState calls ├ù5
+    "Chat" updates 5 separate useState values in one place ÔÇö
+    state that changes together is easier to keep consistent as
+    a single useReducer action.
+    ÔåÆ Group state that always changes together into
+    `useReducer` so one dispatched action describes the whole
+    transition instead of a list of setter calls.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/prefer-useReducer
+
+    src/components/Chat.jsx:50
+
+    src/components/GlobalSearchModal.jsx:6
+
+    src/components/VoiceRoom.jsx:575
+
+    src/pages/DashboardAdmin.jsx:67
+
+    src/pages/ServerView.jsx:65
+
+  ÔÜá Maintainability: Non-component export in component file ├ù3
+    This file exports non-components, so Fast Refresh can't
+    safely preserve component state.
+    ÔåÆ Move non-component exports out of component files so Fast
+    Refresh can preserve component state instead of
+    full-reloading.
+    Curl with no cache & follow the canonical fix and false positive check recipe before fixing: https://react.doctor/docs/rules/react-doctor/only-export-components
+
+    src/components/VoiceSettingsModal.jsx:61
+
+    src/components/WelcomeOnboardingModal.jsx:6
+
+    src/components/WelcomeOnboardingModal.jsx:14
+
+
+  ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  All 156 issues
+
+  Security > 1 warning
+  Bugs > 67 warnings
+  Performance > 30 warnings
+  Accessibility > 8 warnings
+  Maintainability > 50 warnings
+
+Agent guidance
+  - Treat React Doctor diagnostics as starting hypotheses. Read the relevant code before confirming or suppressing each finding.
+  - For each group, decide true positive, false positive, or needs-human-review, then assign high/medium/low confidence.
+  - Do not suppress a finding without evidence from the file in question. Confidence requires code context.
+  - Understand the root cause before editing. Fix the underlying code instead of changing react-doctor config or suppressing rules unless explicitly asked.
+  - Investigate deeply where relevant: race conditions, security-sensitive flows, state propagation, multi-file refactors, and downstream dependency chains.
+  - Ignore pure style preferences, theoretical issues without real impact, missing features, and unrelated pre-existing code.
+  - Start with high-confidence fixes that preserve behavior. Leave low-confidence or product-dependent changes as notes.
+  - Run `npx react-doctor@latest --verbose --scope changed` before and after changes, plus relevant tests after each focused batch.
+  - When available, spawn subagents or isolated worktrees for independent rule families, then review and merge only the best safe fixes.
+  - Split unrelated, broad, or behavior-changing work into separate PRs/branches instead of one large cleanup.
+  - When one rule spans dozens of files (a migration-scale change), fix a representative sample first, confirm the recipe holds, and get the code owner's sign-off before changing the rest. Don't mass-fix a broad pattern in one unreviewed pass.
+  - For confirmed issues that cannot be fixed now, create GitHub issues with the rule, file/line, confidence, impact, and proposed fix.
+  - If a fix needs an API, UX, or architecture decision, stop and ask before editing.
+
+  ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ  46 / 100 Critical
+  Ôöé x x Ôöé  ÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûêÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæÔûæ
+  Ôöé  Ôû¢  Ôöé  React Doctor (https://react.doctor)
+  ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
+
+  Full diagnostics written to C:\Users\CHRIST~1\AppData\Local\Temp\react-doctor-fb94b2df-32c5-4db3-bf28-9e2d11f1a342
+
+  ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  Share: https://react.doctor/share?p=akonet-frontend&s=46&w=156&f=44
+  Tell others how you did on socials
+
+  Docs: https://react.doctor/docs
+  Learn more about fixing issues, setting up CI/CD, and
+  configuring rules with a config file
+
+  GitHub: https://github.com/millionco/react-doctor
+  Report issues and star the repository!
+

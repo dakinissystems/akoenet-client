@@ -4,8 +4,7 @@ import { isTauri } from '../lib/isTauri.js'
 import { resolveMobileAppUrlToRoute } from '../lib/mobile-deep-links.js'
 import { postAuthDestination } from '../lib/postAuthDestination.js'
 import { getAccessToken, getRefreshToken, setAccessToken, setRefreshToken } from './session-store.js'
-
-const TWITCH_OAUTH_ERR_KEY = 'akoenet_twitch_oauth_error'
+import { AKOENET_LS_TWITCH_OAUTH_ERROR } from '../lib/storageKeys.js'
 
 function parseTwitchOAuthFromRoute(route) {
   if (!route?.startsWith('/auth/twitch/callback')) return null
@@ -37,7 +36,7 @@ export async function completeDesktopTwitchOAuth(payload, { navigate, loginWithT
   const { token, refresh, error } = payload || {}
   if (error) {
     try {
-      sessionStorage.setItem(TWITCH_OAUTH_ERR_KEY, error)
+      sessionStorage.setItem(AKOENET_LS_TWITCH_OAUTH_ERROR, error)
     } catch {
       /* ignore */
     }
@@ -58,7 +57,7 @@ export async function completeDesktopTwitchOAuth(payload, { navigate, loginWithT
     navigate(postAuthDestination(me), { replace: true })
   } catch {
     try {
-      sessionStorage.setItem(TWITCH_OAUTH_ERR_KEY, 'twitch_auth_failed')
+      sessionStorage.setItem(AKOENET_LS_TWITCH_OAUTH_ERROR, 'twitch_auth_failed')
     } catch {
       /* ignore */
     }

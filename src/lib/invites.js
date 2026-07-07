@@ -1,12 +1,12 @@
 export const INVITE_TEMP_EXPIRY_HOURS = 24 * 7
 export const INVITE_TEMP_MAX_USES_MULTI = 20
 
-export function formatInviteExpiration(expiresAt) {
+function formatInviteExpiration(expiresAt) {
   if (!expiresAt) return 'Permanent'
   return new Date(expiresAt).toLocaleString()
 }
 
-export function formatInviteRemainingUses(invite) {
+function formatInviteRemainingUses(invite) {
   if (invite.max_uses == null) return 'Unlimited'
   const left = Math.max(0, Number(invite.max_uses) - Number(invite.used_count || 0))
   return `${left} remaining`

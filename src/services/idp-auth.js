@@ -54,7 +54,7 @@ export async function loginViaIdp(email, password) {
   return data
 }
 
-export async function refreshIdpToken(refreshToken) {
+async function refreshIdpToken(refreshToken) {
   const base = getIdpAuthUrl()
   const res = await fetch(`${base}/refresh`, {
     method: 'POST',
@@ -79,7 +79,7 @@ export async function exchangePlatformToken(api, platformAccessToken) {
   return data
 }
 
-export async function logoutIdp(refreshToken) {
+async function logoutIdp(refreshToken) {
   const base = getIdpAuthUrl()
   if (!base || !refreshToken) return
   try {

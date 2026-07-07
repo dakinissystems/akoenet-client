@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -32,7 +32,18 @@ export default function RegisterComplete() {
   const [busy, setBusy] = useState(false)
   const [pendingLoading, setPendingLoading] = useState(true)
   const [emailMasked, setEmailMasked] = useState('')
-  const [inviteFromToken, setInviteFromToken] = useState(null)
+  const inviteFromTokenRef = useRef(null)
+
+  const birthDateMax = useMemo(() => {
+    const d = new Date()
+    d.setFullYear(d.getFullYear() - 13)
+    return d.toISOString().slice(0, 10)
+  }, [])
+  const birthDateMin = useMemo(() => {
+    const d = new Date()
+    d.setFullYear(d.getFullYear() - 120)
+    return d.toISOString().slice(0, 10)
+  }, [])
 
   useEffect(() => {
     if (!loading && user) {
@@ -54,7 +65,7 @@ export default function RegisterComplete() {
         if (cancelled) return
         setEmailMasked(data.email_masked || '')
         const inv = data.invite != null ? String(data.invite).trim() : ''
-        setInviteFromToken(inv || null)
+        inviteFromTokenRef.current = inv || null
       } catch (err) {
         if (cancelled) return
         const code = err.response?.data?.error
@@ -92,7 +103,7 @@ export default function RegisterComplete() {
     try {
       const { user: newUser } = await registerComplete(token, username, password, birthDate)
       const inv =
-        inviteFromToken ||
+        inviteFromTokenRef.current ||
         searchParams.get(INVITE_QUERY_PARAM) ||
         (() => {
           try {
@@ -211,16 +222,8 @@ export default function RegisterComplete() {
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
                 required
-                max={(() => {
-                  const d = new Date()
-                  d.setFullYear(d.getFullYear() - 13)
-                  return d.toISOString().slice(0, 10)
-                })()}
-                min={(() => {
-                  const d = new Date()
-                  d.setFullYear(d.getFullYear() - 120)
-                  return d.toISOString().slice(0, 10)
-                })()}
+                max={birthDateMax}
+                min={birthDateMin}
                 autoComplete="bday"
               />
               <span className="muted small" style={{ display: 'block', marginTop: 4 }}>

@@ -36,6 +36,7 @@ function LandingInviteStrip({ t }) {
             name="invite_paste"
             autoComplete="off"
             placeholder={t.inviteJoin.placeholder}
+            aria-label={t.inviteJoin.placeholder}
             value={raw}
             onChange={(e) => {
               setRaw(e.target.value)

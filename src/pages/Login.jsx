@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -6,23 +6,12 @@ import { getApiBaseUrl } from '../lib/apiBase'
 import api from '../services/api'
 import { inviteLandingPath, INVITE_QUERY_PARAM } from '../lib/invites'
 import { postAuthDestination } from '../lib/postAuthDestination'
-import { isTauri } from '../lib/isTauri'
-import { isCapacitorNative } from '../lib/mobile-runtime'
 import AuthLegalStrip from '../components/AuthLegalStrip'
 import LanguageSwitcher from '../components/LanguageSwitcher'
-
-const SESSION_NOTICE_KEY = 'akoenet_session_notice'
-const LEGACY_SESSION_NOTICE_KEYS = ['akonet_session_notice', 'Akonet_session_notice']
-const TWITCH_OAUTH_ERR_KEY = 'akoenet_twitch_oauth_error'
-const PENDING_INVITE_KEY = 'akoenet_pending_invite'
-
-function readPendingInviteFromSession() {
-  try {
-    return sessionStorage.getItem(PENDING_INVITE_KEY)
-  } catch {
-    return null
-  }
-}
+import LoginCredentialsForm, { LoginTwoFactorForm } from '../components/LoginFormFields'
+import { consumeSessionNotice, PENDING_INVITE_KEY, readPendingInviteFromSession } from '../components/loginConstants'
+import { AKOENET_LS_TWITCH_OAUTH_ERROR } from '../lib/storageKeys'
+import { useExternalPoll } from '../hooks/useExternalPoll'
 
 export default function Login() {
   const { login, completeLogin2fa, user, loading } = useAuth()
@@ -32,15 +21,51 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState(consumeSessionNotice)
   const [busy, setBusy] = useState(false)
   const [twoFactorToken, setTwoFactorToken] = useState(null)
   const [code2fa, setCode2fa] = useState('')
-  const [twitchGate, setTwitchGate] = useState(/** @type {'loading' | 'ready' | 'disabled' | 'unreachable'} */ ('loading'))
   const [twitchStatusRetryToken, setTwitchStatusRetryToken] = useState(0)
-  /** Exact OAuth redirect_uri the backend sends to Twitch (from /auth/twitch/status). */
-  const [twitchOAuthRedirectUri, setTwitchOAuthRedirectUri] = useState(null)
   const apiBase = getApiBaseUrl()
+  const twitchStatusFetcher = useMemo(
+    () => async () => {
+      const ac = new AbortController()
+      const timer = setTimeout(() => ac.abort(), 8000)
+      try {
+        const res = await fetch(`${apiBase}/auth/twitch/status`, { signal: ac.signal })
+        clearTimeout(timer)
+        if (!res.ok) throw new Error(`status ${res.status}`)
+        const data = await res.json()
+        const ru = data?.redirectUri != null ? String(data.redirectUri).trim() : ''
+        return {
+          gate: data?.configured ? 'ready' : 'disabled',
+          redirectUri: ru || null,
+        }
+      } catch (err) {
+        clearTimeout(timer)
+        console.error('[login:twitch-status] unreachable', {
+          apiBase,
+          endpoint: `${apiBase}/auth/twitch/status`,
+          message: err?.message || 'unknown_error',
+        })
+        throw err
+      }
+    },
+    [apiBase]
+  )
+  const twitchStatusPoll = useExternalPoll(
+    `login-twitch-status:${apiBase}:${twitchStatusRetryToken}`,
+    twitchStatusFetcher,
+    0
+  )
+  const twitchGate =
+    twitchStatusPoll.status === 'idle' || twitchStatusPoll.status === 'loading'
+      ? 'loading'
+      : twitchStatusPoll.status === 'error'
+        ? 'unreachable'
+        : twitchStatusPoll.data?.gate ?? 'disabled'
+  const twitchOAuthRedirectUri =
+    twitchStatusPoll.status === 'ready' ? twitchStatusPoll.data?.redirectUri ?? null : null
 
   useEffect(() => {
     if (!loading && user) {
@@ -49,67 +74,11 @@ export default function Login() {
   }, [loading, user, navigate])
 
   useEffect(() => {
-    let msg = localStorage.getItem(SESSION_NOTICE_KEY)
-    if (!msg) {
-      for (const k of LEGACY_SESSION_NOTICE_KEYS) {
-        msg = localStorage.getItem(k)
-        if (msg) break
-      }
-    }
-    if (!msg) return
-    setNotice(msg)
-    localStorage.removeItem(SESSION_NOTICE_KEY)
-    LEGACY_SESSION_NOTICE_KEYS.forEach((k) => localStorage.removeItem(k))
-  }, [])
-
-  useEffect(() => {
-    const code = sessionStorage.getItem(TWITCH_OAUTH_ERR_KEY)
+    const code = sessionStorage.getItem(AKOENET_LS_TWITCH_OAUTH_ERROR)
     if (!code) return
-    sessionStorage.removeItem(TWITCH_OAUTH_ERR_KEY)
+    sessionStorage.removeItem(AKOENET_LS_TWITCH_OAUTH_ERROR)
     setError(t('login.twitchSignInFailed', { code }))
   }, [t])
-
-  useEffect(() => {
-    let cancelled = false
-    setTwitchGate('loading')
-    const ac = new AbortController()
-    const timeoutMs = 8000
-    const timer = setTimeout(() => ac.abort(), timeoutMs)
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'unknown'
-
-    fetch(`${apiBase}/auth/twitch/status`, { signal: ac.signal })
-      .then((res) => {
-        clearTimeout(timer)
-        if (!res.ok) throw new Error(`status ${res.status}`)
-        return res.json()
-      })
-      .then((data) => {
-        if (cancelled) return
-        setTwitchGate(data?.configured ? 'ready' : 'disabled')
-        const ru = data?.redirectUri != null ? String(data.redirectUri).trim() : ''
-        setTwitchOAuthRedirectUri(ru || null)
-      })
-      .catch((err) => {
-        clearTimeout(timer)
-        if (!cancelled) {
-          setTwitchGate('unreachable')
-          // Debug para Android Studio / WebView cuando el hosting entra en reposo o CORS bloquea.
-          console.error('[login:twitch-status] unreachable', {
-            apiBase,
-            endpoint: `${apiBase}/auth/twitch/status`,
-            origin,
-            message: err?.message || 'unknown_error',
-            name: err?.name || 'Error',
-          })
-        }
-      })
-
-    return () => {
-      cancelled = true
-      clearTimeout(timer)
-      ac.abort()
-    }
-  }, [apiBase, twitchStatusRetryToken])
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -200,162 +169,50 @@ export default function Login() {
             : t('login.leadDefault')}
         </p>
         <form onSubmit={onSubmit} className="form-stack">
-          {notice && <div className="info-banner">{notice}</div>}
-          {error && <div className="error-banner">{error}</div>}
           {twoFactorToken ? (
-            <>
-              <p className="muted small">{t('login.twoFactorHint')}</p>
-              <label>
-                {t('login.twoFactorCode')}
-                <input
-                  name="totp"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  value={code2fa}
-                  onChange={(e) => setCode2fa(e.target.value)}
-                  required
-                />
-              </label>
-              <button type="submit" className="btn primary" disabled={busy}>
-                {busy ? t('login.signingIn') : t('login.verify')}
-              </button>
-              <button
-                type="button"
-                className="btn ghost"
-                onClick={() => {
-                  setTwoFactorToken(null)
-                  setCode2fa('')
-                  setError('')
-                }}
-              >
-                {t('login.back')}
-              </button>
-            </>
+            <LoginTwoFactorForm
+              code2fa={code2fa}
+              setCode2fa={setCode2fa}
+              busy={busy}
+              error={error}
+              onBack={() => {
+                setTwoFactorToken(null)
+                setCode2fa('')
+                setError('')
+              }}
+              t={t}
+            />
           ) : (
-            <>
-          <label>
-            {t('login.email')}
-            <input
-              id="login-email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
+            <LoginCredentialsForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              busy={busy}
+              notice={notice}
+              error={error}
+              searchParams={searchParams}
+              twitchGate={twitchGate}
+              twitchOAuthRedirectUri={twitchOAuthRedirectUri}
+              apiBase={apiBase}
+              setTwitchStatusRetryToken={setTwitchStatusRetryToken}
+              t={t}
             />
-          </label>
-          <label>
-            {t('login.password')}
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-          </label>
-          <p className="muted small" style={{ margin: '-0.25rem 0 0.5rem', textAlign: 'right' }}>
-            <Link to="/login/forgot">{t('login.forgotPassword')}</Link>
-          </p>
-          <button type="submit" className="btn primary" disabled={busy}>
-            {busy ? t('login.signingIn') : t('login.signIn')}
-          </button>
-          <button
-            type="button"
-            className="btn twitch"
-            disabled={twitchGate !== 'ready'}
-            title={
-              twitchGate === 'disabled'
-                ? t('login.twitchDisabledTitle')
-                : twitchGate === 'unreachable'
-                  ? t('login.twitchUnreachableTitle')
-                  : undefined
-            }
-            onClick={() => {
-              void (async () => {
-                const inv = searchParams.get(INVITE_QUERY_PARAM)
-                if (inv) {
-                  try {
-                    sessionStorage.setItem(PENDING_INVITE_KEY, inv)
-                  } catch {
-                    /* ignore */
-                  }
-                }
-                const nativeFlow = isCapacitorNative() || isTauri()
-                const url = nativeFlow
-                  ? `${apiBase}/auth/twitch/start?native=1`
-                  : `${apiBase}/auth/twitch/start`
-                if (isTauri()) {
-                  try {
-                    const { openUrl } = await import('@tauri-apps/plugin-opener')
-                    await openUrl(url)
-                    return
-                  } catch {
-                    /* fallback: in-webview navigation */
-                  }
-                }
-                window.location.href = url
-              })()
-            }}
-          >
-            {twitchGate === 'loading'
-              ? t('login.twitchChecking')
-              : twitchGate === 'disabled'
-                ? t('login.twitchUnavailable')
-                : twitchGate === 'unreachable'
-                  ? t('login.twitchServicePaused')
-                  : t('login.twitchSignIn')}
-          </button>
-          {twitchGate === 'disabled' && (
-            <p className="muted small" style={{ marginTop: '0.5rem' }}>
-              {t('login.twitchHelpBeforeUri')}{' '}
-              <code>{twitchOAuthRedirectUri || `${apiBase}/auth/twitch/callback`}</code>
-              {twitchOAuthRedirectUri?.includes('/api/user/') ? (
-                <>
-                  {' '}
-                  ({t('login.twitchHelpMountNote')})
-                </>
-              ) : null}
-              {isTauri() ? (
-                <>
-                  {' '}
-                  {t('login.twitchHelpDesktopNote')}
-                </>
-              ) : null}
-            </p>
-          )}
-          {twitchGate === 'unreachable' && (
-            <div className="muted small" style={{ marginTop: '0.5rem' }}>
-              <p style={{ margin: '0 0 0.5rem' }}>{t('login.twitchUnreachableBody')}</p>
-              <button
-                type="button"
-                className="btn ghost small"
-                onClick={() => setTwitchStatusRetryToken((n) => n + 1)}
-              >
-                {t('login.twitchRetryCheck')}
-              </button>
-            </div>
-          )}
-            </>
           )}
         </form>
         {!twoFactorToken && (
-        <p className="muted small">
-          {t('login.noAccount')}{' '}
-          <Link
-            to={
-              searchParams.get(INVITE_QUERY_PARAM)
-                ? `/register?${INVITE_QUERY_PARAM}=${encodeURIComponent(searchParams.get(INVITE_QUERY_PARAM))}`
-                : '/register'
-            }
-          >
-            {t('login.signUp')}
-          </Link>
-        </p>
+          <p className="muted small">
+            {t('login.noAccount')}{' '}
+            <Link
+              to={
+                searchParams.get(INVITE_QUERY_PARAM)
+                  ? `/register?${INVITE_QUERY_PARAM}=${encodeURIComponent(searchParams.get(INVITE_QUERY_PARAM))}`
+                  : '/register'
+              }
+            >
+              {t('login.signUp')}
+            </Link>
+          </p>
         )}
         <AuthLegalStrip />
       </div>

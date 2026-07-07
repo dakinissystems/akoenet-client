@@ -1,52 +1,91 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import api from '../services/api'
 
+const SEARCH_INITIAL = { open: false, q: '', busy: false, results: [], error: '' }
+
+function searchReducer(state, action) {
+  switch (action.type) {
+    case 'open':
+      return { ...state, open: true }
+    case 'close':
+      return { ...SEARCH_INITIAL }
+    case 'set-q':
+      return { ...state, q: action.q }
+    case 'search-start':
+      return { ...state, busy: true, error: '' }
+    case 'search-success':
+      return { ...state, busy: false, results: action.results }
+    case 'search-fail':
+      return { ...state, busy: false, results: [], error: action.error }
+    default:
+      return state
+  }
+}
+
 export default function GlobalSearchModal() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [open, setOpen] = useState(false)
-  const [q, setQ] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [results, setResults] = useState([])
-  const [error, setError] = useState('')
+  const dialogRef = useRef(null)
+  const [state, dispatch] = useReducer(searchReducer, SEARCH_INITIAL)
+  const { open, q, busy, results, error } = state
 
   const runSearch = useCallback(async () => {
     const term = q.trim()
     if (term.length < 2) {
-      setResults([])
+      dispatch({ type: 'search-success', results: [] })
       return
     }
-    setBusy(true)
-    setError('')
+    dispatch({ type: 'search-start' })
     try {
       const { data } = await api.get('/messages/search/global', { params: { q: term, limit: 25 } })
-      setResults(Array.isArray(data) ? data : [])
+      dispatch({ type: 'search-success', results: Array.isArray(data) ? data : [] })
     } catch {
-      setResults([])
-      setError(t('globalSearch.errFailed'))
-    } finally {
-      setBusy(false)
+      dispatch({ type: 'search-fail', error: t('globalSearch.errFailed') })
     }
   }, [q, t])
 
   useEffect(() => {
-    function onOpen() {
-      setOpen(true)
+    const dialog = dialogRef.current
+    if (!dialog) return
+    if (open) {
+      if (!dialog.open) dialog.showModal()
+    } else if (dialog.open) {
+      dialog.close()
     }
-    window.addEventListener('akoenet-open-global-search', onOpen)
-    return () => window.removeEventListener('akoenet-open-global-search', onOpen)
+  }, [open])
+
+  function closeModal() {
+    dispatch({ type: 'close' })
+  }
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    function onCancel(e) {
+      e.preventDefault()
+      closeModal()
+    }
+    dialog.addEventListener('cancel', onCancel)
+    return () => dialog.removeEventListener('cancel', onCancel)
+  }, [])
+
+  useEffect(() => {
+    function onOpenEvent() {
+      dispatch({ type: 'open' })
+    }
+    window.addEventListener('akoenet-open-global-search', onOpenEvent)
+    return () => window.removeEventListener('akoenet-open-global-search', onOpenEvent)
   }, [])
 
   useEffect(() => {
     function onKey(e) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
-        setOpen((o) => !o)
-        return
+        if (open) closeModal()
+        else dispatch({ type: 'open' })
       }
-      if (open && e.key === 'Escape') setOpen(false)
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
@@ -57,25 +96,25 @@ export default function GlobalSearchModal() {
     const cid = m.channel_id
     if (sid == null || cid == null) return
     navigate(`/server/${sid}?channel=${cid}`)
-    setOpen(false)
+    closeModal()
   }
 
-  if (!open) return null
-
   return (
-    <div
+    <dialog
+      ref={dialogRef}
       className="global-search-overlay"
-      role="dialog"
-      aria-modal="true"
       aria-label={t('globalSearch.ariaDialog')}
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) setOpen(false)
-      }}
     >
+      <button
+        type="button"
+        className="global-search-backdrop"
+        aria-label={t('common.close')}
+        onClick={closeModal}
+      />
       <div className="global-search-modal card">
         <div className="global-search-head">
           <h2 className="global-search-title">{t('globalSearch.title')}</h2>
-          <button type="button" className="btn ghost small" onClick={() => setOpen(false)}>
+          <button type="button" className="btn ghost small" onClick={closeModal}>
             {t('common.close')}
           </button>
         </div>
@@ -89,9 +128,8 @@ export default function GlobalSearchModal() {
         >
           <input
             className="composer-input"
-            autoFocus
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e) => dispatch({ type: 'set-q', q: e.target.value })}
             placeholder={t('globalSearch.placeholder')}
             aria-label={t('globalSearch.queryAria')}
           />
@@ -116,6 +154,6 @@ export default function GlobalSearchModal() {
           ))}
         </ul>
       </div>
-    </div>
+    </dialog>
   )
 }

@@ -313,7 +313,7 @@ export const footerContent = {
 }
 
 /** Login/register: browser language → footer-style legal line (no landing locale in tree). */
-export const authFooter = {
+const authFooter = {
   en: {
     copyrightReserved: 'All rights reserved.',
     copyrightSubject: 'Use is subject to',
@@ -330,7 +330,7 @@ export const authFooter = {
   },
 }
 
-export function resolveAuthFooterLocale() {
+function resolveAuthFooterLocale() {
   if (typeof navigator === 'undefined') return 'en'
   const lang = String(navigator.language || '').toLowerCase()
   return lang.startsWith('es') ? 'es' : 'en'
