@@ -7,6 +7,7 @@
     "dev": "vite",
     "prebuild": "node scripts/verify-versions.mjs && node scripts/verify-invite-links.mjs",
     "build": "vite build && node scripts/publish-release-assets.mjs",
+    "build:app": "vite build",
     "start": "node scripts/serve-production.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -35,7 +36,8 @@
     "updater:manifest": "node scripts/generate-desktop-updater-manifest.mjs",
     "updater:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-tauri-updater.ps1",
     "cleanup": "node scripts/cleanup-workspace.mjs",
-    "cleanup:dry": "node scripts/cleanup-workspace.mjs --dry-run"
+    "cleanup:dry": "node scripts/cleanup-workspace.mjs --dry-run",
+    "prune:releases": "node scripts/prune-public-releases.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",

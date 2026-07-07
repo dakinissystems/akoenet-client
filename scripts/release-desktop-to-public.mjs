@@ -69,5 +69,6 @@ if (!hasInstaller) {
   process.exit(1)
 }
 
+run('node', ['scripts/verify-desktop-installer-size.mjs'])
 run('node', ['scripts/generate-desktop-updater-manifest.mjs'])
 console.log('[release:desktop] done — artifacts in', outDir)

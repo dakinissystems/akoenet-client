@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { copyPublicDir } from './scripts/lib/copy-public.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pkg = JSON.parse(readFileSync(path.join(__dirname, 'package.json'), 'utf-8'))
@@ -21,11 +22,23 @@ function resolveUseHashRouter(mode) {
 export default defineConfig(({ mode }) => {
   const useHashRouter = resolveUseHashRouter(mode)
   return {
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'copy-public-except-releases',
+      closeBundle: {
+        order: 'post',
+        handler() {
+          copyPublicDir(path.join(__dirname, 'public'), path.join(__dirname, 'dist'))
+        },
+      },
+    },
+  ],
   resolve: {
     dedupe: ['@capacitor/core', '@capacitor/app', '@capacitor/preferences'],
   },
   build: {
+    copyPublicDir: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
