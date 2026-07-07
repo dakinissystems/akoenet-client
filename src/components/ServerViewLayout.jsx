@@ -14,9 +14,12 @@ export default function ServerViewLayout(props) {
     activeChannelId, emojis, banStatus, setActiveChannelId, serverName, serverTag, createChannel,
     createCategory, deleteCategory, deleteChannel, moveChannel, moveCategory, collapsedCategories,
     toggleCategoryCollapse, userSettingsOpen, setUserSettingsOpen, userSettingsSection, setUserSettingsSection,
-    serverSettingsOpen, setServerSettingsOpen, channelSettingsOpen, setChannelSettingsOpen, channelSettingsTarget,
-    membersDrawerOpen, closeMembersPanel, openMembersPanel, membersPanelAutoClose, voicePresenceByChannel,
-    voiceConnectedCountByChannel, screenSharingUserIds, showInlineMembersPanel, setAppearOnline, activeChannel,
+    serverSettingsOpen, setServerSettingsOpen, channelSettingsOpen, setChannelSettingsOpen,
+    membersDrawerOpen, closeMembersPanel, openMembersPanel, voicePresence, voiceScreenSharingUserIds,
+    rtcVoiceChannelId, rtcVoiceChannelMeta, rtcVoiceConnectedCount, handleVoiceSessionChange,
+    connectedUserIds, activityByUserId, gameRanking, serverOwnerId, refreshServerMembers,
+    channelPermissions, togglePermission, userPermissions, toggleUserPermission, updateChannel,
+    selectedMemberId, setSelectedMemberId, toast, showInlineMembersPanel, setAppearOnline, activeChannel,
   } = props
 
   if (banStatus?.banned) {
