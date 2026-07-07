@@ -17,7 +17,7 @@ export default function ServerViewLayout(props) {
     serverSettingsOpen, setServerSettingsOpen, channelSettingsOpen, setChannelSettingsOpen,
     membersDrawerOpen, closeMembersPanel, openMembersPanel, voicePresence, voiceScreenSharingUserIds,
     rtcVoiceChannelId, rtcVoiceChannelMeta, rtcVoiceConnectedCount, handleVoiceSessionChange,
-    connectedUserIds, activityByUserId, gameRanking, serverOwnerId, refreshServerMembers,
+    connectedUserIds, activityByUserId, gameRanking, serverOwnerId, refreshServerMembers, refreshServerList,
     channelPermissions, togglePermission, userPermissions, toggleUserPermission, updateChannel,
     selectedMemberId, setSelectedMemberId, toast, showInlineMembersPanel, setAppearOnline, activeChannel,
   } = props

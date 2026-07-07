@@ -735,6 +735,7 @@ export function useServerView() {
     gameRanking,
     serverOwnerId,
     refreshServerMembers,
+    refreshServerList,
     channelPermissions,
     togglePermission,
     userPermissions,
