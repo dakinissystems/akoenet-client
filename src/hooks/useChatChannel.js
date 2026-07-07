@@ -5,7 +5,6 @@ import { getAccessToken } from '../services/session-store'
 import { getSocket } from '../services/socket'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { pickImageFileFromDevice } from '../services/mobile-media'
-import { getAccessToken } from '../services/session-store'
 import { getApiBaseUrl } from '../lib/apiBase'
 import {
   ALLOWED_IMAGE_MIME_TYPES,
