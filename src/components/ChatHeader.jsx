@@ -64,17 +64,19 @@ export default function ChatHeader({
         >
           🔎
         </button>
-        <div className="chat-save-row" role="group" aria-label={t('chat.downloadHistoryAria')}>
-          <button type="button" className="btn link chat-save-link" onClick={() => exportHistory('csv')}>
-            {t('chat.spreadsheet')}
-          </button>
-          <span className="chat-save-dot" aria-hidden="true">
-            ·
-          </span>
-          <button type="button" className="btn link chat-save-link" onClick={() => exportHistory('json')}>
-            {t('chat.jsonBackup')}
-          </button>
-        </div>
+        {!isVoice && (
+          <div className="chat-save-row" role="group" aria-label={t('chat.downloadHistoryAria')}>
+            <button type="button" className="btn link chat-save-link" onClick={() => exportHistory('csv')}>
+              {t('chat.spreadsheet')}
+            </button>
+            <span className="chat-save-dot" aria-hidden="true">
+              ·
+            </span>
+            <button type="button" className="btn link chat-save-link" onClick={() => exportHistory('json')}>
+              {t('chat.jsonBackup')}
+            </button>
+          </div>
+        )}
         <span className="chat-live-pill" title={t('chat.liveTitle')}>
           <span className="chat-live-dot" aria-hidden="true" />
           {t('chat.live')}
