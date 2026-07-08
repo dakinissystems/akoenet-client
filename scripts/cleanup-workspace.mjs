@@ -22,6 +22,17 @@ const REMOVE_PATHS = [
   '../docs/legal',
 ]
 
+const NESTED_RES_PATHS = [
+  'android/app/src/main/res/values/values',
+  'android/app/src/main/res/mipmap-hdpi/mipmap-hdpi',
+  'android/app/src/main/res/mipmap-mdpi/mipmap-mdpi',
+  'android/app/src/main/res/mipmap-xhdpi/mipmap-xhdpi',
+  'android/app/src/main/res/mipmap-xxhdpi/mipmap-xxhdpi',
+  'android/app/src/main/res/mipmap-xxxhdpi/mipmap-xxxhdpi',
+  'android/app/src/main/res/mipmap-anydpi-v26/mipmap-anydpi-v26',
+  'android/app/src/main/java/com/dakinis/akoenet',
+]
+
 function removePath(rel) {
   const abs = join(root, rel)
   if (!existsSync(abs)) return false
@@ -60,7 +71,7 @@ function removeEmptyDirs(rel, maxDepth = 4) {
 }
 
 let count = 0
-for (const rel of REMOVE_PATHS) {
+for (const rel of [...REMOVE_PATHS, ...NESTED_RES_PATHS]) {
   if (removePath(rel)) count += 1
 }
 removeEmptyDirs('../docs')

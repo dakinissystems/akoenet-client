@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "node scripts/verify-versions.mjs && node scripts/verify-invite-links.mjs",
-    "build": "vite build && node scripts/publish-release-assets.mjs",
+    "build": "vite build && node scripts/publish-release-assets.mjs && node scripts/verify-dist-installer.mjs",
     "build:app": "vite build",
+    "build:ci": "vite build && node scripts/publish-release-assets.mjs",
     "start": "node scripts/serve-production.mjs",
     "lint": "eslint .",
     "preview": "vite preview",

@@ -20,6 +20,28 @@ function copyIfExists(src, dest) {
   return true
 }
 
+function copyDesktopArtifactsFromDir(sourceDir, destRoots) {
+  if (!existsSync(sourceDir)) return 0
+  const versionToken = `_${version}_`
+  let copied = 0
+  for (const name of readdirSync(sourceDir)) {
+    const full = join(sourceDir, name)
+    if (!statSync(full).isFile()) continue
+    if (!/\.(msi|exe|dmg|AppImage|sig|json)$/i.test(name)) continue
+    if (
+      !name.includes(versionToken) &&
+      !name.includes(`_${version}.`) &&
+      name !== 'latest.json'
+    ) {
+      continue
+    }
+    for (const destRoot of destRoots) {
+      if (copyIfExists(full, join(destRoot, 'desktop', name))) copied += 1
+    }
+  }
+  return copied
+}
+
 spawnSync('node', ['scripts/prune-public-releases.mjs'], { stdio: 'inherit' })
 
 mkdirSync(join(publicRoot, 'android'), { recursive: true })
@@ -32,22 +54,13 @@ const aabName = `akoenet-${version}.aab`
 copyIfExists(aabSrc, join(publicRoot, 'android', aabName))
 copyIfExists(aabSrc, join(distRoot, 'android', aabName))
 
-const desktopDir = join('releases', 'desktop', version)
-if (existsSync(desktopDir)) {
-  const versionToken = `_${version}_`
-  for (const name of readdirSync(desktopDir)) {
-    const full = join(desktopDir, name)
-    if (!statSync(full).isFile()) continue
-    if (!/\.(msi|exe|dmg|AppImage|sig|json)$/i.test(name)) continue
-    if (
-      !name.includes(versionToken) &&
-      !name.includes(`_${version}.`) &&
-      name !== 'latest.json'
-    ) {
-      continue
-    }
-    copyIfExists(full, join(publicRoot, 'desktop', name))
-    copyIfExists(full, join(distRoot, 'desktop', name))
+const desktopFromRelease = join('releases', 'desktop', version)
+const desktopFromPublic = join(publicRoot, 'desktop')
+let desktopCopied = copyDesktopArtifactsFromDir(desktopFromRelease, [publicRoot, distRoot])
+if (!desktopCopied) {
+  desktopCopied = copyDesktopArtifactsFromDir(desktopFromPublic, [distRoot])
+  if (desktopCopied) {
+    console.log('[publish-release-assets] copied desktop installers from public/releases → dist')
   }
 }
 
