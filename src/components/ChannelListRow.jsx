@@ -5,6 +5,7 @@ import {
   VoiceSidebarHeadphonesDeafIcon,
   VoiceSidebarMicMutedIcon,
 } from './channelListUtils'
+import VoiceSidebarUserControls from './VoiceSidebarUserControls'
 
 export default function ChannelListRow({
   channel: c,
@@ -27,6 +28,7 @@ export default function ChannelListRow({
   voiceAvatarFailed,
   setVoiceAvatarFailed,
   currentUserId = null,
+  voiceSidebarControls = null,
 }) {
   const besideOpen = createUI?.type === 'beside' && createUI.channelId === c.id
   const vCount = c.type === 'voice' ? voiceUsersForChannel(c.id).length : 0
@@ -36,6 +38,10 @@ export default function ChannelListRow({
   const voiceXyFull = c.type === 'voice' && vMax != null && vCount >= vMax
   const showVoiceXy = c.type === 'voice' && vMax != null && voiceXyFull
   const isActiveVoice = c.type === 'voice' && activeChannelId === c.id
+  const selfVoiceControlsActive =
+    voiceSidebarControls?.joined &&
+    voiceSidebarControls.channelId != null &&
+    Number(voiceSidebarControls.channelId) === Number(c.id)
 
   return (
     <li
@@ -121,6 +127,7 @@ export default function ChannelListRow({
               const showImg = p.avatar_url && !voiceAvatarFailed.has(uidKey)
               const liveSharing = isVoiceScreenSharingUser(p.userId)
               const displayName = p.username || `User ${p.userId}`
+              const showSelfControls = isSelf && selfVoiceControlsActive
               return (
                 <li
                   key={`${c.id}-${p.userId}`}
@@ -153,18 +160,29 @@ export default function ChannelListRow({
                       <span className="voice-channel-connected-you">{t('channelList.voiceYouSuffix')}</span>
                     ) : null}
                   </span>
-                  <span className="voice-channel-audio-badges" aria-hidden>
-                    {p.mic_muted ? (
-                      <span className="voice-channel-audio-badge voice-channel-audio-badge--mute" title={t('channelList.micMutedTitle')}>
-                        <VoiceSidebarMicMutedIcon />
-                      </span>
-                    ) : null}
-                    {p.deafened ? (
-                      <span className="voice-channel-audio-badge voice-channel-audio-badge--deaf" title={t('channelList.deafenedTitle')}>
-                        <VoiceSidebarHeadphonesDeafIcon />
-                      </span>
-                    ) : null}
-                  </span>
+                  {showSelfControls ? (
+                    <VoiceSidebarUserControls
+                      t={t}
+                      muted={voiceSidebarControls.muted}
+                      deafened={voiceSidebarControls.deafened}
+                      onToggleMute={voiceSidebarControls.toggleMute}
+                      onToggleDeafen={voiceSidebarControls.toggleDeafened}
+                      onLeave={voiceSidebarControls.leaveVoice}
+                    />
+                  ) : (
+                    <span className="voice-channel-audio-badges" aria-hidden>
+                      {p.mic_muted ? (
+                        <span className="voice-channel-audio-badge voice-channel-audio-badge--mute" title={t('channelList.micMutedTitle')}>
+                          <VoiceSidebarMicMutedIcon />
+                        </span>
+                      ) : null}
+                      {p.deafened ? (
+                        <span className="voice-channel-audio-badge voice-channel-audio-badge--deaf" title={t('channelList.deafenedTitle')}>
+                          <VoiceSidebarHeadphonesDeafIcon />
+                        </span>
+                      ) : null}
+                    </span>
+                  )}
                   {liveSharing ? (
                     <span className="voice-channel-live-badge" title={t('channelList.screenShareTitle')}>
                       {t('channelList.liveBadge')}

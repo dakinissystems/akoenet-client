@@ -138,6 +138,10 @@ export default {
     deleteCategory: 'Delete category',
     expandCategory: 'Expand category',
     collapseCategory: 'Collapse category',
+    voiceSelfControlsAria: 'Your voice controls',
+    downloadHistoryAria: 'Download chat history',
+    spreadsheet: 'Spreadsheet',
+    jsonBackup: 'JSON backup',
   },
   chat: {
     emptyChoose: 'Choose a channel',
@@ -1003,6 +1007,88 @@ export default {
       developer: 'Developer',
       business: 'Business',
       entertainment: 'Entertainment',
+    },
+    modules: {
+      guardian: {
+        name: 'Guardian',
+        description: 'AutoMod, anti-raid, /ban /kick /mute /warn commands and moderation logs',
+      },
+      welcome: {
+        name: 'Welcome',
+        description: 'Welcome messages, auto role, captcha and verification',
+      },
+      reaction_roles: {
+        name: 'Reaction Roles',
+        description: 'Assign roles when members react to messages',
+      },
+      levels: {
+        name: 'Levels',
+        description: 'XP, ranks, leaderboards and prestige',
+      },
+      economy: {
+        name: 'Economy',
+        description: 'Server currency, shop, daily rewards and mini-games',
+      },
+      polls: {
+        name: 'Polls & Giveaways',
+        description: 'Polls, votes, quizzes, giveaways and raffles',
+      },
+      games: {
+        name: 'Games',
+        description: 'Trivia, mini-games and rewards',
+      },
+      music: {
+        name: 'Music',
+        description: 'Share what you are listening to (Spotify) — no in-server playback',
+      },
+      streamer: {
+        name: 'Streamer',
+        description: 'Go-live announcements, schedule, clips and Twitch/YouTube alerts via StreamAutomator',
+      },
+      assistant: {
+        name: 'AI Assistant',
+        description: '@AI — server copilot for questions, summaries, translation and search',
+      },
+      guardian_ai: {
+        name: 'AI Moderator',
+        description: 'Context-aware toxicity detection — not just banned words',
+      },
+      translator: {
+        name: 'Translator',
+        description: 'Automatic multilingual translation in channels',
+      },
+      knowledge: {
+        name: 'Knowledge',
+        description: 'FAQ and server docs via Dakinis Knowledge',
+      },
+      meeting_ai: {
+        name: 'Meeting AI',
+        description: 'Voice session summaries — tasks and participants',
+      },
+      developer_ai: {
+        name: 'Developer AI',
+        description: 'Explain code, analyze logs and errors',
+      },
+      business: {
+        name: 'Business',
+        description: 'CRM, tickets and billing from Dakinis Core',
+      },
+      support: {
+        name: 'Support',
+        description: 'Tickets, FAQs and server knowledge base',
+      },
+      events: {
+        name: 'Events',
+        description: 'Calendar, RSVP and reminders',
+      },
+      developer: {
+        name: 'Developer',
+        description: 'GitHub, GitLab, Railway and Supabase webhooks',
+      },
+      automation: {
+        name: 'Automation',
+        description: 'When X happens → do Y — visual flows like Zapier',
+      },
     },
   },
 }

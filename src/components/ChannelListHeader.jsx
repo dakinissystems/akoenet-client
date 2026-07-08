@@ -1,4 +1,5 @@
 import { resolveImageUrl } from '../lib/resolveImageUrl'
+import { exportChannelHistory } from '../lib/channelExport'
 import AppChromeToolbar from './AppChromeToolbar'
 
 export default function ChannelListHeader({
@@ -16,6 +17,8 @@ export default function ChannelListHeader({
   onOpenUserSettings,
   onOpenAdminDashboard,
   onLogout,
+  exportChannelId = null,
+  onExportChannelHistory = exportChannelHistory,
   t,
 }) {
   return (
@@ -98,6 +101,33 @@ export default function ChannelListHeader({
                 >
                   {t('channelList.settings')}
                 </button>
+                {exportChannelId ? (
+                  <>
+                    <div className="user-menu-divider" role="separator" aria-hidden="true" />
+                    <div className="user-menu-export" role="group" aria-label={t('channelList.downloadHistoryAria')}>
+                      <button
+                        type="button"
+                        className="btn link"
+                        onClick={() => {
+                          setUserMenuOpen(false)
+                          void onExportChannelHistory(exportChannelId, 'csv')
+                        }}
+                      >
+                        {t('channelList.spreadsheet')}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn link"
+                        onClick={() => {
+                          setUserMenuOpen(false)
+                          void onExportChannelHistory(exportChannelId, 'json')
+                        }}
+                      >
+                        {t('channelList.jsonBackup')}
+                      </button>
+                    </div>
+                  </>
+                ) : null}
                 <button
                   type="button"
                   className="btn link"

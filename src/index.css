@@ -1818,6 +1818,48 @@ textarea {
   font-size: 0.75rem;
 }
 
+.voice-channel-connected-user--self .voice-channel-connected-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.voice-channel-self-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.voice-icon-btn--sidebar {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.voice-icon-btn--sidebar .voice-hangup-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.voice-toolbar-svg--sidebar {
+  width: 14px;
+  height: 14px;
+}
+
+.user-menu-divider {
+  height: 1px;
+  margin: 0.35rem 0;
+  background: var(--nexora-border);
+}
+
+.user-menu-export {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
 .voice-channel-audio-badges {
   display: inline-flex;
   align-items: center;

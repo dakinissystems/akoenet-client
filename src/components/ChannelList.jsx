@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDismissiblePopover } from '../hooks/useDismissiblePopover'
+import { exportChannelHistory } from '../lib/channelExport'
 import SchedulerUpcomingWidget from './SchedulerUpcomingWidget'
 import ChannelTopCreatePanel from './ChannelTopCreatePanel'
 import ChannelListHeader from './ChannelListHeader'
@@ -34,6 +35,8 @@ export default function ChannelList({
   schedulerStreamerUsername,
   voicePresence = EMPTY_VOICE_PRESENCE,
   voiceScreenSharingUserIds = EMPTY_SCREEN_SHARING_IDS,
+  voiceSidebarControls = null,
+  exportChannelId = null,
 }) {
   const { t } = useTranslation()
 
@@ -149,6 +152,7 @@ export default function ChannelList({
     voiceAvatarFailed,
     setVoiceAvatarFailed,
     currentUserId: user?.id ?? null,
+    voiceSidebarControls,
   }
 
   return (
@@ -168,6 +172,8 @@ export default function ChannelList({
         onOpenUserSettings={onOpenUserSettings}
         onOpenAdminDashboard={onOpenAdminDashboard}
         onLogout={onLogout}
+        exportChannelId={exportChannelId}
+        onExportChannelHistory={exportChannelHistory}
         t={t}
       />
       <SchedulerUpcomingWidget streamerUsername={schedulerStreamerUsername} />
@@ -248,6 +254,7 @@ export default function ChannelList({
               voiceAvatarFailed={voiceAvatarFailed}
               setVoiceAvatarFailed={setVoiceAvatarFailed}
               currentUserId={user?.id ?? null}
+              voiceSidebarControls={voiceSidebarControls}
             />
           ))}
         </ul>

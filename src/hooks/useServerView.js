@@ -252,6 +252,35 @@ export function useServerView() {
     }
   }, [])
 
+  const voiceSidebarControlsRef = useRef({
+    channelId: null,
+    joined: false,
+    muted: false,
+    deafened: false,
+    toggleMute: () => {},
+    toggleDeafened: () => {},
+    leaveVoice: () => {},
+  })
+  const [voiceSidebarRevision, setVoiceSidebarRevision] = useState(0)
+
+  const registerVoiceSidebarControls = useCallback((controls) => {
+    voiceSidebarControlsRef.current = controls || {
+      channelId: null,
+      joined: false,
+      muted: false,
+      deafened: false,
+      toggleMute: () => {},
+      toggleDeafened: () => {},
+      leaveVoice: () => {},
+    }
+    setVoiceSidebarRevision((v) => v + 1)
+  }, [])
+
+  const voiceSidebarControls = useMemo(
+    () => ({ ...voiceSidebarControlsRef.current, _revision: voiceSidebarRevision }),
+    [voiceSidebarRevision]
+  )
+
   const memberIdsKeyRef = useRef('')
 
   useEffect(() => {
@@ -767,6 +796,8 @@ export function useServerView() {
     rtcVoiceChannelMeta,
     rtcVoiceConnectedCount,
     handleVoiceSessionChange,
+    registerVoiceSidebarControls,
+    voiceSidebarControls,
     connectedUserIds,
     activityByUserId,
     gameRanking,

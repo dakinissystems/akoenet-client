@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { assistantModuleName } from '../lib/assistantModuleI18n'
 import { fetchServerAssistantModules, setServerAssistantModule } from '../services/assistant-modules'
 
 /**
@@ -84,8 +85,8 @@ export function useServerAssistantModules({ serverId, canManage, open = true }) 
       setModules((prev) => prev.map((m) => (m.key === mod.key ? { ...m, enabled: next } : m)))
       setInfo(
         next
-          ? t('serverAssistant.enabled', { name: mod.name })
-          : t('serverAssistant.disabled', { name: mod.name })
+          ? t('serverAssistant.enabled', { name: assistantModuleName(mod, t) })
+          : t('serverAssistant.disabled', { name: assistantModuleName(mod, t) })
       )
     } catch (err) {
       const code = err?.response?.data?.error

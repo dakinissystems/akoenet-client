@@ -1,4 +1,5 @@
 import { useServerAssistantModules, canToggleModule } from '../hooks/useServerAssistantModules'
+import { assistantModuleDescription, assistantModuleName } from '../lib/assistantModuleI18n'
 
 const MODULE_ICONS = {
   guardian: '🛡',
@@ -19,6 +20,8 @@ const MODULE_ICONS = {
   levels: '🏆',
   economy: '🪙',
   translator: '🌐',
+  meeting_ai: '🎙',
+  developer_ai: '💻',
 }
 
 function categoryLabel(category, t) {
@@ -86,7 +89,7 @@ export default function ServerSettingsAssistantPanel({ serverId, canManage, t })
                         {icon}
                       </span>
                       <div className="assistant-module-card__titles">
-                        <strong>{mod.name}</strong>
+                        <strong>{assistantModuleName(mod, t)}</strong>
                         {phase ? <span className="assistant-module-card__phase">{phase}</span> : null}
                       </div>
                       <button
@@ -108,8 +111,10 @@ export default function ServerSettingsAssistantPanel({ serverId, canManage, t })
                             : t('serverAssistant.off')}
                       </button>
                     </div>
-                    {mod.description ? (
-                      <p className="muted small assistant-module-card__desc">{mod.description}</p>
+                    {assistantModuleDescription(mod, t) ? (
+                      <p className="muted small assistant-module-card__desc">
+                        {assistantModuleDescription(mod, t)}
+                      </p>
                     ) : null}
                   </article>
                 )

@@ -6,6 +6,7 @@ import { getSocket } from '../services/socket'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { pickImageFileFromDevice } from '../services/mobile-media'
 import { getApiBaseUrl } from '../lib/apiBase'
+import { exportChannelHistory } from '../lib/channelExport'
 import {
   ALLOWED_IMAGE_MIME_TYPES,
   CHANNEL_UI_INITIAL,
@@ -548,25 +549,7 @@ export function useChatChannel({
   }
 
   async function exportHistory(format) {
-    const token = getAccessToken()
-    if (!token || !channelId) return
-    try {
-      const res = await fetch(`${baseURL}/messages/channel/${channelId}/export?format=${format}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok) return
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `channel-${channelId}-messages.${format}`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      URL.revokeObjectURL(url)
-    } catch {
-      /* ignore */
-    }
+    await exportChannelHistory(channelId, format)
   }
 
   async function refreshLatestMessages() {

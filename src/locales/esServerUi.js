@@ -139,6 +139,10 @@ export default {
     deleteCategory: 'Eliminar categoría',
     expandCategory: 'Expandir categoría',
     collapseCategory: 'Contraer categoría',
+    voiceSelfControlsAria: 'Tus controles de voz',
+    downloadHistoryAria: 'Descargar historial del chat',
+    spreadsheet: 'Hoja de cálculo',
+    jsonBackup: 'Copia JSON',
   },
   chat: {
     emptyChoose: 'Elige un canal',
@@ -655,7 +659,7 @@ export default {
     navEmojis: 'Emojis',
     navRoles: 'Roles',
     navCommands: 'Comandos',
-    navAssistant: 'AkoeNet Assistant',
+    navAssistant: 'Asistente AkoeNet',
     navEvents: 'Eventos',
     navAnnouncements: 'Anuncios',
     navBans: 'Baneos',
@@ -1009,6 +1013,88 @@ export default {
       developer: 'Desarrollador',
       business: 'Empresas',
       entertainment: 'Entretenimiento',
+    },
+    modules: {
+      guardian: {
+        name: 'Guardian',
+        description: 'AutoMod, anti-raid, comandos /ban /kick /mute /warn y registros de moderación',
+      },
+      welcome: {
+        name: 'Bienvenida',
+        description: 'Mensajes de bienvenida, rol automático, captcha y verificación',
+      },
+      reaction_roles: {
+        name: 'Roles por reacción',
+        description: 'Asigna roles cuando los miembros reaccionan a mensajes',
+      },
+      levels: {
+        name: 'Niveles',
+        description: 'XP, rangos, clasificación y prestigio',
+      },
+      economy: {
+        name: 'Economía',
+        description: 'Monedas del servidor, tienda, recompensas diarias y minijuegos',
+      },
+      polls: {
+        name: 'Encuestas y sorteos',
+        description: 'Encuestas, votos, quizzes, sorteos y rifas',
+      },
+      games: {
+        name: 'Juegos',
+        description: 'Trivia, minijuegos y recompensas',
+      },
+      music: {
+        name: 'Música',
+        description: 'Compartir lo que escuchas (Spotify) — sin reproducción en el servidor',
+      },
+      streamer: {
+        name: 'Streamer',
+        description: 'Anuncios en vivo, horario, clips y alertas Twitch/YouTube vía StreamAutomator',
+      },
+      assistant: {
+        name: 'Asistente IA',
+        description: '@AI — copilot del servidor: preguntas, resúmenes, traducción y búsqueda',
+      },
+      guardian_ai: {
+        name: 'Moderador IA',
+        description: 'Detección de toxicidad con contexto — no solo palabras prohibidas',
+      },
+      translator: {
+        name: 'Traductor',
+        description: 'Traducción automática multilingüe en canales',
+      },
+      knowledge: {
+        name: 'Knowledge',
+        description: 'FAQ y documentación del servidor vía Dakinis Knowledge',
+      },
+      meeting_ai: {
+        name: 'Meeting AI',
+        description: 'Resúmenes de sesiones de voz — tareas y participantes',
+      },
+      developer_ai: {
+        name: 'Developer AI',
+        description: 'Explica código, analiza logs y errores',
+      },
+      business: {
+        name: 'Business',
+        description: 'CRM, tickets y facturación desde Dakinis Core',
+      },
+      support: {
+        name: 'Soporte',
+        description: 'Tickets, FAQs y base de conocimiento del servidor',
+      },
+      events: {
+        name: 'Eventos',
+        description: 'Calendario, RSVP y recordatorios',
+      },
+      developer: {
+        name: 'Developer',
+        description: 'Webhooks de GitHub, GitLab, Railway y Supabase',
+      },
+      automation: {
+        name: 'Automatización',
+        description: 'Cuando ocurre X → haz Y — flujos visuales tipo Zapier',
+      },
     },
   },
 }

@@ -29,6 +29,7 @@ export default function ChannelCategoryBlock({
   voiceAvatarFailed,
   setVoiceAvatarFailed,
   currentUserId = null,
+  voiceSidebarControls = null,
 }) {
   return (
     <li
@@ -145,6 +146,7 @@ export default function ChannelCategoryBlock({
             voiceAvatarFailed={voiceAvatarFailed}
             setVoiceAvatarFailed={setVoiceAvatarFailed}
             currentUserId={currentUserId}
+            voiceSidebarControls={voiceSidebarControls}
           />
         ))}
       </ul>

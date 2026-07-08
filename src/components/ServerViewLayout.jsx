@@ -17,6 +17,7 @@ export default function ServerViewLayout(props) {
     serverSettingsOpen, setServerSettingsOpen, channelSettingsOpen, setChannelSettingsOpen,
     membersDrawerOpen, closeMembersPanel, openMembersPanel, voicePresence, voiceScreenSharingUserIds,
     rtcVoiceChannelId, rtcVoiceChannelMeta, rtcVoiceConnectedCount, handleVoiceSessionChange,
+    registerVoiceSidebarControls, voiceSidebarControls,
     connectedUserIds, activityByUserId, gameRanking, serverOwnerId, refreshServerMembers, refreshServerList,
     channelPermissions, togglePermission, userPermissions, toggleUserPermission, updateChannel,
     selectedMemberId, setSelectedMemberId, toast, showInlineMembersPanel, setAppearOnline, activeChannel,
@@ -92,6 +93,10 @@ export default function ServerViewLayout(props) {
             schedulerStreamerUsername={import.meta.env.VITE_SCHEDULER_STREAMER_USERNAME}
             voicePresence={voicePresence}
             voiceScreenSharingUserIds={voiceScreenSharingUserIds}
+            voiceSidebarControls={voiceSidebarControls}
+            exportChannelId={
+              activeChannel && activeChannel.type !== 'voice' ? activeChannelId : null
+            }
           />
           <Chat
             channelId={activeChannelId}
@@ -103,6 +108,7 @@ export default function ServerViewLayout(props) {
             voiceUserLimit={rtcVoiceChannelMeta?.voice_user_limit}
             voiceConnectedCount={rtcVoiceConnectedCount}
             onVoiceSessionChange={handleVoiceSessionChange}
+            onRegisterVoiceSidebarControls={registerVoiceSidebarControls}
             rtcVoiceChannelId={rtcVoiceChannelId}
             rtcVoiceChannelName={rtcVoiceChannelMeta?.name}
             onOpenChannelSettings={() => setChannelSettingsOpen(true)}

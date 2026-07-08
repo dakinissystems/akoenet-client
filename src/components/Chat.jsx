@@ -22,6 +22,7 @@ export default function Chat({
   rtcVoiceChannelId,
   rtcVoiceChannelName,
   onVoiceSessionChange,
+  onRegisterVoiceSidebarControls,
   onOpenChannelSettings,
   onOpenMembersPanel,
   membersCount = 0,
@@ -92,7 +93,6 @@ export default function Chat({
         refreshLatestMessages={chat.refreshLatestMessages}
         onOpenChannelSettings={onOpenChannelSettings}
         onOpenMembersPanel={onOpenMembersPanel}
-        exportHistory={chat.exportHistory}
         t={t}
       />
 
@@ -175,6 +175,7 @@ export default function Chat({
           voiceUserLimit={voiceUserLimit}
           voiceConnectedCount={voiceConnectedCount}
           onVoiceSessionChange={onVoiceSessionChange}
+          onRegisterVoiceSidebarControls={onRegisterVoiceSidebarControls}
         />
       )}
 
