@@ -148,6 +148,9 @@ public/releases/android/*.aab
 public/releases/desktop/*
 !public/releases/desktop/.gitkeep
 !public/releases/desktop/latest.json
+!public/releases/desktop/*.exe
+!public/releases/desktop/*.msi
+!public/releases/desktop/*.sig
 public/releases/*.exe
 public/releases/*.sig
 releases/android/*.aab
