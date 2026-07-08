@@ -6,6 +6,7 @@ import ServerRolesTab from './ServerRolesTab'
 import ServerSettingsTagPanel from './ServerSettingsTagPanel'
 import ServerSettingsInvitesPanel from './ServerSettingsInvitesPanel'
 import ServerSettingsBansPanel from './ServerSettingsBansPanel'
+import ServerSettingsAssistantPanel from './ServerSettingsAssistantPanel.jsx'
 import { useServerSettingsModal } from '../hooks/useServerSettingsModal'
 
 const EMPTY_MEMBERS = []
@@ -61,6 +62,7 @@ export default function ServerSettingsModal({
           {navBtn('emojis', t('serverModal.navEmojis'))}
           {navBtn('roles', t('serverModal.navRoles'))}
           {navBtn('commands', t('serverModal.navCommands'))}
+          {navBtn('assistant', t('serverModal.navAssistant'))}
           {navBtn('events', t('serverModal.navEvents'))}
           {navBtn('announcements', t('serverModal.navAnnouncements'))}
           {navBtn('bans', t('serverModal.navBans'))}
@@ -131,6 +133,14 @@ export default function ServerSettingsModal({
               serverId={Number(serverId)}
               canManage={settings.canManageServer}
               tab={settings.activeSection}
+            />
+          ) : null}
+
+          {settings.activeSection === 'assistant' && serverId ? (
+            <ServerSettingsAssistantPanel
+              serverId={serverId}
+              canManage={settings.canManageServer}
+              t={t}
             />
           ) : null}
 
