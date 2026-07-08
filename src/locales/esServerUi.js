@@ -990,6 +990,7 @@ export default {
     readOnly: 'Solo quien administra el servidor puede cambiar los módulos.',
     notConfigured: 'La API del asistente aún no está configurada. Los módulos se muestran en modo vista previa.',
     errLoad: 'No se pudieron cargar los módulos del asistente.',
+    errApiRoute: 'API del asistente no encontrada — redespliega akoenet-client o usa VITE_API_URL=https://api.akoenet.dakinissystems.com',
     errToggle: 'No se pudo actualizar el módulo.',
     errNotConfigured: 'Backend del asistente sin configurar (DAKINIS_INTERNAL_SERVICE_KEY).',
     enabled: '{{name}} activado.',

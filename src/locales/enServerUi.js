@@ -984,6 +984,7 @@ export default {
     readOnly: 'Only server managers can change assistant modules.',
     notConfigured: 'Platform assistant API is not configured yet. Modules are shown in preview mode.',
     errLoad: 'Could not load assistant modules.',
+    errApiRoute: 'Assistant API not found — redeploy akoenet-client or set VITE_API_URL to https://api.akoenet.dakinissystems.com',
     errToggle: 'Could not update module.',
     errNotConfigured: 'Assistant backend is not configured (DAKINIS_INTERNAL_SERVICE_KEY).',
     enabled: '{{name}} enabled.',

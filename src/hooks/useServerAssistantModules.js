@@ -55,8 +55,13 @@ export function useServerAssistantModules({ serverId, canManage, open = true }) 
       setModules(data.items || [])
       setConfigured(data.configured !== false)
       setWarning(data.warning || '')
-    } catch {
-      setError(t('serverAssistant.errLoad'))
+    } catch (err) {
+      const status = err?.response?.status
+      if (status === 404) {
+        setError(t('serverAssistant.errApiRoute'))
+      } else {
+        setError(t('serverAssistant.errLoad'))
+      }
       setModules([])
     } finally {
       setLoading(false)

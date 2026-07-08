@@ -9,6 +9,26 @@ function stripTrailingSlash(u) {
   return String(u || '').replace(/\/$/, '')
 }
 
+/**
+ * Railway builds sometimes set VITE_API_URL=https://api.dakinissystems.com (gateway root).
+ * AkoeNet REST lives on akoenet-backend — not at /servers/* on the gateway root (404).
+ */
+function normalizeGatewayApiBase(url) {
+  const u = stripTrailingSlash(url)
+  try {
+    const parsed = new URL(u)
+    const host = parsed.hostname.toLowerCase()
+    const path = parsed.pathname.replace(/\/$/, '') || ''
+
+    if (host === 'api.dakinissystems.com' && path === '') {
+      return PRODUCTION_API_DEFAULT
+    }
+  } catch {
+    /* keep url */
+  }
+  return u
+}
+
 function isLocalhostApiUrl(urlStr) {
   try {
     const h = new URL(urlStr).hostname.toLowerCase()
@@ -58,7 +78,7 @@ export function getApiBaseUrl() {
     return PRODUCTION_API_DEFAULT
   }
 
-  return url
+  return normalizeGatewayApiBase(url)
 }
 
 /** Socket.IO uses URL origin only — a path like `/akoenet` becomes a namespace, not the REST prefix. */
