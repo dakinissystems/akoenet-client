@@ -1,5 +1,6 @@
 import api from '../../services/api'
 import { urlBase64ToUint8Array } from '../../lib/userSettingsHelpers'
+import PasswordField from '../PasswordField'
 
 export default function UserSettingsAccountSection(props) {
   const {
@@ -37,14 +38,22 @@ export default function UserSettingsAccountSection(props) {
   return (
     <div className="form-stack">
       <form onSubmit={(e) => { e.preventDefault(); saveUserSettings() }} className="form-stack">
-        <label>
-          {t('userSettings.account.currentPasswordHint')}
-          <input id="settings-current-password" name="current_password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-        </label>
-        <label>
-          {t('userSettings.account.newPassword')}
-          <input id="settings-new-password" name="new_password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-        </label>
+        <PasswordField
+          id="settings-current-password"
+          name="current_password"
+          label={t('userSettings.account.currentPasswordHint')}
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          autoComplete="current-password"
+        />
+        <PasswordField
+          id="settings-new-password"
+          name="new_password"
+          label={t('userSettings.account.newPassword')}
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          autoComplete="new-password"
+        />
         <button type="submit" className="btn primary" disabled={saving}>
           {saving ? t('userSettings.profile.saving') : t('userSettings.account.saveAccountSettings')}
         </button>
@@ -80,15 +89,13 @@ export default function UserSettingsAccountSection(props) {
         {user?.totp_enabled ? (
           <div className="form-stack">
             <p className="muted small">{t('userSettings.account.twofaEnabledLine')}</p>
-            <label>
-              {t('userSettings.account.currentPassword')}
-              <input
-                type="password"
-                value={disable2faPassword}
-                onChange={(e) => setDisable2faPassword(e.target.value)}
-                autoComplete="current-password"
-              />
-            </label>
+            <PasswordField
+              id="settings-disable-2fa-password"
+              label={t('userSettings.account.currentPassword')}
+              value={disable2faPassword}
+              onChange={(e) => setDisable2faPassword(e.target.value)}
+              autoComplete="current-password"
+            />
             <label>
               {t('userSettings.account.authenticatorCode')}
               <input value={disable2faCode} onChange={(e) => setDisable2faCode(e.target.value)} />

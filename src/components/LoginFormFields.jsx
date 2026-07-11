@@ -5,6 +5,7 @@ import { isCapacitorNative } from '../lib/mobile-runtime'
 import { isTauri } from '../lib/isTauri'
 import { INVITE_QUERY_PARAM } from '../lib/invites'
 import { PENDING_INVITE_KEY } from './loginConstants'
+import PasswordField from './PasswordField'
 
 export default function LoginCredentialsForm({
   email,
@@ -37,18 +38,15 @@ export default function LoginCredentialsForm({
           autoComplete="email"
         />
       </label>
-      <label>
-        {t('login.password')}
-        <input
-          id="login-password"
-          name="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="current-password"
-        />
-      </label>
+      <PasswordField
+        id="login-password"
+        name="password"
+        label={t('login.password')}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        autoComplete="current-password"
+      />
       <p className="muted small" style={{ margin: '-0.25rem 0 0.5rem', textAlign: 'right' }}>
         <Link to="/login/forgot">{t('login.forgotPassword')}</Link>
       </p>

@@ -8,6 +8,7 @@ import { getRegistrationTokenFromLocation } from '../lib/register-token-url'
 import { postAuthDestination } from '../lib/postAuthDestination'
 import AuthLegalStrip from '../components/AuthLegalStrip'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import PasswordField from '../components/PasswordField'
 
 export default function PasswordResetComplete() {
   const { t } = useTranslation()
@@ -134,32 +135,26 @@ export default function PasswordResetComplete() {
         {!pendingLoading && !loadError && (
           <form onSubmit={onSubmit} className="form-stack">
             {error && <div className="error-banner">{error}</div>}
-            <label>
-              {t('passwordResetComplete.password')}
-              <input
-                id="password-reset-new"
-                name="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </label>
-            <label>
-              {t('passwordResetComplete.passwordConfirm')}
-              <input
-                id="password-reset-confirm"
-                name="password_confirm"
-                type="password"
-                value={passwordConfirm}
-                onChange={(e) => setPasswordConfirm(e.target.value)}
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </label>
+            <PasswordField
+              id="password-reset-new"
+              name="password"
+              label={t('passwordResetComplete.password')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
+            <PasswordField
+              id="password-reset-confirm"
+              name="password_confirm"
+              label={t('passwordResetComplete.passwordConfirm')}
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
             <button type="submit" className="btn primary" disabled={busy}>
               {busy ? t('passwordResetComplete.saving') : t('passwordResetComplete.savePassword')}
             </button>

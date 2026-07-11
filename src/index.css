@@ -8148,3 +8148,42 @@ dialog.welcome-onboarding-overlay::backdrop {
   margin: 0.5rem 0 0;
   line-height: 1.35;
 }
+
+.password-field {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.password-field input {
+  flex: 1;
+  min-width: 0;
+}
+
+.password-field__toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--nexora-border);
+  background: var(--nexora-input-bg);
+  color: var(--nexora-muted);
+  cursor: pointer;
+}
+
+.password-field__toggle svg {
+  display: block;
+}
+
+.password-field__toggle:hover {
+  color: var(--nexora-text);
+  border-color: var(--nexora-accent);
+}
+
+.password-field__toggle:focus-visible {
+  outline: 2px solid var(--nexora-accent);
+  outline-offset: 2px;
+}
