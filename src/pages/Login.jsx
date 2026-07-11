@@ -11,6 +11,9 @@ import LanguageSwitcher from '../components/LanguageSwitcher'
 import LoginCredentialsForm, { LoginTwoFactorForm } from '../components/LoginFormFields'
 import { consumeSessionNotice, PENDING_INVITE_KEY, readPendingInviteFromSession } from '../components/loginConstants'
 import { AKOENET_LS_TWITCH_OAUTH_ERROR } from '../lib/storageKeys'
+import { clearPlatformTokenFromUrl, readPlatformTokenFromLocation } from '../lib/platformAuth'
+import { exchangePlatformToken } from '../services/idp-auth'
+import { storeLoginTokens } from '../lib/authSession'
 import { useExternalPoll } from '../hooks/useExternalPoll'
 
 export default function Login() {
@@ -79,6 +82,23 @@ export default function Login() {
     sessionStorage.removeItem(AKOENET_LS_TWITCH_OAUTH_ERROR)
     setError(t('login.twitchSignInFailed', { code }))
   }, [t])
+
+  useEffect(() => {
+    const platformToken = readPlatformTokenFromLocation()
+    if (!platformToken || loading || user) return
+    setBusy(true)
+    void exchangePlatformToken(api, platformToken)
+      .then((data) => {
+        storeLoginTokens(data)
+        clearPlatformTokenFromUrl()
+        window.location.reload()
+      })
+      .catch(() => {
+        clearPlatformTokenFromUrl()
+        setError(t('login.googleSignInFailed', { defaultValue: 'Google sign-in failed. Try again or use email.' }))
+      })
+      .finally(() => setBusy(false))
+  }, [loading, user, t])
 
   async function onSubmit(e) {
     e.preventDefault()

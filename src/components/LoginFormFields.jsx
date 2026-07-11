@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { getApiBaseUrl } from '../lib/apiBase'
+import { buildGoogleOAuthStartUrl } from '../lib/platformAuth'
 import { isCapacitorNative } from '../lib/mobile-runtime'
 import { isTauri } from '../lib/isTauri'
 import { INVITE_QUERY_PARAM } from '../lib/invites'
@@ -53,6 +54,15 @@ export default function LoginCredentialsForm({
       </p>
       <button type="submit" className="btn primary" disabled={busy}>
         {busy ? t('login.signingIn') : t('login.signIn')}
+      </button>
+      <button
+        type="button"
+        className="btn secondary"
+        onClick={() => {
+          window.location.href = buildGoogleOAuthStartUrl(window.location.origin)
+        }}
+      >
+        {t('login.googleSignIn', { defaultValue: 'Continue with Google' })}
       </button>
       <button
         type="button"

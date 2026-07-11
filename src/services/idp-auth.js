@@ -40,7 +40,7 @@ export async function loginViaIdp(email, password) {
   const base = getIdpAuthUrl()
   if (!base) throw new Error('VITE_DAKINIS_AUTH_URL not configured')
 
-  const res = await fetch(`${base}/login`, {
+  const res = await fetch(`${base}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -56,7 +56,7 @@ export async function loginViaIdp(email, password) {
 
 async function refreshIdpToken(refreshToken) {
   const base = getIdpAuthUrl()
-  const res = await fetch(`${base}/refresh`, {
+  const res = await fetch(`${base}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken }),
@@ -83,7 +83,7 @@ async function logoutIdp(refreshToken) {
   const base = getIdpAuthUrl()
   if (!base || !refreshToken) return
   try {
-    await fetch(`${base}/logout`, {
+    await fetch(`${base}/auth/logout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
