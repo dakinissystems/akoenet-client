@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
-import { mediaApi } from "../services/mediaApi.js";
+import { isMediaApiEnabled, mediaApi } from "../services/mediaApi.js";
 
+/** Same-origin demo assets (public/media/demo/) — avoids CORS in prod */
 const DEMO_TRACKS = [
   {
     id: "demo-track-1",
@@ -8,7 +9,7 @@ const DEMO_TRACKS = [
     artist: "Daft Punk",
     album: "Discovery",
     durationMs: 320000,
-    sourceRef: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    sourceRef: "/media/demo/song-1.mp3",
   },
   {
     id: "demo-track-2",
@@ -16,7 +17,7 @@ const DEMO_TRACKS = [
     artist: "Hans Zimmer",
     album: "Inception",
     durationMs: 277000,
-    sourceRef: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    sourceRef: "/media/demo/song-2.mp3",
   },
 ];
 
@@ -25,15 +26,24 @@ export function usePlaylist() {
   const [playlistName, setPlaylistName] = useState("Dakinis Classics");
 
   const loadDemo = useCallback(async () => {
+    if (!isMediaApiEnabled()) return;
     try {
       const data = await mediaApi.listTracks();
-      if (data?.items?.length) setTracks(data.items);
+      if (data?.items?.length) {
+        setTracks(
+          data.items.map((t) => ({
+            ...t,
+            sourceRef: t.sourceRef ?? t.url,
+          })),
+        );
+      }
     } catch {
-      /* fallback demo tracks */
+      /* keep bundled demo tracks */
     }
   }, []);
 
   const loadPlaylist = useCallback(async (id) => {
+    if (!isMediaApiEnabled()) return;
     const pl = await mediaApi.getPlaylist(id);
     setPlaylistName(pl.name);
     setTracks(pl.trackIds?.map((tid) => ({ id: tid, title: tid })) ?? []);
@@ -44,9 +54,9 @@ export function usePlaylist() {
     if (!files.length) return;
     const newTracks = files.map((file) => ({
       id: `local-${file.name}-${file.size}-${file.lastModified}`,
-      title: file.name.replace(/\.[^.]+$/, ''),
-      artist: 'Local',
-      album: '',
+      title: file.name.replace(/\.[^.]+$/, ""),
+      artist: "Local",
+      album: "",
       durationMs: 0,
       sourceRef: URL.createObjectURL(file),
       local: true,

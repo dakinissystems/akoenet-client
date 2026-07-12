@@ -68,7 +68,8 @@ export class AudioEngine {
   /** @param {string} url */
   async loadUrl(url) {
     await this.ensureContext();
-    const res = await fetch(url);
+    const res = await fetch(url, { credentials: "same-origin" });
+    if (!res.ok) throw new Error(`audio_fetch_${res.status}`);
     const buf = await res.arrayBuffer();
     return this.ctx.decodeAudioData(buf);
   }

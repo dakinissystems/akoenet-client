@@ -1,12 +1,26 @@
 import { getAccessToken } from '../../../services/session-store.js'
 
-const BASE = import.meta.env.VITE_MEDIA_API_URL ?? '/media-api'
+/** @returns {string | null} */
+function resolveMediaApiBase() {
+  const explicit = String(import.meta.env.VITE_MEDIA_API_URL ?? '').trim()
+  if (explicit) return explicit.replace(/\/$/, '')
+  // Dev only: Vite proxies /media-api → localhost:4090
+  if (import.meta.env.DEV) return '/media-api'
+  return null
+}
+
+export function isMediaApiEnabled() {
+  return resolveMediaApiBase() != null
+}
 
 /**
  * @param {string} path
  * @param {RequestInit} [init]
  */
 async function api(path, init = {}) {
+  const base = resolveMediaApiBase()
+  if (!base) throw new Error('media_api_disabled')
+
   const token = getAccessToken()
   const headers = {
     'Content-Type': 'application/json',
@@ -14,7 +28,7 @@ async function api(path, init = {}) {
   }
   if (token) headers.Authorization = `Bearer ${token}`
 
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${base}${path}`, {
     ...init,
     headers,
   })

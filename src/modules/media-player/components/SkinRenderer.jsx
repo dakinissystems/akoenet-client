@@ -12,7 +12,9 @@ export function SkinRenderer({ skinId = "classic", children }) {
       return;
     }
     import("../services/mediaApi.js")
-      .then(({ mediaApi }) => mediaApi.getSkinManifest(skinId))
+      .then(({ isMediaApiEnabled, mediaApi }) =>
+        isMediaApiEnabled() ? mediaApi.getSkinManifest(skinId) : Promise.reject(new Error("disabled")),
+      )
       .then(setManifest)
       .catch(() => setManifest(classicManifest));
   }, [skinId]);
