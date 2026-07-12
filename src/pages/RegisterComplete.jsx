@@ -15,7 +15,7 @@ const PENDING_INVITE_KEY = 'akoenet_pending_invite'
 
 export default function RegisterComplete() {
   const { t } = useTranslation()
-  const { registerComplete, user, loading } = useAuth()
+  const { registerComplete, registerStart, user, loading } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const token = useMemo(() => {
@@ -34,6 +34,10 @@ export default function RegisterComplete() {
   const [pendingLoading, setPendingLoading] = useState(true)
   const [emailMasked, setEmailMasked] = useState('')
   const inviteFromTokenRef = useRef(null)
+  const [resendEmail, setResendEmail] = useState('')
+  const [resendBusy, setResendBusy] = useState(false)
+  const [resendError, setResendError] = useState('')
+  const [resendSent, setResendSent] = useState(false)
 
   const birthDateMax = useMemo(() => {
     const d = new Date()
@@ -88,6 +92,31 @@ export default function RegisterComplete() {
       cancelled = true
     }
   }, [token, t])
+
+  async function onResendRegistration(e) {
+    e.preventDefault()
+    const target = resendEmail.trim()
+    if (!target) return
+    setResendError('')
+    setResendBusy(true)
+    setResendSent(false)
+    try {
+      await registerStart(
+        target,
+        searchParams.get(INVITE_QUERY_PARAM) || undefined
+      )
+      setResendSent(true)
+    } catch (err) {
+      const code = err.response?.data?.error
+      setResendError(
+        code === 'email_not_configured' || code === 'email_send_failed'
+          ? t('register.errorEmail')
+          : t('register.errorStart')
+      )
+    } finally {
+      setResendBusy(false)
+    }
+  }
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -182,9 +211,36 @@ export default function RegisterComplete() {
         {pendingLoading && <p className="muted">{t('registerComplete.checkingLink')}</p>}
         {loadError && <div className="error-banner">{loadError}</div>}
         {loadError && (
-          <p className="muted small">
-            <Link to="/register">{t('registerComplete.backSignUp')}</Link>
-          </p>
+          <div className="form-stack">
+            <p className="muted small">{t('registerComplete.resendLead')}</p>
+            {resendError && <div className="error-banner">{resendError}</div>}
+            {resendSent && <p className="muted">{t('register.sentHint')}</p>}
+            <form onSubmit={onResendRegistration} className="form-stack">
+              <label>
+                {t('register.email')}
+                <input
+                  id="register-complete-resend-email"
+                  name="email"
+                  type="email"
+                  value={resendEmail}
+                  onChange={(e) => setResendEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                />
+              </label>
+              <button type="submit" className="btn secondary" disabled={resendBusy}>
+                {resendBusy ? t('register.sending') : t('register.resendLink')}
+              </button>
+            </form>
+            <p className="muted small">{t('registerComplete.existingAccountHint')}</p>
+            <p className="muted small">
+              <Link to="/register">{t('registerComplete.backSignUp')}</Link>
+              {' · '}
+              <Link to="/login">{t('registerComplete.signIn')}</Link>
+              {' · '}
+              <Link to="/login/forgot">{t('register.forgotPassword')}</Link>
+            </p>
+          </div>
         )}
         {!pendingLoading && !loadError && (
           <form onSubmit={onSubmit} className="form-stack">

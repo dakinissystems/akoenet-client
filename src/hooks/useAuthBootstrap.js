@@ -15,6 +15,7 @@ import {
   getIdpRefreshToken,
   isIdpAuthEnabled,
   loginViaIdp,
+  registerViaIdp,
   setIdpRefreshToken,
 } from '../services/idp-auth'
 import { dakinisPerformClientLogout, dakinisRevokeIdpRefreshToken } from '../lib/dakinis-client-logout.js'
@@ -233,18 +234,7 @@ export function useAuthBootstrap() {
     })
   }, [clearLocalSession])
 
-  const login = useCallback(async (email, password) => {
-    if (isIdpAuthEnabled()) {
-      const idp = await loginViaIdp(email, password)
-      if (idp.refreshToken) setIdpRefreshToken(idp.refreshToken)
-      const data = await exchangePlatformToken(api, idp.token)
-      storeLoginTokens(data)
-      setUser(data.user)
-      setServerUnreachable(false)
-      applyAuthenticatedSession(data.user, data.token)
-      return { user: data.user, requires2fa: false }
-    }
-
+  const loginLocal = useCallback(async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password })
     if (data.requires_2fa && data.two_factor_token) {
       return { requires2fa: true, twoFactorToken: data.two_factor_token }
@@ -255,6 +245,37 @@ export function useAuthBootstrap() {
     applyAuthenticatedSession(data.user, data.token)
     return { user: data.user, requires2fa: false }
   }, [setServerUnreachable, setUser])
+
+  const login = useCallback(async (email, password) => {
+    if (isIdpAuthEnabled()) {
+      try {
+        const idp = await loginViaIdp(email, password)
+        if (idp.refreshToken) setIdpRefreshToken(idp.refreshToken)
+        const data = await exchangePlatformToken(api, idp.token)
+        storeLoginTokens(data)
+        setUser(data.user)
+        setServerUnreachable(false)
+        applyAuthenticatedSession(data.user, data.token)
+        return { user: data.user, requires2fa: false }
+      } catch (err) {
+        if (err.response?.status !== 401) throw err
+      }
+    }
+
+    return loginLocal(email, password)
+  }, [loginLocal, setServerUnreachable, setUser])
+
+  const provisionIdpAfterLocalSignup = useCallback(async (email, password) => {
+    if (!isIdpAuthEnabled()) return
+    try {
+      await registerViaIdp(email, password)
+    } catch (err) {
+      const status = err.response?.status
+      if (status !== 409) {
+        reportError(err, 'idp_register_after_akoenet_signup')
+      }
+    }
+  }, [])
 
   const completeLogin2fa = useCallback(async (twoFactorToken, code) => {
     const { data } = await api.post('/auth/login/2fa', {
@@ -305,9 +326,20 @@ export function useAuthBootstrap() {
         birth_date,
         accept_terms_version: ver.current_terms_version,
       })
-      return login(data.email, password)
+      const email = data.user?.email || data.email
+      if (data.token && data.user) {
+        storeLoginTokens(data)
+        setUser(data.user)
+        setServerUnreachable(false)
+        applyAuthenticatedSession(data.user, data.token)
+        void provisionIdpAfterLocalSignup(email, password)
+        return { user: data.user, requires2fa: false }
+      }
+      const session = await loginLocal(email, password)
+      void provisionIdpAfterLocalSignup(email, password)
+      return session
     },
-    [login]
+    [loginLocal, provisionIdpAfterLocalSignup, setServerUnreachable, setUser]
   )
 
   const passwordResetStart = useCallback(async (email) => {
@@ -318,9 +350,11 @@ export function useAuthBootstrap() {
   const passwordResetComplete = useCallback(
     async (token, password) => {
       const { data } = await api.post('/auth/password-reset/complete', { token, password })
-      return login(data.email, password)
+      const session = await loginLocal(data.email, password)
+      void provisionIdpAfterLocalSignup(data.email, password)
+      return session
     },
-    [login]
+    [loginLocal, provisionIdpAfterLocalSignup]
   )
 
   return {

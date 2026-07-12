@@ -90,6 +90,10 @@ export default {
     sending: 'Sending…',
     sentHint:
       'If an account does not already exist for that address, we sent a message with a link. Open it on this device to choose your username and password.',
+    resendLink: 'Resend verification link',
+    sentAccountHint:
+      'No email? Check spam. If you already finished sign up, sign in instead. If you forgot your password, use reset password.',
+    forgotPassword: 'Reset password',
     devOpenLink: 'open registration link',
     devLabel: 'Dev:',
     backSignIn: 'Back to sign in',
@@ -153,6 +157,9 @@ export default {
     tokenApiUnreachable:
       'Cannot reach the API at {{url}}. Check that the backend is up and CORS allows this site.',
     backSignUp: '← Back to sign up',
+    resendLead: 'Request a new verification email:',
+    existingAccountHint:
+      'If you already created your account but could not sign in, try sign in or reset your password instead of registering again.',
     username: 'Username',
     password: 'Password',
     birthDate: 'Date of birth',

@@ -91,6 +91,10 @@ export default {
     sending: 'Enviando…',
     sentHint:
       'Si no existe ya una cuenta con esa dirección, hemos enviado un mensaje con un enlace. Ábrelo en este dispositivo para elegir usuario y contraseña.',
+    resendLink: 'Reenviar enlace de verificación',
+    sentAccountHint:
+      '¿No llega el correo? Revisa spam. Si ya terminaste el registro, entra con tu cuenta. Si olvidaste la contraseña, restablécela.',
+    forgotPassword: 'Restablecer contraseña',
     devOpenLink: 'abrir enlace de registro',
     devLabel: 'Dev:',
     backSignIn: 'Volver a iniciar sesión',
@@ -154,6 +158,9 @@ export default {
     tokenApiUnreachable:
       'No hay conexión con la API en {{url}}. Comprueba que el backend esté activo y que CORS permita este sitio.',
     backSignUp: '← Volver al registro',
+    resendLead: 'Pide un nuevo correo de verificación:',
+    existingAccountHint:
+      'Si ya creaste la cuenta pero no pudiste entrar, prueba a iniciar sesión o restablecer la contraseña en lugar de registrarte otra vez.',
     username: 'Usuario',
     password: 'Contraseña',
     birthDate: 'Fecha de nacimiento',

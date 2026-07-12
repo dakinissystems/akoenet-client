@@ -48,6 +48,29 @@ export default function Register() {
     }
   }
 
+  async function onResend() {
+    if (!email.trim()) return
+    setError('')
+    setBusy(true)
+    setDevLink(null)
+    try {
+      const { data } = await registerStart(email, inviteFromQuery || undefined)
+      if (data?.dev_verify_url) {
+        setDevLink(data.dev_verify_url)
+      }
+      setSent(true)
+    } catch (err) {
+      const code = err.response?.data?.error
+      const msg =
+        code === 'email_not_configured' || code === 'email_send_failed'
+          ? t('register.errorEmail')
+          : t('register.errorStart')
+      setError(msg)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="auth-page">
@@ -96,7 +119,12 @@ export default function Register() {
           </>
         ) : (
           <div className="form-stack">
+            {error && <div className="error-banner">{error}</div>}
             <p className="muted">{t('register.sentHint')}</p>
+            <button type="button" className="btn secondary" disabled={busy} onClick={onResend}>
+              {busy ? t('register.sending') : t('register.resendLink')}
+            </button>
+            <p className="muted small">{t('register.sentAccountHint')}</p>
             {devLink && (
               <p className="muted small">
                 {t('register.devLabel')}{' '}
@@ -105,6 +133,8 @@ export default function Register() {
             )}
             <p className="muted small">
               <Link to="/login">{t('register.backSignIn')}</Link>
+              {' · '}
+              <Link to="/login/forgot">{t('register.forgotPassword')}</Link>
             </p>
           </div>
         )}

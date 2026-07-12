@@ -36,6 +36,24 @@ export function setIdpRefreshToken(token) {
   }
 }
 
+export async function registerViaIdp(email, password) {
+  const base = getIdpAuthUrl()
+  if (!base) throw new Error('VITE_DAKINIS_AUTH_URL not configured')
+
+  const res = await fetch(`${base}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    const err = new Error(data.error || 'IdP register failed')
+    err.response = { status: res.status, data }
+    throw err
+  }
+  return data
+}
+
 export async function loginViaIdp(email, password) {
   const base = getIdpAuthUrl()
   if (!base) throw new Error('VITE_DAKINIS_AUTH_URL not configured')
