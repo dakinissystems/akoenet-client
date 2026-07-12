@@ -14,8 +14,21 @@ export const IMPLEMENTED_ADDON_ROUTES = {
   'media-player': '/media',
 }
 
+/** @type {Set<string> | null} */
+let enabledFilter = null
+
+export function setWorkspaceEnabledFilter(ids) {
+  if (!ids) {
+    enabledFilter = null
+    return
+  }
+  enabledFilter = ids instanceof Set ? ids : new Set(ids)
+}
+
 export function listCatalogAddons() {
-  return [...(catalog.addons || [])].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999))
+  const all = [...(catalog.addons || [])].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999))
+  if (!enabledFilter) return all
+  return all.filter((a) => enabledFilter.has(a.id))
 }
 
 export function getAddonById(id) {

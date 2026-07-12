@@ -1,8 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import CommandPalette, { useCommandPaletteShortcut } from './CommandPalette.jsx'
 import ActivityCenter from './ActivityCenter.jsx'
+import { fetchWorkspaceAddons } from './workspaceApi.js'
+import { setWorkspaceEnabledFilter } from './addonCatalog.js'
 import './workspace.css'
 
 export default function WorkspaceProviders({ children }) {
@@ -15,6 +17,21 @@ export default function WorkspaceProviders({ children }) {
   const closeCmd = useCallback(() => setCmdOpen(false), [])
 
   useCommandPaletteShortcut(openCmd)
+
+  useEffect(() => {
+    if (!user) {
+      setWorkspaceEnabledFilter(null)
+      return
+    }
+    let cancelled = false
+    fetchWorkspaceAddons().then((data) => {
+      if (cancelled || !data?.enabledIds) return
+      setWorkspaceEnabledFilter(data.enabledIds)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
 
   if (!user) return children
 
