@@ -111,6 +111,14 @@ function MediaPlayerDesktop() {
     });
   }, []);
 
+  const resizeWindow = useCallback((id, rect) => {
+    setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, rect } : w)));
+  }, []);
+
+  const finishResize = useCallback((id, rect) => {
+    setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, rect } : w)));
+  }, []);
+
   const toggleWindow = useCallback((id) => {
     setWindows((prev) =>
       prev.map((w) => (w.id === id ? { ...w, visible: !w.visible, minimized: false } : w)),
@@ -217,8 +225,10 @@ function MediaPlayerDesktop() {
             zIndex={w.zIndex}
             focused={focusedId === w.id}
             onFocus={() => focus(w.id)}
-            onMove={(rect) => moveWindow(w.id, rect)}
-            onMoveEnd={(rect) => finishMove(w.id, rect)}
+            onMove={(r) => moveWindow(w.id, r)}
+            onMoveEnd={(r) => finishMove(w.id, r)}
+            onResize={(r) => resizeWindow(w.id, r)}
+            onResizeEnd={(r) => finishResize(w.id, r)}
             onClose={() => toggleWindow(w.id)}
           >
             {renderWindow[w.id]}
