@@ -1,22 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-export function useVisualizer(audioEngine) {
-  const [frequencyData, setFrequencyData] = useState(new Uint8Array(128));
-
+/** Enables analyser FFT only when the visualizer window is open */
+export function useVisualizer(audioEngine, enabled) {
   useEffect(() => {
-    const analyser = audioEngine?.getAnalyser?.();
-    if (!analyser) return;
+    audioEngine?.setAnalyserActive?.(enabled);
+    return () => audioEngine?.setAnalyserActive?.(false);
+  }, [audioEngine, enabled]);
 
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    let raf;
-    const tick = () => {
-      analyser.getByteFrequencyData(data);
-      setFrequencyData(new Uint8Array(data));
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [audioEngine]);
-
-  return { frequencyData };
+  return { analyser: enabled ? audioEngine?.getAnalyser?.() ?? null : null };
 }

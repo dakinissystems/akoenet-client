@@ -1,13 +1,47 @@
-import { formatTime, inferTrackFormat } from "../lib/format.js";
+import { memo, useCallback } from "react";
+import { formatTime } from "../lib/format.js";
+import { STRINGS } from "../i18n/strings.js";
 
-export function MainWindow({ player, onToggleCompact, onOpenPlaylist, onOpenEq }) {
-  const { currentTrack, isPlaying, loading, positionMs, volume, togglePlay, stop, setVolume } =
-    player;
+export const MainWindow = memo(function MainWindow({
+  player,
+  onToggleCompact,
+  onOpenPlaylist,
+  onOpenSound,
+}) {
+  const {
+    currentTrack,
+    isPlaying,
+    loading,
+    positionMs,
+    volume,
+    togglePlay,
+    stop,
+    seek,
+    playNext,
+    playPrevious,
+    setVolume,
+  } = player;
 
   const durationMs = currentTrack?.durationMs || 0;
   const progress = durationMs ? Math.min(100, (positionMs / durationMs) * 100) : 0;
-  const fmt = inferTrackFormat(currentTrack?.sourceRef, currentTrack?.local);
-  const statusLabel = loading ? "Loading…" : isPlaying ? "Playing" : currentTrack ? "Paused" : "Ready";
+
+  const statusLabel = loading
+    ? STRINGS.loading
+    : isPlaying
+      ? STRINGS.nowPlaying
+      : currentTrack
+        ? STRINGS.paused
+        : STRINGS.ready;
+
+  const onSeek = useCallback(
+    (e) => {
+      if (!durationMs) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      seek(Math.floor(ratio * durationMs));
+    },
+    [durationMs, seek],
+  );
 
   return (
     <div className={`dmp-main${isPlaying ? " dmp-main--playing" : ""}`}>
@@ -21,53 +55,63 @@ export function MainWindow({ player, onToggleCompact, onOpenPlaylist, onOpenEq }
       </div>
 
       <div className="dmp-lcd">
-        <div className="dmp-lcd__label">NOW PLAYING</div>
+        <div className="dmp-lcd__label">{STRINGS.nowPlaying}</div>
         <div className="dmp-lcd__title">{currentTrack?.title ?? "—"}</div>
-        <div className="dmp-lcd__artist">{currentTrack?.artist ?? "Select a track or drop a file"}</div>
-        {currentTrack?.album ? <div className="dmp-lcd__album">{currentTrack.album}</div> : null}
+        <div className="dmp-lcd__artist">{currentTrack?.artist ?? STRINGS.chooseTrack}</div>
+        {!currentTrack ? <div className="dmp-lcd__hint">{STRINGS.tapToPlay}</div> : null}
       </div>
 
       <div className="dmp-progress dmp-progress--interactive">
-        <div className="dmp-progress__track">
-          <div className="dmp-progress__bar" style={{ width: `${progress}%` }}>
+        <button
+          type="button"
+          className="dmp-progress__track"
+          onClick={onSeek}
+          disabled={!currentTrack || !durationMs}
+          aria-label="Posición en la canción"
+        >
+          <span className="dmp-progress__bar" style={{ width: `${progress}%` }}>
             <span className="dmp-progress__knob" />
-          </div>
-        </div>
+          </span>
+        </button>
         <div className="dmp-progress__times">
           <span>{formatTime(positionMs)}</span>
           <span>{durationMs ? formatTime(durationMs) : "—"}</span>
         </div>
       </div>
 
-      {currentTrack ? (
-        <div className="dmp-tech">
-          <span>{fmt.codec}</span>
-          <span>{fmt.bitrate}</span>
-          <span>{fmt.sampleRate}</span>
-          <span>{fmt.channels}</span>
-        </div>
-      ) : null}
-
       <div className="dmp-controls">
-        <button type="button" className="dmp-btn" onClick={stop} title="Stop">
+        <button type="button" className="dmp-btn" onClick={playPrevious} disabled={!currentTrack} title={STRINGS.previous} aria-label={STRINGS.previous}>
+          ⏮
+        </button>
+        <button type="button" className="dmp-btn" onClick={stop} title={STRINGS.stop} aria-label={STRINGS.stop}>
           ■
         </button>
-        <button type="button" className="dmp-btn dmp-btn--primary" onClick={togglePlay} disabled={loading || !currentTrack}>
+        <button
+          type="button"
+          className="dmp-btn dmp-btn--primary"
+          onClick={togglePlay}
+          disabled={loading || !currentTrack}
+          title={isPlaying ? STRINGS.pause : STRINGS.play}
+          aria-label={isPlaying ? STRINGS.pause : STRINGS.play}
+        >
           {isPlaying ? "❚❚" : "▶"}
         </button>
-        <button type="button" className="dmp-btn" onClick={onOpenPlaylist} title="Playlist">
+        <button type="button" className="dmp-btn" onClick={playNext} disabled={!currentTrack} title={STRINGS.next} aria-label={STRINGS.next}>
+          ⏭
+        </button>
+        <button type="button" className="dmp-btn" onClick={onOpenPlaylist} title={STRINGS.openQueue} aria-label={STRINGS.openQueue}>
           ☰
         </button>
-        <button type="button" className="dmp-btn" onClick={onOpenEq} title="EQ">
-          EQ
+        <button type="button" className="dmp-btn" onClick={onOpenSound} title={STRINGS.openSound} aria-label={STRINGS.openSound}>
+          ♪
         </button>
-        <button type="button" className="dmp-btn" onClick={onToggleCompact} title="Compact">
+        <button type="button" className="dmp-btn" onClick={onToggleCompact} title={STRINGS.miniPlayer} aria-label={STRINGS.miniPlayer}>
           ─
         </button>
       </div>
 
       <label className="dmp-volume">
-        Vol
+        {STRINGS.volume}
         <input
           type="range"
           min="0"
@@ -75,8 +119,9 @@ export function MainWindow({ player, onToggleCompact, onOpenPlaylist, onOpenEq }
           step="0.01"
           value={volume}
           onChange={(e) => setVolume(Number(e.target.value))}
+          aria-label={STRINGS.volume}
         />
       </label>
     </div>
   );
-}
+});

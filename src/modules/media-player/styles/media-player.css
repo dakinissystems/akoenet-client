@@ -406,10 +406,31 @@
   font-size: 11px;
 }
 
+.dmp-lcd__hint {
+  margin-top: 6px;
+  font-size: 10px;
+  color: #888;
+  line-height: 1.35;
+}
+
 .dmp-progress {
   height: 6px;
   background: #111;
   border: 1px inset #333;
+}
+
+.dmp-progress--interactive .dmp-progress__track {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.dmp-progress--interactive .dmp-progress__track:disabled {
+  cursor: default;
+  opacity: 0.6;
 }
 
 .dmp-progress__bar {
@@ -504,6 +525,95 @@
   direction: rtl;
   height: 90px;
   width: 20px;
+}
+
+.dmp-sound__header h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: var(--dmp-accent);
+}
+
+.dmp-sound__header p {
+  margin: 0 0 10px;
+  font-size: 11px;
+  color: #999;
+  line-height: 1.4;
+}
+
+.dmp-sound__presets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.dmp-sound__preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.dmp-sound__preset.is-active {
+  border-color: var(--dmp-accent);
+  background: rgba(45, 212, 191, 0.12);
+  color: var(--dmp-text);
+}
+
+.dmp-sound__preset-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dmp-sound__preset-desc {
+  font-size: 10px;
+  color: #888;
+}
+
+.dmp-sound__advanced-toggle {
+  margin-top: 10px;
+}
+
+.dmp-action {
+  background: transparent;
+  border: 1px dashed #444;
+  color: #aaa;
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.dmp-action:hover {
+  border-color: var(--dmp-accent);
+  color: var(--dmp-text);
+}
+
+.dmp-eq__hint {
+  font-size: 10px;
+  color: #777;
+  margin: 0 0 8px;
+}
+
+.dmp-eq--advanced {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #333;
+}
+
+.dmp-viz__hint {
+  font-size: 10px;
+  color: #777;
+  margin: 0 0 6px;
 }
 
 .dmp-library__header {

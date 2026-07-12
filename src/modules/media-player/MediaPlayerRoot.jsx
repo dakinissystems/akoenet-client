@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MainWindow } from "./components/MainWindow.jsx";
 import { PlaylistWindow } from "./components/PlaylistWindow.jsx";
@@ -14,7 +14,8 @@ import { usePlayer } from "./hooks/usePlayer.js";
 import { usePlaylist } from "./hooks/usePlaylist.js";
 import { useEqualizer } from "./hooks/useEqualizer.js";
 import { useVisualizer } from "./hooks/useVisualizer.js";
-import { PlayerProvider } from "./store/playerStore.jsx";
+import { PlayerProvider, usePlayerStore } from "./store/playerStore.jsx";
+import { STRINGS, windowTitle } from "./i18n/strings.js";
 import { WINDOW_REGISTRY, classicLayout } from "./windowRegistry.js";
 import {
   applyWindowSnap,
@@ -34,19 +35,57 @@ export default function MediaPlayerRoot() {
   );
 }
 
+function pickNextTrack(tracks, current, { shuffle, repeat }) {
+  if (!tracks.length) return null;
+  if (repeat === "one" && current) return current;
+  if (shuffle) {
+    const pool = tracks.filter((t) => t.id !== current?.id);
+    const list = pool.length ? pool : tracks;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+  if (!current) return tracks[0];
+  const idx = tracks.findIndex((t) => t.id === current.id);
+  if (idx < 0) return tracks[0];
+  if (idx + 1 < tracks.length) return tracks[idx + 1];
+  return repeat === "all" ? tracks[0] : null;
+}
+
 function MediaPlayerDesktop() {
   const navigate = useNavigate();
-  const player = usePlayer();
+  const { state } = usePlayerStore();
   const playlist = usePlaylist();
-  const equalizer = useEqualizer(player.audioEngine);
-  const visualizer = useVisualizer(player.audioEngine);
   const [windows, setWindows] = useState(() => loadPersistedLayout(WINDOW_REGISTRY) ?? classicLayout());
   const [compact, setCompact] = useState(false);
   const [focusedId, setFocusedId] = useState("player.main");
 
+  const visualizerOpen = useMemo(
+    () => windows.some((w) => w.id === "player.visualizer" && w.visible && !w.minimized),
+    [windows],
+  );
+
+  const playFnRef = useRef(null);
+
+  const handleNeedNextTrack = useCallback(
+    (current) => {
+      const next = pickNextTrack(playlist.tracks, current, state);
+      if (next) playFnRef.current?.(next, 0);
+    },
+    [playlist.tracks, state],
+  );
+
+  const player = usePlayer({ tracks: playlist.tracks, onNeedNextTrack: handleNeedNextTrack });
+  playFnRef.current = player.play;
+
+  const equalizer = useEqualizer(player.audioEngine);
+  const visualizer = useVisualizer(player.audioEngine, visualizerOpen && player.isPlaying);
+
   useEffect(() => {
     persistLayout(windows);
   }, [windows]);
+
+  useEffect(() => {
+    playlist.loadDemo();
+  }, [playlist]);
 
   const focus = useCallback((id) => {
     setFocusedId(id);
@@ -88,10 +127,6 @@ function MediaPlayerDesktop() {
     setFocusedId("player.main");
   }, []);
 
-  useEffect(() => {
-    playlist.loadDemo();
-  }, [playlist]);
-
   const renderWindow = useMemo(() => {
     const map = {
       "player.main": (
@@ -99,7 +134,7 @@ function MediaPlayerDesktop() {
           player={player}
           onToggleCompact={() => setCompact((c) => !c)}
           onOpenPlaylist={() => toggleWindow("player.playlist")}
-          onOpenEq={() => toggleWindow("player.eq")}
+          onOpenSound={() => toggleWindow("player.eq")}
         />
       ),
       "player.playlist": (
@@ -109,7 +144,16 @@ function MediaPlayerDesktop() {
           onSelect={(track) => player.play(track)}
         />
       ),
-      "player.eq": <EqualizerWindow bands={equalizer.bands} onChange={equalizer.setBand} />,
+      "player.eq": (
+        <EqualizerWindow
+          presets={equalizer.presets}
+          presetId={equalizer.presetId}
+          bands={equalizer.bands}
+          onPreset={equalizer.applyPreset}
+          onChange={equalizer.setBand}
+          onReset={equalizer.reset}
+        />
+      ),
       "player.library": (
         <LibraryWindow
           tracks={playlist.tracks}
@@ -119,7 +163,7 @@ function MediaPlayerDesktop() {
       ),
       "player.visualizer": (
         <VisualizerWindow
-          frequencyData={visualizer.frequencyData}
+          analyser={visualizer.analyser}
           isPlaying={player.isPlaying}
           hasTrack={Boolean(player.currentTrack)}
         />
@@ -127,7 +171,7 @@ function MediaPlayerDesktop() {
       "player.friends": <FriendsListeningPanel />,
     };
     return map;
-  }, [player, playlist, equalizer, visualizer, toggleWindow]);
+  }, [player, playlist, equalizer, visualizer.analyser, toggleWindow]);
 
   if (compact) {
     return (
@@ -141,22 +185,22 @@ function MediaPlayerDesktop() {
     <div className="dmp-desktop">
       <div className="dmp-toolbar">
         <button type="button" className="dmp-toolbar__btn dmp-toolbar__back" onClick={() => navigate("/")}>
-          ← AkoeNet
+          ← {STRINGS.back}
         </button>
         <div className="dmp-toolbar__brand-block">
-          <span className="dmp-toolbar__brand">Dakinis Media Workspace</span>
-          <span className="dmp-toolbar__tagline">Player · Library · Social</span>
+          <span className="dmp-toolbar__brand">{STRINGS.appName}</span>
+          <span className="dmp-toolbar__tagline">{STRINGS.appSubtitle}</span>
         </div>
         <SkinPicker />
-        <button type="button" className="dmp-toolbar__btn" onClick={applyStackLayout} title="Stack Player + Playlist + EQ">
-          ⊟ Stack
+        <button type="button" className="dmp-toolbar__btn" onClick={applyStackLayout} title={STRINGS.layoutStack}>
+          ⊟ {STRINGS.layoutStack}
         </button>
-        <button type="button" className="dmp-toolbar__btn" onClick={resetLayout} title="Grid layout">
-          ⊞ Grid
+        <button type="button" className="dmp-toolbar__btn" onClick={resetLayout} title={STRINGS.layoutGrid}>
+          ⊞ {STRINGS.layoutGrid}
         </button>
         {WINDOW_REGISTRY.map((w) => (
           <button key={w.id} type="button" className="dmp-toolbar__btn" onClick={() => toggleWindow(w.id)}>
-            {w.title}
+            {windowTitle(w.id)}
           </button>
         ))}
       </div>
@@ -168,7 +212,7 @@ function MediaPlayerDesktop() {
           <WindowFrame
             key={w.id}
             id={w.id}
-            title={w.title}
+            title={windowTitle(w.id)}
             rect={w.rect}
             zIndex={w.zIndex}
             focused={focusedId === w.id}

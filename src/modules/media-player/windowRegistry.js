@@ -1,42 +1,44 @@
+import { windowTitle } from "./i18n/strings.js";
+
 export const WINDOW_REGISTRY = [
   {
     id: "player.main",
-    title: "Player",
-    defaultRect: { x: 48, y: 56, width: 340, height: 200 },
+    title: windowTitle("player.main"),
+    defaultRect: { x: 48, y: 56, width: 360, height: 220 },
     defaultVisible: true,
     snapTo: ["player.playlist", "player.eq"],
   },
   {
     id: "player.playlist",
-    title: "Playlist",
-    defaultRect: { x: 48, y: 268, width: 340, height: 240 },
+    title: windowTitle("player.playlist"),
+    defaultRect: { x: 48, y: 288, width: 360, height: 240 },
     defaultVisible: true,
     snapTo: ["player.main"],
   },
   {
     id: "player.eq",
-    title: "Equalizer",
-    defaultRect: { x: 400, y: 56, width: 300, height: 200 },
+    title: windowTitle("player.eq"),
+    defaultRect: { x: 420, y: 56, width: 320, height: 260 },
     defaultVisible: true,
     snapTo: ["player.main"],
   },
   {
-    id: "player.visualizer",
-    title: "Visualizer",
-    defaultRect: { x: 712, y: 56, width: 300, height: 200 },
+    id: "player.library",
+    title: windowTitle("player.library"),
+    defaultRect: { x: 420, y: 328, width: 320, height: 220 },
     defaultVisible: true,
   },
   {
-    id: "player.library",
-    title: "Library",
-    defaultRect: { x: 400, y: 268, width: 300, height: 240 },
-    defaultVisible: true,
+    id: "player.visualizer",
+    title: windowTitle("player.visualizer"),
+    defaultRect: { x: 752, y: 56, width: 280, height: 200 },
+    defaultVisible: false,
   },
   {
     id: "player.friends",
-    title: "Friends",
-    defaultRect: { x: 712, y: 268, width: 300, height: 180 },
-    defaultVisible: true,
+    title: windowTitle("player.friends"),
+    defaultRect: { x: 752, y: 268, width: 280, height: 180 },
+    defaultVisible: false,
   },
 ];
 

@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { formatTime } from "../lib/format.js";
+import { STRINGS } from "../i18n/strings.js";
 
 const TABS = [
-  { id: "all", label: "All" },
-  { id: "recent", label: "Recent" },
-  { id: "imported", label: "Imported" },
+  { id: "all", label: "Todas" },
+  { id: "recent", label: "Recientes" },
+  { id: "imported", label: "Importadas" },
 ];
 
 export function LibraryWindow({ tracks, onPlay, onAddFiles }) {
@@ -28,10 +29,10 @@ export function LibraryWindow({ tracks, onPlay, onAddFiles }) {
   return (
     <div className="dmp-library">
       <div className="dmp-library__header">
-        <span>Biblioteca</span>
+        <span>{STRINGS.library}</span>
         {onAddFiles ? (
           <label className="dmp-library__import">
-            + Import
+            + Añadir música
             <input
               type="file"
               accept="audio/*"
