@@ -851,6 +851,8 @@ export default {
     dmAria: 'Direct messages',
     mediaTitle: 'Media Player',
     mediaAria: 'Dakinis Media Player',
+    workspaceTitle: 'Dakinis Workspace',
+    workspaceAria: 'Dakinis Workspace desktop',
   },
   schedulerWidget: {
     ariaStreams: 'Streams',

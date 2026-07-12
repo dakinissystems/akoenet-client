@@ -40,6 +40,7 @@ export default function Messages() {
         messagesAction={() => navigate('/messages')}
         messagesActive
         mediaAction={() => navigate('/media')}
+        workspaceAction={() => navigate('/workspace')}
       />
       <div className="main-panel home-panel">
         <header className="home-header">

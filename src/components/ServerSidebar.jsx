@@ -9,6 +9,8 @@ export default function ServerSidebar({
   messagesActive = false,
   mediaAction,
   mediaActive = false,
+  workspaceAction,
+  workspaceActive = false,
 }) {
   const { t } = useTranslation()
   return (
@@ -50,7 +52,7 @@ export default function ServerSidebar({
             </button>
           )}
         </div>
-        {(messagesAction || mediaAction) && (
+        {(messagesAction || mediaAction || workspaceAction) && (
           <div className="rail-shortcuts-zone">
             <div className="rail-sep rail-sep-shortcuts" />
             {messagesAction ? (
@@ -108,6 +110,23 @@ export default function ServerSidebar({
                   />
                   <circle cx="6" cy="18" r="3" stroke="currentColor" strokeWidth="1.8" />
                   <circle cx="18" cy="16" r="3" stroke="currentColor" strokeWidth="1.8" />
+                </svg>
+              </button>
+            ) : null}
+            {workspaceAction ? (
+              <button
+                type="button"
+                className={`rail-icon rail-icon--touch rail-icon-workspace ${workspaceActive ? 'active' : ''}`}
+                title={t('rail.workspaceTitle')}
+                aria-label={t('rail.workspaceAria')}
+                onClick={workspaceAction}
+              >
+                <span className="rail-active-pill" aria-hidden="true" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+                  <rect x="13" y="3" width="8" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+                  <rect x="13" y="10" width="8" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+                  <rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
                 </svg>
               </button>
             ) : null}

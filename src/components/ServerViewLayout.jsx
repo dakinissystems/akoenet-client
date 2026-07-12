@@ -66,6 +66,7 @@ export default function ServerViewLayout(props) {
             homeAction={() => navigate('/')}
             messagesAction={() => navigate('/messages')}
             mediaAction={() => navigate('/media')}
+            workspaceAction={() => navigate('/workspace')}
           />
           <ChannelList
             serverName={serverName}

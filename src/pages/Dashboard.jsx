@@ -207,6 +207,7 @@ export default function Dashboard() {
           homeAction={() => navigate('/')}
           messagesAction={() => navigate('/messages')}
           mediaAction={() => navigate('/media')}
+          workspaceAction={() => navigate('/workspace')}
         />
         <div className="main-panel home-panel">
           <DashboardHomeHeader

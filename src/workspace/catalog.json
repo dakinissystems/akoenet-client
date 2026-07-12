@@ -1,0 +1,395 @@
+{
+  "$schema": "./workspace-addon.schema.json",
+  "version": "1.0.0",
+  "platformServices": [
+    "auth",
+    "ai",
+    "billing",
+    "notifications",
+    "storage",
+    "knowledge",
+    "events",
+    "search",
+    "marketplace"
+  ],
+  "categories": [
+    { "id": "system", "i18n": { "en": "System", "es": "Sistema" } },
+    { "id": "productivity", "i18n": { "en": "Productivity", "es": "Productividad" } },
+    { "id": "developer", "i18n": { "en": "Developer", "es": "Desarrollo" } },
+    { "id": "stream", "i18n": { "en": "Streaming", "es": "Streaming" } },
+    { "id": "media", "i18n": { "en": "Media", "es": "Media" } },
+    { "id": "entertainment", "i18n": { "en": "Entertainment", "es": "Entretenimiento" } }
+  ],
+  "addons": [
+    {
+      "id": "terminal",
+      "sortOrder": 10,
+      "category": "developer",
+      "phase": "growth",
+      "icon": "terminal",
+      "permissions": ["storage", "notifications", "network"],
+      "windows": ["terminal", "ssh", "railway", "docker", "supabase", "kubernetes", "logs", "history", "bookmarks"],
+      "i18n": {
+        "name": { "en": "Dakinis Terminal", "es": "Terminal Dakinis" },
+        "description": {
+          "en": "Shell for developers — Railway, Docker, Git, Supabase and deploy logs with AI hints.",
+          "es": "Terminal para desarrolladores — Railway, Docker, Git, Supabase y logs de deploy con ayuda de IA."
+        }
+      }
+    },
+    {
+      "id": "ai-workspace",
+      "sortOrder": 20,
+      "category": "productivity",
+      "phase": "mvp",
+      "icon": "sparkles",
+      "permissions": ["ai", "storage", "knowledge", "notifications"],
+      "windows": ["conversation", "prompt-library", "knowledge", "actions", "files", "models", "history", "settings"],
+      "i18n": {
+        "name": { "en": "AI Workspace", "es": "Espacio de IA" },
+        "description": {
+          "en": "Multi-window AI desktop — conversations, prompts, knowledge and actions.",
+          "es": "Escritorio de IA con ventanas — conversaciones, prompts, conocimiento y acciones."
+        }
+      }
+    },
+    {
+      "id": "whiteboard",
+      "sortOrder": 30,
+      "category": "productivity",
+      "phase": "growth",
+      "icon": "pen-tool",
+      "permissions": ["storage", "realtime", "voice"],
+      "windows": ["canvas", "sticky-notes", "shapes", "mind-map", "flowchart", "draw", "export"],
+      "i18n": {
+        "name": { "en": "Whiteboard", "es": "Pizarra colaborativa" },
+        "description": {
+          "en": "Excalidraw-style board for brainstorming, architecture and voice meetings.",
+          "es": "Pizarra estilo Excalidraw para brainstorming, arquitectura y reuniones con voz."
+        }
+      }
+    },
+    {
+      "id": "kanban",
+      "sortOrder": 40,
+      "category": "productivity",
+      "phase": "growth",
+      "icon": "columns",
+      "permissions": ["storage", "notifications"],
+      "windows": ["boards", "columns", "tasks", "comments", "labels", "members", "calendar"],
+      "i18n": {
+        "name": { "en": "Kanban", "es": "Kanban" },
+        "description": {
+          "en": "Todo → Doing → Review → Done without leaving Dakinis.",
+          "es": "Todo → Doing → Review → Done sin salir de Dakinis."
+        }
+      }
+    },
+    {
+      "id": "calendar",
+      "sortOrder": 50,
+      "category": "productivity",
+      "phase": "growth",
+      "icon": "calendar",
+      "permissions": ["events", "notifications"],
+      "windows": ["agenda", "week", "month", "meetings", "bookings", "birthdays", "reminders"],
+      "i18n": {
+        "name": { "en": "Calendar", "es": "Calendario" },
+        "description": {
+          "en": "Streams, events, meetings, bookings and birthdays with Assistant reminders.",
+          "es": "Streams, eventos, reuniones, reservas y cumpleaños con recordatorios del Assistant."
+        }
+      }
+    },
+    {
+      "id": "notes",
+      "sortOrder": 60,
+      "category": "productivity",
+      "phase": "growth",
+      "icon": "file-text",
+      "permissions": ["storage", "ai", "knowledge", "search"],
+      "windows": ["folders", "editor", "wiki", "tags", "backlinks", "search", "ai-summary"],
+      "i18n": {
+        "name": { "en": "Notes", "es": "Notas" },
+        "description": {
+          "en": "Obsidian-style markdown wiki with backlinks and AI summaries.",
+          "es": "Wiki Markdown estilo Obsidian con backlinks y resúmenes de IA."
+        }
+      }
+    },
+    {
+      "id": "code-editor",
+      "sortOrder": 70,
+      "category": "developer",
+      "phase": "growth",
+      "icon": "code",
+      "permissions": ["storage", "git"],
+      "windows": ["explorer", "editor", "terminal", "git", "problems", "outline"],
+      "i18n": {
+        "name": { "en": "Code Editor", "es": "Editor de código" },
+        "description": {
+          "en": "Lightweight editor to share files during voice calls.",
+          "es": "Editor ligero para compartir archivos durante llamadas de voz."
+        }
+      }
+    },
+    {
+      "id": "dashboard",
+      "sortOrder": 80,
+      "category": "system",
+      "phase": "mvp",
+      "icon": "layout-dashboard",
+      "permissions": ["metrics", "notifications"],
+      "windows": ["widgets", "cpu", "memory", "stripe", "railway", "github", "supabase", "analytics", "calendar", "weather", "streams"],
+      "i18n": {
+        "name": { "en": "Dashboard", "es": "Panel" },
+        "description": {
+          "en": "Configurable widgets — CPU, Railway, GitHub, Stripe and live streams.",
+          "es": "Widgets configurables — CPU, Railway, GitHub, Stripe y streams en vivo."
+        }
+      }
+    },
+    {
+      "id": "stream-deck",
+      "sortOrder": 90,
+      "category": "stream",
+      "phase": "growth",
+      "icon": "grid-3x3",
+      "permissions": ["streamautomator", "obs", "twitch"],
+      "windows": ["buttons", "pages", "macros", "obs", "twitch", "akoenet", "keyboard", "automation"],
+      "i18n": {
+        "name": { "en": "Stream Deck", "es": "Stream Deck virtual" },
+        "description": {
+          "en": "Virtual deck for StreamAutomator — OBS, Twitch, macros and hotkeys.",
+          "es": "Deck virtual para StreamAutomator — OBS, Twitch, macros y atajos."
+        }
+      }
+    },
+    {
+      "id": "soundboard",
+      "sortOrder": 100,
+      "category": "entertainment",
+      "phase": "growth",
+      "icon": "volume-2",
+      "permissions": ["storage", "voice"],
+      "windows": ["categories", "favorites", "hotkeys", "history", "upload", "share"],
+      "i18n": {
+        "name": { "en": "Soundboard", "es": "Soundboard" },
+        "description": {
+          "en": "Voice-channel soundboard with favorites and hotkeys.",
+          "es": "Soundboard en canales de voz con favoritos y atajos."
+        }
+      }
+    },
+    {
+      "id": "game-launcher",
+      "sortOrder": 110,
+      "category": "entertainment",
+      "phase": "future",
+      "icon": "gamepad-2",
+      "permissions": ["steam", "presence"],
+      "windows": ["library", "steam", "epic", "gog", "battlenet", "presence"],
+      "i18n": {
+        "name": { "en": "Game Launcher", "es": "Lanzador de juegos" },
+        "description": {
+          "en": "Manage libraries and presence across Steam, Epic, GOG and Battle.net.",
+          "es": "Gestiona bibliotecas y presencia en Steam, Epic, GOG y Battle.net."
+        }
+      }
+    },
+    {
+      "id": "clip-studio",
+      "sortOrder": 120,
+      "category": "stream",
+      "phase": "future",
+      "icon": "scissors",
+      "permissions": ["storage", "streamautomator"],
+      "windows": ["clips", "editor", "export", "share"],
+      "i18n": {
+        "name": { "en": "Clip Studio", "es": "Clip Studio" },
+        "description": {
+          "en": "Create, edit and share clips for streamers.",
+          "es": "Crea, edita y comparte clips para streamers."
+        }
+      }
+    },
+    {
+      "id": "marketplace",
+      "sortOrder": 130,
+      "category": "system",
+      "phase": "growth",
+      "icon": "store",
+      "permissions": ["marketplace", "billing"],
+      "windows": ["browse", "installed", "updates", "themes", "plugins", "ratings", "developer"],
+      "i18n": {
+        "name": { "en": "Marketplace", "es": "Marketplace" },
+        "description": {
+          "en": "Browse, install and update addons, themes and plugins.",
+          "es": "Explora, instala y actualiza addons, temas y plugins."
+        }
+      }
+    },
+    {
+      "id": "theme-studio",
+      "sortOrder": 140,
+      "category": "system",
+      "phase": "growth",
+      "icon": "palette",
+      "permissions": ["storage", "marketplace"],
+      "windows": ["colors", "fonts", "borders", "icons", "animations", "preview", "export"],
+      "i18n": {
+        "name": { "en": "Theme Studio", "es": "Theme Studio" },
+        "description": {
+          "en": "Create skins, preview and publish to the Marketplace.",
+          "es": "Crea skins, previsualiza y publica en el Marketplace."
+        }
+      }
+    },
+    {
+      "id": "media-player",
+      "sortOrder": 150,
+      "category": "media",
+      "phase": "mvp",
+      "icon": "music",
+      "permissions": ["storage", "media", "realtime"],
+      "windows": ["player", "playlist", "library", "equalizer", "visualizer", "friends"],
+      "i18n": {
+        "name": { "en": "Media Player", "es": "Reproductor multimedia" },
+        "description": {
+          "en": "Winamp-style player — albums, lyrics, visualizer and listen together.",
+          "es": "Reproductor estilo Winamp — álbumes, letras, visualizer y escuchar juntos."
+        }
+      }
+    },
+    {
+      "id": "downloads",
+      "sortOrder": 160,
+      "category": "system",
+      "phase": "future",
+      "icon": "download",
+      "permissions": ["storage"],
+      "windows": ["active", "history", "queue", "settings"],
+      "i18n": {
+        "name": { "en": "Downloads", "es": "Descargas" },
+        "description": {
+          "en": "Download manager with history and queue.",
+          "es": "Administrador de descargas con historial y cola."
+        }
+      }
+    },
+    {
+      "id": "file-explorer",
+      "sortOrder": 170,
+      "category": "system",
+      "phase": "growth",
+      "icon": "folder",
+      "permissions": ["storage"],
+      "windows": ["recent", "shared", "uploads", "downloads", "cloud", "trash", "favorites"],
+      "i18n": {
+        "name": { "en": "File Explorer", "es": "Explorador de archivos" },
+        "description": {
+          "en": "Workspace files — uploads, shared media and documents.",
+          "es": "Archivos del workspace — subidas, media compartida y documentos."
+        }
+      }
+    },
+    {
+      "id": "devops",
+      "sortOrder": 180,
+      "category": "developer",
+      "phase": "growth",
+      "icon": "server",
+      "permissions": ["railway", "supabase", "metrics"],
+      "windows": ["deployments", "logs", "containers", "railway", "supabase", "redis", "cron", "metrics"],
+      "i18n": {
+        "name": { "en": "DevOps", "es": "DevOps" },
+        "description": {
+          "en": "Deploy, logs and metrics for Railway, Supabase and Redis.",
+          "es": "Deploy, logs y métricas de Railway, Supabase y Redis."
+        }
+      }
+    },
+    {
+      "id": "obs-companion",
+      "sortOrder": 190,
+      "category": "stream",
+      "phase": "growth",
+      "icon": "video",
+      "permissions": ["obs", "streamautomator"],
+      "windows": ["scenes", "sources", "audio", "streaming", "recording", "chat", "statistics"],
+      "i18n": {
+        "name": { "en": "OBS Companion", "es": "OBS Companion" },
+        "description": {
+          "en": "Switch scenes, read chat and control mic/camera from Dakinis.",
+          "es": "Cambia escenas, lee el chat y controla mic/cámara desde Dakinis."
+        }
+      }
+    },
+    {
+      "id": "automation-builder",
+      "sortOrder": 200,
+      "category": "developer",
+      "phase": "growth",
+      "icon": "workflow",
+      "permissions": ["automation", "ai", "notifications"],
+      "windows": ["canvas", "triggers", "conditions", "actions", "variables", "history", "logs"],
+      "i18n": {
+        "name": { "en": "Automation Builder", "es": "Automation Builder" },
+        "description": {
+          "en": "Visual flows — message → AI → condition → action (n8n style).",
+          "es": "Flujos visuales — mensaje → IA → condición → acción (estilo n8n)."
+        }
+      }
+    },
+    {
+      "id": "command-palette",
+      "sortOrder": 5,
+      "category": "system",
+      "phase": "mvp",
+      "icon": "command",
+      "builtin": true,
+      "permissions": ["search"],
+      "windows": ["palette"],
+      "i18n": {
+        "name": { "en": "Command Center", "es": "Centro de comandos" },
+        "description": {
+          "en": "Ctrl+K — open apps, search messages, deploy Railway, play music.",
+          "es": "Ctrl+K — abrir apps, buscar mensajes, deploy Railway, reproducir música."
+        }
+      }
+    },
+    {
+      "id": "activity-center",
+      "sortOrder": 6,
+      "category": "system",
+      "phase": "mvp",
+      "icon": "bell",
+      "builtin": true,
+      "permissions": ["notifications"],
+      "windows": ["feed"],
+      "i18n": {
+        "name": { "en": "Activity Center", "es": "Centro de actividad" },
+        "description": {
+          "en": "Notifications, streams, deploys, invoices, messages and AI alerts.",
+          "es": "Notificaciones, streams, deploys, facturas, mensajes y alertas de IA."
+        }
+      }
+    },
+    {
+      "id": "live-dashboard",
+      "sortOrder": 7,
+      "category": "productivity",
+      "phase": "future",
+      "icon": "users",
+      "permissions": ["voice", "ai", "calendar"],
+      "windows": ["meeting", "voice", "screen", "notes", "ai-summary", "tasks", "calendar"],
+      "i18n": {
+        "name": { "en": "Live Dashboard", "es": "Panel en vivo" },
+        "description": {
+          "en": "Meeting mode — voice, screen, notes, AI summary and tasks together.",
+          "es": "Modo reunión — voz, pantalla, notas, resumen IA y tareas juntos."
+        }
+      }
+    }
+  ]
+}

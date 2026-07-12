@@ -18,7 +18,7 @@ import { initDesktopIntegrations } from './services/desktop-integrations'
 import { isTauri } from './lib/isTauri'
 import { reportError } from './lib/reportError'
 import { getAccessToken } from './services/session-store'
-import DevSentryErrorButton from './components/DevSentryErrorButton.jsx'
+import WorkspaceProviders from './workspace/WorkspaceProviders.jsx'
 
 const pushTokenInFlight = new Set()
 const pushTokenSent = new Set()
@@ -34,7 +34,10 @@ const LegalDocPage = lazy(() => import('./pages/LegalDocPage'))
 const DmcaPage = lazy(() => import('./pages/DmcaPage'))
 const DpoPage = lazy(() => import('./pages/DpoPage'))
 const SystemStatus = lazy(() => import('./pages/SystemStatus'))
+const WorkspaceDesktop = lazy(() => import('./pages/WorkspaceDesktop.jsx'))
+const WorkspaceAddonPage = lazy(() => import('./pages/WorkspaceAddonPage.jsx'))
 const MediaPlayerRoot = lazy(() => import('./modules/media-player/MediaPlayerRoot.jsx'))
+const DevSentryErrorButton = lazy(() => import('./components/DevSentryErrorButton.jsx'))
 
 function PageFallback() {
   const { t } = useTranslation()
@@ -169,7 +172,7 @@ export default function App() {
   }, [])
 
   return (
-    <>
+    <WorkspaceProviders>
       <ThemeSync />
       <Suspense fallback={<PageFallback />}>
         <Routes>
@@ -205,6 +208,22 @@ export default function App() {
             }
           />
           <Route
+            path="/workspace"
+            element={
+              <AuthGateRoute>
+                <WorkspaceDesktop />
+              </AuthGateRoute>
+            }
+          />
+          <Route
+            path="/workspace/:addonId"
+            element={
+              <AuthGateRoute>
+                <WorkspaceAddonPage />
+              </AuthGateRoute>
+            }
+          />
+          <Route
             path="/media/*"
             element={
               <AuthGateRoute>
@@ -224,7 +243,9 @@ export default function App() {
         </Routes>
       </Suspense>
       <CookieConsentBanner />
-      <DevSentryErrorButton />
-    </>
+      <Suspense fallback={null}>
+        <DevSentryErrorButton />
+      </Suspense>
+    </WorkspaceProviders>
   )
 }
