@@ -5,7 +5,7 @@ import AppChrome from '../components/AppChrome'
 import ServerSidebar from '../components/ServerSidebar'
 import FloatingWindow from './components/FloatingWindow.jsx'
 import { addonDescription, addonLabel } from './addonCatalog.js'
-import { getWindowPreviewBody, humanizeWindowId } from './windowContent.js'
+import { getWindowPreviewBody, humanizeWindowId } from './windowContent.jsx'
 import { defaultLayoutForWindows, loadAddonLayout, persistAddonLayout } from './windowManager/layout.js'
 import './workspace.css'
 
