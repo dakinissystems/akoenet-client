@@ -6,6 +6,15 @@ import { EQ_BAND_LABELS } from "../i18n/strings.js";
 const EQ_FREQUENCIES = [60, 170, 310, 600, 1000, 3000, 6000, 12000, 14000, 16000];
 const BUFFER_CACHE_MAX = 6;
 
+/** @type {AudioEngine | null} */
+let sharedEngine = null;
+
+/** One engine per tab — survives route remounts without stacking AudioContexts. */
+export function getAudioEngine() {
+  if (!sharedEngine) sharedEngine = new AudioEngine();
+  return sharedEngine;
+}
+
 export class AudioEngine {
   constructor() {
     this.ctx = null;
@@ -153,13 +162,15 @@ export class AudioEngine {
 
   stopSource() {
     if (!this.source) return;
+    const node = this.source;
+    node.onended = null;
     try {
-      this.source.stop();
+      node.stop();
     } catch {
       /* already stopped */
     }
     try {
-      this.source.disconnect();
+      node.disconnect();
     } catch {
       /* noop */
     }

@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AudioEngine } from "../services/audioEngine.js";
+import { getAudioEngine } from "../services/audioEngine.js";
 import { usePlayerStore } from "../store/playerStore.jsx";
 
 const POSITION_TICK_MS = 250;
 
 export function usePlayer({ tracks = [], onNeedNextTrack } = {}) {
   const { state, dispatch } = usePlayerStore();
-  const engineRef = useRef(null);
-  if (!engineRef.current) engineRef.current = new AudioEngine();
+  const engineRef = useRef(getAudioEngine());
+  const playGenRef = useRef(0);
+  const mountedRef = useRef(true);
 
   const [currentTrack, setCurrentTrack] = useState(null);
   const [buffer, setBuffer] = useState(null);
@@ -20,11 +21,22 @@ export function usePlayer({ tracks = [], onNeedNextTrack } = {}) {
   currentTrackRef.current = currentTrack;
 
   useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      playGenRef.current += 1;
+      audioEngine.onEnded = null;
+      audioEngine.stop();
+    };
+  }, [audioEngine]);
+
+  useEffect(() => {
     audioEngine.setVolume(state.volume);
   }, [audioEngine, state.volume]);
 
   useEffect(() => {
     audioEngine.onEnded = () => {
+      if (!mountedRef.current) return;
       setIsPlaying(false);
       onNeedNextTrack?.(currentTrackRef.current);
     };
@@ -44,22 +56,32 @@ export function usePlayer({ tracks = [], onNeedNextTrack } = {}) {
   const play = useCallback(
     async (track, seekSec = 0) => {
       if (!track?.sourceRef) return;
+      const gen = ++playGenRef.current;
+      audioEngine.stop();
+      setIsPlaying(false);
       setLoading(true);
       try {
         await audioEngine.ensureContext();
-        const decoded =
-          track.sourceRef && buffer && currentTrack?.id === track.id && seekSec === 0
-            ? buffer
-            : await audioEngine.loadUrl(track.sourceRef);
+        if (gen !== playGenRef.current || !mountedRef.current) return;
+
+        const reuseBuffer =
+          track.sourceRef && buffer && currentTrack?.id === track.id && seekSec === 0;
+        const decoded = reuseBuffer ? buffer : await audioEngine.loadUrl(track.sourceRef);
+        if (gen !== playGenRef.current || !mountedRef.current) return;
+
         setBuffer(decoded);
         setCurrentTrack(track);
         audioEngine.playBuffer(decoded, seekSec);
         setIsPlaying(true);
         setPositionMs(Math.floor(seekSec * 1000));
       } catch (err) {
-        console.error("[dmp] play failed", err);
+        if (gen === playGenRef.current) {
+          console.error("[dmp] play failed", err);
+        }
       } finally {
-        setLoading(false);
+        if (gen === playGenRef.current) {
+          setLoading(false);
+        }
       }
     },
     [audioEngine, buffer, currentTrack?.id],
@@ -77,6 +99,7 @@ export function usePlayer({ tracks = [], onNeedNextTrack } = {}) {
   }, [audioEngine, buffer, currentTrack, isPlaying, positionMs]);
 
   const stop = useCallback(() => {
+    playGenRef.current += 1;
     audioEngine.stop();
     setIsPlaying(false);
     setPositionMs(0);

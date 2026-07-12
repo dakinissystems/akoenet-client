@@ -192,7 +192,14 @@ function MediaPlayerDesktop() {
   return (
     <div className="dmp-desktop">
       <div className="dmp-toolbar">
-        <button type="button" className="dmp-toolbar__btn dmp-toolbar__back" onClick={() => navigate("/")}>
+        <button
+          type="button"
+          className="dmp-toolbar__btn dmp-toolbar__back"
+          onClick={() => {
+            player.stop();
+            navigate("/");
+          }}
+        >
           ← {STRINGS.back}
         </button>
         <div className="dmp-toolbar__brand-block">
