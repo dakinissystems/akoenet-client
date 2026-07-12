@@ -206,6 +206,7 @@ export default function Dashboard() {
           onSelectServer={(id) => navigate(`/server/${id}`)}
           homeAction={() => navigate('/')}
           messagesAction={() => navigate('/messages')}
+          mediaAction={() => navigate('/media')}
         />
         <div className="main-panel home-panel">
           <DashboardHomeHeader

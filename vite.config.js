@@ -60,6 +60,11 @@ export default defineConfig(({ mode }) => {
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
+      '/media-api': {
+        target: 'http://localhost:4090',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/media-api/, '/media'),
+      },
     },
     fs: {
       allow: [__dirname, path.join(__dirname, '..')],

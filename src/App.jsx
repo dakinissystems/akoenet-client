@@ -34,6 +34,7 @@ const LegalDocPage = lazy(() => import('./pages/LegalDocPage'))
 const DmcaPage = lazy(() => import('./pages/DmcaPage'))
 const DpoPage = lazy(() => import('./pages/DpoPage'))
 const SystemStatus = lazy(() => import('./pages/SystemStatus'))
+const MediaPlayerRoot = lazy(() => import('./modules/media-player/MediaPlayerRoot.jsx'))
 
 function PageFallback() {
   const { t } = useTranslation()
@@ -200,6 +201,14 @@ export default function App() {
             element={
               <AuthGateRoute>
                 <ServerView />
+              </AuthGateRoute>
+            }
+          />
+          <Route
+            path="/media/*"
+            element={
+              <AuthGateRoute>
+                <MediaPlayerRoot />
               </AuthGateRoute>
             }
           />

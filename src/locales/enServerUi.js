@@ -849,6 +849,8 @@ export default {
     homeAria: 'Home',
     dmTitle: 'Direct messages',
     dmAria: 'Direct messages',
+    mediaTitle: 'Media Player',
+    mediaAria: 'Dakinis Media Player',
   },
   schedulerWidget: {
     ariaStreams: 'Streams',

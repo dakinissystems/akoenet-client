@@ -7,6 +7,8 @@ export default function ServerSidebar({
   homeAction,
   messagesAction,
   messagesActive = false,
+  mediaAction,
+  mediaActive = false,
 }) {
   const { t } = useTranslation()
   return (
@@ -48,36 +50,67 @@ export default function ServerSidebar({
             </button>
           )}
         </div>
-        {messagesAction && (
+        {(messagesAction || mediaAction) && (
           <div className="rail-shortcuts-zone">
             <div className="rail-sep rail-sep-shortcuts" />
-            <button
-              type="button"
-              className={`rail-icon rail-icon--touch rail-icon-message ${messagesActive ? 'active' : ''}`}
-              title={t('rail.dmTitle')}
-              aria-label={t('rail.dmAria')}
-              onClick={messagesAction}
-            >
-              <span className="rail-active-pill" aria-hidden="true" />
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
+            {messagesAction ? (
+              <button
+                type="button"
+                className={`rail-icon rail-icon--touch rail-icon-message ${messagesActive ? 'active' : ''}`}
+                title={t('rail.dmTitle')}
+                aria-label={t('rail.dmAria')}
+                onClick={messagesAction}
               >
-                <path
-                  d="M5 6.5C5 5.12 6.12 4 7.5 4h9C17.88 4 19 5.12 19 6.5v6C19 13.88 17.88 15 16.5 15H11l-3.5 3v-3H7.5C6.12 15 5 13.88 5 12.5v-6Z"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path d="M8.5 8.5h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                <path d="M8.5 11h4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </button>
+                <span className="rail-active-pill" aria-hidden="true" />
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 6.5C5 5.12 6.12 4 7.5 4h9C17.88 4 19 5.12 19 6.5v6C19 13.88 17.88 15 16.5 15H11l-3.5 3v-3H7.5C6.12 15 5 13.88 5 12.5v-6Z"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M8.5 8.5h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <path d="M8.5 11h4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </button>
+            ) : null}
+            {mediaAction ? (
+              <button
+                type="button"
+                className={`rail-icon rail-icon--touch rail-icon-media ${mediaActive ? 'active' : ''}`}
+                title={t('rail.mediaTitle')}
+                aria-label={t('rail.mediaAria')}
+                onClick={mediaAction}
+              >
+                <span className="rail-active-pill" aria-hidden="true" />
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M9 18V6l12-2v14"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="6" cy="18" r="3" stroke="currentColor" strokeWidth="1.8" />
+                  <circle cx="18" cy="16" r="3" stroke="currentColor" strokeWidth="1.8" />
+                </svg>
+              </button>
+            ) : null}
           </div>
         )}
         <div className="rail-sep" />
