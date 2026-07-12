@@ -5,6 +5,7 @@ import { PlaylistWindow } from "./components/PlaylistWindow.jsx";
 import { EqualizerWindow } from "./components/EqualizerWindow.jsx";
 import { LibraryWindow } from "./components/LibraryWindow.jsx";
 import { VisualizerWindow } from "./components/VisualizerWindow.jsx";
+import { FriendsListeningPanel } from "./components/FriendsListeningPanel.jsx";
 import { MiniPlayer } from "./components/MiniPlayer.jsx";
 import { WindowFrame } from "./components/WindowFrame.jsx";
 import { SkinRenderer } from "./components/SkinRenderer.jsx";
@@ -13,7 +14,7 @@ import { usePlaylist } from "./hooks/usePlaylist.js";
 import { useEqualizer } from "./hooks/useEqualizer.js";
 import { useVisualizer } from "./hooks/useVisualizer.js";
 import { PlayerProvider } from "./store/playerStore.jsx";
-import { WINDOW_REGISTRY } from "./windowRegistry.js";
+import { WINDOW_REGISTRY, classicLayout } from "./windowRegistry.js";
 import "./styles/media-player.css";
 
 export default function MediaPlayerRoot() {
@@ -32,7 +33,7 @@ function MediaPlayerDesktop() {
   const playlist = usePlaylist();
   const equalizer = useEqualizer(player.audioEngine);
   const visualizer = useVisualizer(player.audioEngine);
-  const [windows, setWindows] = useState(() => initWindows());
+  const [windows, setWindows] = useState(() => classicLayout());
   const [compact, setCompact] = useState(false);
   const [focusedId, setFocusedId] = useState("player.main");
 
@@ -52,6 +53,11 @@ function MediaPlayerDesktop() {
     setWindows((prev) =>
       prev.map((w) => (w.id === id ? { ...w, visible: !w.visible, minimized: false } : w)),
     );
+  }, []);
+
+  const resetLayout = useCallback(() => {
+    setWindows(classicLayout());
+    setFocusedId("player.main");
   }, []);
 
   useEffect(() => {
@@ -83,7 +89,14 @@ function MediaPlayerDesktop() {
           onAddFiles={playlist.addLocalFiles}
         />
       ),
-      "player.visualizer": <VisualizerWindow frequencyData={visualizer.frequencyData} />,
+      "player.visualizer": (
+        <VisualizerWindow
+          frequencyData={visualizer.frequencyData}
+          isPlaying={player.isPlaying}
+          hasTrack={Boolean(player.currentTrack)}
+        />
+      ),
+      "player.friends": <FriendsListeningPanel />,
     };
     return map;
   }, [player, playlist, equalizer, visualizer, toggleWindow]);
@@ -99,20 +112,25 @@ function MediaPlayerDesktop() {
   return (
     <div className="dmp-desktop">
       <div className="dmp-toolbar">
-        <button type="button" className="dmp-toolbar__btn dmp-toolbar__back" onClick={() => navigate('/')}>
+        <button type="button" className="dmp-toolbar__btn dmp-toolbar__back" onClick={() => navigate("/")}>
           ← AkoeNet
         </button>
-        <span className="dmp-toolbar__brand">Dakinis Media Player</span>
+        <div className="dmp-toolbar__brand-block">
+          <span className="dmp-toolbar__brand">Dakinis Media Workspace</span>
+          <span className="dmp-toolbar__tagline">Player · Library · Social</span>
+        </div>
+        <button type="button" className="dmp-toolbar__btn" onClick={resetLayout} title="Classic layout">
+          ⊞ Layout
+        </button>
         {WINDOW_REGISTRY.map((w) => (
-          <button
-            key={w.id}
-            type="button"
-            className="dmp-toolbar__btn"
-            onClick={() => toggleWindow(w.id)}
-          >
+          <button key={w.id} type="button" className="dmp-toolbar__btn" onClick={() => toggleWindow(w.id)}>
             {w.title}
           </button>
         ))}
+      </div>
+
+      <div className="dmp-desktop__grid-hint" aria-hidden="true">
+        Player + Playlist + EQ + Visualizer + Library
       </div>
 
       {windows
@@ -135,15 +153,4 @@ function MediaPlayerDesktop() {
         ))}
     </div>
   );
-}
-
-function initWindows() {
-  return WINDOW_REGISTRY.map((desc, i) => ({
-    id: desc.id,
-    title: desc.title,
-    rect: { ...desc.defaultRect },
-    visible: desc.defaultVisible ?? true,
-    minimized: false,
-    zIndex: i + 1,
-  }));
 }
