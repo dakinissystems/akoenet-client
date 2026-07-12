@@ -1,5 +1,15 @@
 import { createContext, useContext, useMemo, useReducer } from "react";
 
+const SKIN_KEY = "dmp_skin_id";
+
+function readSkinId() {
+  try {
+    return localStorage.getItem(SKIN_KEY) || "dakinis";
+  } catch {
+    return "dakinis";
+  }
+}
+
 const PlayerContext = createContext(null);
 
 const initialState = {
@@ -7,7 +17,7 @@ const initialState = {
   balance: 0,
   shuffle: false,
   repeat: "off",
-  skinId: "classic",
+  skinId: readSkinId(),
 };
 
 function reducer(state, action) {
@@ -20,8 +30,14 @@ function reducer(state, action) {
       return { ...state, shuffle: action.payload };
     case "SET_REPEAT":
       return { ...state, repeat: action.payload };
-    case "SET_SKIN":
+    case "SET_SKIN": {
+      try {
+        localStorage.setItem(SKIN_KEY, action.payload);
+      } catch {
+        /* ignore */
+      }
       return { ...state, skinId: action.payload };
+    }
     default:
       return state;
   }

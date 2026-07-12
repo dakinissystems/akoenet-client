@@ -1,6 +1,17 @@
 import { useCallback, useRef } from "react";
 
-export function WindowFrame({ id, title, rect, zIndex, focused, onFocus, onMove, onClose, children }) {
+export function WindowFrame({
+  id,
+  title,
+  rect,
+  zIndex,
+  focused,
+  onFocus,
+  onMove,
+  onMoveEnd,
+  onClose,
+  children,
+}) {
   const dragRef = useRef(null);
 
   const onMouseDown = useCallback(
@@ -19,11 +30,20 @@ export function WindowFrame({ id, title, rect, zIndex, focused, onFocus, onMove,
         onMove({
           ...dragRef.current.origin,
           x: Math.max(0, dragRef.current.origin.x + dx),
-          y: Math.max(0, dragRef.current.origin.y + dy),
+          y: Math.max(44, dragRef.current.origin.y + dy),
         });
       };
 
-      const onUp = () => {
+      const onUp = (ev) => {
+        if (dragRef.current && onMoveEnd) {
+          const dx = ev.clientX - dragRef.current.startX;
+          const dy = ev.clientY - dragRef.current.startY;
+          onMoveEnd({
+            ...dragRef.current.origin,
+            x: Math.max(0, dragRef.current.origin.x + dx),
+            y: Math.max(44, dragRef.current.origin.y + dy),
+          });
+        }
         dragRef.current = null;
         window.removeEventListener("mousemove", onMoveEvt);
         window.removeEventListener("mouseup", onUp);
@@ -32,7 +52,7 @@ export function WindowFrame({ id, title, rect, zIndex, focused, onFocus, onMove,
       window.addEventListener("mousemove", onMoveEvt);
       window.addEventListener("mouseup", onUp);
     },
-    [onFocus, onMove, rect],
+    [onFocus, onMove, onMoveEnd, rect],
   );
 
   return (

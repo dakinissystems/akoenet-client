@@ -9,18 +9,25 @@ import { FriendsListeningPanel } from "./components/FriendsListeningPanel.jsx";
 import { MiniPlayer } from "./components/MiniPlayer.jsx";
 import { WindowFrame } from "./components/WindowFrame.jsx";
 import { SkinRenderer } from "./components/SkinRenderer.jsx";
+import { SkinPicker } from "./components/SkinPicker.jsx";
 import { usePlayer } from "./hooks/usePlayer.js";
 import { usePlaylist } from "./hooks/usePlaylist.js";
 import { useEqualizer } from "./hooks/useEqualizer.js";
 import { useVisualizer } from "./hooks/useVisualizer.js";
 import { PlayerProvider } from "./store/playerStore.jsx";
 import { WINDOW_REGISTRY, classicLayout } from "./windowRegistry.js";
+import {
+  applyWindowSnap,
+  loadPersistedLayout,
+  persistLayout,
+  stackLayout,
+} from "./lib/windowSnap.js";
 import "./styles/media-player.css";
 
 export default function MediaPlayerRoot() {
   return (
     <PlayerProvider>
-      <SkinRenderer skinId="classic">
+      <SkinRenderer>
         <MediaPlayerDesktop />
       </SkinRenderer>
     </PlayerProvider>
@@ -33,9 +40,13 @@ function MediaPlayerDesktop() {
   const playlist = usePlaylist();
   const equalizer = useEqualizer(player.audioEngine);
   const visualizer = useVisualizer(player.audioEngine);
-  const [windows, setWindows] = useState(() => classicLayout());
+  const [windows, setWindows] = useState(() => loadPersistedLayout(WINDOW_REGISTRY) ?? classicLayout());
   const [compact, setCompact] = useState(false);
   const [focusedId, setFocusedId] = useState("player.main");
+
+  useEffect(() => {
+    persistLayout(windows);
+  }, [windows]);
 
   const focus = useCallback((id) => {
     setFocusedId(id);
@@ -49,6 +60,18 @@ function MediaPlayerDesktop() {
     setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, rect } : w)));
   }, []);
 
+  const finishMove = useCallback((id, rect) => {
+    setWindows((prev) => {
+      const snapped = applyWindowSnap(
+        id,
+        rect,
+        prev.map((w) => (w.id === id ? { ...w, rect } : w)),
+        WINDOW_REGISTRY,
+      );
+      return prev.map((w) => (w.id === id ? { ...w, rect: snapped } : w));
+    });
+  }, []);
+
   const toggleWindow = useCallback((id) => {
     setWindows((prev) =>
       prev.map((w) => (w.id === id ? { ...w, visible: !w.visible, minimized: false } : w)),
@@ -57,6 +80,11 @@ function MediaPlayerDesktop() {
 
   const resetLayout = useCallback(() => {
     setWindows(classicLayout());
+    setFocusedId("player.main");
+  }, []);
+
+  const applyStackLayout = useCallback(() => {
+    setWindows(stackLayout(WINDOW_REGISTRY));
     setFocusedId("player.main");
   }, []);
 
@@ -119,18 +147,18 @@ function MediaPlayerDesktop() {
           <span className="dmp-toolbar__brand">Dakinis Media Workspace</span>
           <span className="dmp-toolbar__tagline">Player · Library · Social</span>
         </div>
-        <button type="button" className="dmp-toolbar__btn" onClick={resetLayout} title="Classic layout">
-          ⊞ Layout
+        <SkinPicker />
+        <button type="button" className="dmp-toolbar__btn" onClick={applyStackLayout} title="Stack Player + Playlist + EQ">
+          ⊟ Stack
+        </button>
+        <button type="button" className="dmp-toolbar__btn" onClick={resetLayout} title="Grid layout">
+          ⊞ Grid
         </button>
         {WINDOW_REGISTRY.map((w) => (
           <button key={w.id} type="button" className="dmp-toolbar__btn" onClick={() => toggleWindow(w.id)}>
             {w.title}
           </button>
         ))}
-      </div>
-
-      <div className="dmp-desktop__grid-hint" aria-hidden="true">
-        Player + Playlist + EQ + Visualizer + Library
       </div>
 
       {windows
@@ -146,6 +174,7 @@ function MediaPlayerDesktop() {
             focused={focusedId === w.id}
             onFocus={() => focus(w.id)}
             onMove={(rect) => moveWindow(w.id, rect)}
+            onMoveEnd={(rect) => finishMove(w.id, rect)}
             onClose={() => toggleWindow(w.id)}
           >
             {renderWindow[w.id]}

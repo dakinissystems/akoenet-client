@@ -1,11 +1,23 @@
 :root {
-  --dmp-text: #00ff00;
-  --dmp-text-dim: #008800;
+  --dmp-text: #00ff41;
+  --dmp-text-dim: #00aa2a;
   --dmp-bg: #181818;
   --dmp-accent: #2dd4bf;
+  --dmp-accent-2: #7c3aed;
   --dmp-titlebar: #232323;
+  --dmp-border: #333333;
+  --dmp-glow: rgba(45, 212, 191, 0.35);
+  --dmp-glow-2: rgba(124, 58, 237, 0.3);
+  --dmp-desktop-from: #1a1a2e;
+  --dmp-desktop-to: #0f0f0f;
+  --dmp-lcd-bg: #001a00;
+  --dmp-lcd-text: #00ff41;
   --dmp-font-ui: Tahoma, Arial, sans-serif;
   --dmp-font-lcd: "Courier New", monospace;
+}
+
+.dmp-root {
+  min-height: 100vh;
 }
 
 .dmp-desktop {
@@ -13,12 +25,100 @@
   min-height: 100vh;
   padding-top: 44px;
   background:
-    radial-gradient(circle at 15% 20%, rgba(45, 212, 191, 0.06), transparent 40%),
-    radial-gradient(circle at 85% 70%, rgba(99, 102, 241, 0.05), transparent 35%),
-    linear-gradient(160deg, #12121a 0%, #0a0a0f 55%, #050508 100%);
+    radial-gradient(circle at 20% 15%, var(--dmp-glow-2), transparent 42%),
+    radial-gradient(circle at 80% 75%, var(--dmp-glow), transparent 38%),
+    linear-gradient(160deg, var(--dmp-desktop-from) 0%, var(--dmp-desktop-to) 60%, #000 100%);
   color: var(--dmp-text);
   font-family: var(--dmp-font-ui);
   overflow: hidden;
+}
+
+.dmp-root[data-skin="dakinis"] .dmp-window {
+  border-color: var(--dmp-border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+
+.dmp-root[data-skin="dakinis"] .dmp-window.is-focused {
+  border-color: var(--dmp-accent);
+  box-shadow:
+    0 0 0 1px var(--dmp-accent),
+    0 0 20px var(--dmp-glow),
+    0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+.dmp-root[data-skin="dakinis"] .dmp-window__titlebar {
+  background: linear-gradient(180deg, #122840 0%, var(--dmp-titlebar) 100%);
+  border-bottom: 1px solid var(--dmp-border);
+}
+
+.dmp-root[data-skin="dakinis"] .dmp-lcd {
+  background: linear-gradient(180deg, var(--dmp-lcd-bg) 0%, #050a12 100%);
+  border-color: var(--dmp-border);
+  box-shadow: inset 0 0 16px var(--dmp-glow);
+}
+
+.dmp-root[data-skin="dakinis"] .dmp-lcd__title {
+  color: var(--dmp-lcd-text, var(--dmp-accent));
+}
+
+.dmp-root[data-skin="dakinis"] .dmp-btn--primary {
+  color: var(--dmp-titlebar);
+  background: linear-gradient(180deg, var(--dmp-accent) 0%, #14b8a6 100%);
+  border-color: var(--dmp-accent);
+}
+
+.dmp-root[data-skin="dakinis"] .dmp-toolbar__brand {
+  background: linear-gradient(90deg, var(--dmp-accent), var(--dmp-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dmp-root[data-skin="neon"] .dmp-desktop {
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+    linear-gradient(160deg, var(--dmp-desktop-from) 0%, var(--dmp-desktop-to) 100%);
+  background-size: 24px 24px, 24px 24px, 100% 100%;
+}
+
+.dmp-skin-picker {
+  display: flex;
+  gap: 4px;
+  margin-right: 8px;
+}
+
+.dmp-skin-picker__btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  color: #aaa;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.dmp-skin-picker__btn.is-active {
+  border-color: var(--dmp-accent);
+  color: var(--dmp-text);
+  box-shadow: 0 0 8px var(--dmp-glow);
+}
+
+.dmp-skin-picker__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 4px currentColor;
+}
+
+.dmp-skin-picker__label {
+  max-width: 52px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dmp-desktop__grid-hint {
@@ -92,7 +192,7 @@
   display: flex;
   flex-direction: column;
   background: var(--dmp-bg);
-  border: 2px solid #333;
+  border: 2px solid var(--dmp-border, #333);
   box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
   user-select: none;
 }
@@ -180,11 +280,11 @@
 
 .dmp-lcd {
   font-family: var(--dmp-font-lcd);
-  background: linear-gradient(180deg, #001a00 0%, #000 100%);
-  border: 1px inset #333;
+  background: linear-gradient(180deg, var(--dmp-lcd-bg, #001a00) 0%, #000 100%);
+  border: 1px inset var(--dmp-border, #333);
   padding: 8px 10px;
   min-height: 56px;
-  box-shadow: inset 0 0 12px rgba(0, 255, 65, 0.08);
+  box-shadow: inset 0 0 12px var(--dmp-glow);
 }
 
 .dmp-lcd__label {
@@ -293,7 +393,7 @@
 }
 
 .dmp-lcd__title {
-  color: var(--dmp-text);
+  color: var(--dmp-lcd-text, var(--dmp-text));
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
