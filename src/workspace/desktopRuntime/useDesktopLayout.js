@@ -5,6 +5,10 @@ import { loadPersistedLayout, persistLayout } from "../../modules/media-player/l
 
 const SAVE_DEBOUNCE_MS = 900;
 
+function windowsToPayload(rows) {
+  return rows.map(({ id, rect, visible }) => ({ id, rect, visible }));
+}
+
 /**
  * Load/save addon window layout via Desktop Runtime API with localStorage fallback.
  *
@@ -50,10 +54,27 @@ export function useDesktopLayout({ addonId, registry, factoryLayout, profileKey 
           if (local) {
             setWindows(local);
             setSource("localStorage");
+            const key = apiLayout.profileKey || profileKeyRef.current;
+            if (key) {
+              saveAddonLayout(addonId, {
+                profileKey: key,
+                windows: windowsToPayload(local),
+              }).catch(() => {
+                /* localStorage already has layout */
+              });
+            }
             return;
           }
-          setWindows(factoryLayout());
+          const defaults = factoryLayout();
+          setWindows(defaults);
           setSource("api-default");
+          const key = apiLayout.profileKey || profileKeyRef.current;
+          if (key) {
+            saveAddonLayout(addonId, {
+              profileKey: key,
+              windows: windowsToPayload(defaults),
+            }).catch(() => {});
+          }
           return;
         }
       } catch {
@@ -80,7 +101,7 @@ export function useDesktopLayout({ addonId, registry, factoryLayout, profileKey 
 
   const flushSave = useCallback(
     (nextWindows) => {
-      const payload = nextWindows.map(({ id, rect, visible }) => ({ id, rect, visible }));
+      const payload = windowsToPayload(nextWindows);
       persistLayout(nextWindows);
 
       const key =
