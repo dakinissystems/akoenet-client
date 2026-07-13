@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDesktopLayout } from "../../workspace/desktopRuntime/useDesktopLayout.js";
 import { MainWindow } from "./components/MainWindow.jsx";
 import { PlaylistWindow } from "./components/PlaylistWindow.jsx";
 import { EqualizerWindow } from "./components/EqualizerWindow.jsx";
@@ -19,8 +20,6 @@ import { STRINGS, windowTitle } from "./i18n/strings.js";
 import { WINDOW_REGISTRY, classicLayout } from "./windowRegistry.js";
 import {
   applyWindowSnap,
-  loadPersistedLayout,
-  persistLayout,
   stackLayout,
 } from "./lib/windowSnap.js";
 import "./styles/media-player.css";
@@ -50,11 +49,17 @@ function pickNextTrack(tracks, current, { shuffle, repeat }) {
   return repeat === "all" ? tracks[0] : null;
 }
 
+const MEDIA_PLAYER_ADDON_ID = "media-player";
+
 function MediaPlayerDesktop() {
   const navigate = useNavigate();
   const { state } = usePlayerStore();
   const playlist = usePlaylist();
-  const [windows, setWindows] = useState(() => loadPersistedLayout(WINDOW_REGISTRY) ?? classicLayout());
+  const { windows, setWindows, layoutSource, profileKey } = useDesktopLayout({
+    addonId: MEDIA_PLAYER_ADDON_ID,
+    registry: WINDOW_REGISTRY,
+    factoryLayout: classicLayout,
+  });
   const [compact, setCompact] = useState(false);
   const [focusedId, setFocusedId] = useState("player.main");
 
@@ -78,10 +83,6 @@ function MediaPlayerDesktop() {
 
   const equalizer = useEqualizer(player.audioEngine);
   const visualizer = useVisualizer(player.audioEngine, visualizerOpen && player.isPlaying);
-
-  useEffect(() => {
-    persistLayout(windows);
-  }, [windows]);
 
   useEffect(() => {
     playlist.loadDemo();
@@ -205,6 +206,11 @@ function MediaPlayerDesktop() {
         <div className="dmp-toolbar__brand-block">
           <span className="dmp-toolbar__brand">{STRINGS.appName}</span>
           <span className="dmp-toolbar__tagline">{STRINGS.appSubtitle}</span>
+          {layoutSource === "api" && profileKey ? (
+            <span className="dmp-toolbar__tagline" title="Desktop profile">
+              {profileKey}
+            </span>
+          ) : null}
         </div>
         <SkinPicker />
         <button type="button" className="dmp-toolbar__btn" onClick={applyStackLayout} title={STRINGS.layoutStack}>

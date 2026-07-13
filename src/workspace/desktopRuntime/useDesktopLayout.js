@@ -1,0 +1,110 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { fetchAddonLayout, saveAddonLayout } from "./layoutApi.js";
+import { resolveLayoutFromApiResponse } from "./layoutMerge.js";
+import { loadPersistedLayout, persistLayout } from "../../modules/media-player/lib/windowSnap.js";
+
+const SAVE_DEBOUNCE_MS = 900;
+
+/**
+ * Load/save addon window layout via Desktop Runtime API with localStorage fallback.
+ *
+ * @param {{
+ *   addonId: string,
+ *   registry: Array<{ id: string, title?: string, defaultRect: object, defaultVisible?: boolean }>,
+ *   factoryLayout: () => Array<object>,
+ *   profileKey?: string,
+ * }} opts
+ */
+export function useDesktopLayout({ addonId, registry, factoryLayout, profileKey }) {
+  const [windows, setWindows] = useState(() => factoryLayout());
+  const [profileKeyActive, setProfileKeyActive] = useState(null);
+  const [source, setSource] = useState("default");
+  const saveTimer = useRef(null);
+  const profileKeyRef = useRef(profileKey);
+  profileKeyRef.current = profileKey;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const apiLayout = await fetchAddonLayout(addonId, profileKeyRef.current);
+        if (cancelled) return;
+
+        const fromApi = resolveLayoutFromApiResponse(apiLayout, addonId, registry);
+        if (fromApi) {
+          setWindows(fromApi);
+          setProfileKeyActive(apiLayout.profileKey || null);
+          setSource("api");
+          return;
+        }
+      } catch {
+        /* offline or API unavailable */
+      }
+
+      const local = loadPersistedLayout(registry);
+      if (!cancelled && local) {
+        setWindows(local);
+        setSource("localStorage");
+        return;
+      }
+
+      if (!cancelled) {
+        setWindows(factoryLayout());
+        setSource("default");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [addonId, registry, factoryLayout]);
+
+  const flushSave = useCallback(
+    (nextWindows) => {
+      const payload = nextWindows.map(({ id, rect, visible }) => ({ id, rect, visible }));
+      persistLayout(nextWindows);
+
+      saveAddonLayout(addonId, {
+        profileKey: profileKeyRef.current || profileKeyActive || undefined,
+        windows: payload,
+      }).catch(() => {
+        /* localStorage already saved */
+      });
+    },
+    [addonId, profileKeyActive],
+  );
+
+  const scheduleSave = useCallback(
+    (nextWindows) => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => flushSave(nextWindows), SAVE_DEBOUNCE_MS);
+    },
+    [flushSave],
+  );
+
+  useEffect(
+    () => () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    },
+    [],
+  );
+
+  const setWindowsPersisted = useCallback(
+    (updater) => {
+      setWindows((prev) => {
+        const next = typeof updater === "function" ? updater(prev) : updater;
+        scheduleSave(next);
+        return next;
+      });
+    },
+    [scheduleSave],
+  );
+
+  return {
+    windows,
+    setWindows: setWindowsPersisted,
+    profileKey: profileKeyActive,
+    layoutSource: source,
+  };
+}
