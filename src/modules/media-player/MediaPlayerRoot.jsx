@@ -206,9 +206,9 @@ function MediaPlayerDesktop() {
         <div className="dmp-toolbar__brand-block">
           <span className="dmp-toolbar__brand">{STRINGS.appName}</span>
           <span className="dmp-toolbar__tagline">{STRINGS.appSubtitle}</span>
-          {layoutSource === "api" && profileKey ? (
-            <span className="dmp-toolbar__tagline" title="Desktop profile">
-              {profileKey}
+          {profileKey ? (
+            <span className="dmp-toolbar__tagline" title={`Perfil Desktop (${layoutSource})`}>
+              · {profileKey}
             </span>
           ) : null}
         </div>

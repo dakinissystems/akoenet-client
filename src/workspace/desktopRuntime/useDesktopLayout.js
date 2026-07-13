@@ -21,21 +21,39 @@ export function useDesktopLayout({ addonId, registry, factoryLayout, profileKey 
   const [source, setSource] = useState("default");
   const saveTimer = useRef(null);
   const profileKeyRef = useRef(profileKey);
+  const profileKeyFromApiRef = useRef(null);
   profileKeyRef.current = profileKey;
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
+      let apiLayout = null;
       try {
-        const apiLayout = await fetchAddonLayout(addonId, profileKeyRef.current);
+        apiLayout = await fetchAddonLayout(addonId, profileKeyRef.current);
         if (cancelled) return;
+
+        if (apiLayout?.profileKey) {
+          profileKeyFromApiRef.current = apiLayout.profileKey;
+          setProfileKeyActive(apiLayout.profileKey);
+        }
 
         const fromApi = resolveLayoutFromApiResponse(apiLayout, addonId, registry);
         if (fromApi) {
           setWindows(fromApi);
-          setProfileKeyActive(apiLayout.profileKey || null);
-          setSource("api");
+          setSource(apiLayout?.windows?.length ? "api" : "api-preset");
+          return;
+        }
+
+        if (apiLayout?.workspaceId) {
+          const local = loadPersistedLayout(registry);
+          if (local) {
+            setWindows(local);
+            setSource("localStorage");
+            return;
+          }
+          setWindows(factoryLayout());
+          setSource("api-default");
           return;
         }
       } catch {
@@ -65,8 +83,12 @@ export function useDesktopLayout({ addonId, registry, factoryLayout, profileKey 
       const payload = nextWindows.map(({ id, rect, visible }) => ({ id, rect, visible }));
       persistLayout(nextWindows);
 
+      const key =
+        profileKeyRef.current || profileKeyFromApiRef.current || profileKeyActive || undefined;
+      if (!key) return;
+
       saveAddonLayout(addonId, {
-        profileKey: profileKeyRef.current || profileKeyActive || undefined,
+        profileKey: key,
         windows: payload,
       }).catch(() => {
         /* localStorage already saved */
