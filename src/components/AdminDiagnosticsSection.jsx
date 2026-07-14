@@ -7,6 +7,9 @@ import {
   formatUptimeMs,
   readyStateIcon,
   readyStateLabel,
+  NA,
+  SEP,
+  okIcon,
 } from './AdminOverviewHelpers'
 
 export default function AdminDiagnosticsSection(p) {
@@ -44,11 +47,11 @@ export default function AdminDiagnosticsSection(p) {
               {metrics && (
                 <div className="status-meta" style={{ marginTop: '0.5rem', flexWrap: 'wrap' }}>
                   <span>
-                    <strong>{t('admin.metaMsgsTotal')}</strong> ch {metrics.messages_total?.channel ?? 0} ┬À dm{' '}
+                    <strong>{t('admin.metaMsgsTotal')}</strong> ch {metrics.messages_total?.channel ?? 0} {SEP} dm{' '}
                     {metrics.messages_total?.dm ?? 0}
                   </span>
                   <span>
-                    <strong>{t('admin.metaMsgs60')}</strong> ch {metrics.messages_last_60s?.channel ?? 0} ┬À dm{' '}
+                    <strong>{t('admin.metaMsgs60')}</strong> ch {metrics.messages_last_60s?.channel ?? 0} {SEP} dm{' '}
                     {metrics.messages_last_60s?.dm ?? 0}
                   </span>
                   <span className="muted small">
@@ -246,9 +249,9 @@ export default function AdminDiagnosticsSection(p) {
                       <li key={`${h.at}-${i}`}>
                         <span>{new Date(h.at).toLocaleTimeString()}</span>
                         <span>
-                          {t('admin.healthLivenessTitle')}: {h.liveness ? 'Ô£à' : 'ÔØî'} ┬À {t('admin.healthReadinessTitle')}:{' '}
-                          {h.readiness ? 'Ô£à' : 'ÔØî'}
-                          {h.deps != null ? ` ┬À deps: ${h.deps ? 'Ô£à' : 'ÔØî'}` : ''}
+                          {t('admin.healthLivenessTitle')}: {h.liveness ? okIcon(true) : okIcon(false)} {SEP}{' '}
+                          {t('admin.healthReadinessTitle')}: {h.readiness ? okIcon(true) : okIcon(false)}
+                          {h.deps != null ? ` ${SEP} deps: ${h.deps ? okIcon(true) : okIcon(false)}` : ''}
                         </span>
                         <span>{h.total ?? t('admin.na')} ms</span>
                       </li>

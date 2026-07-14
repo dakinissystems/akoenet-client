@@ -521,6 +521,7 @@ export default {
     alertReportsPending: 'Reportes de mensajes pendientes:',
     alertWeakPw: 'Usuarios con contraseña débil: no comprobado',
     alertSchedulerLegacy: 'API Scheduler en modo legacy (discovery ausente o antiguo)',
+    alertSchedulerDown: 'API StreamAutomator no responde: {{error}}',
     alertReadinessFailed: 'Liveness OK pero readiness falló — revisa Postgres/Redis/S3 (GET /health/ready).',
     footerHint:
       'Usa este panel para ver dependencias, auditoría e informes de mensajes. Licencias e ingresos son placeholders hasta integración comercial.',

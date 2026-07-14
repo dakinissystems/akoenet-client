@@ -518,6 +518,7 @@ export default {
     alertReportsPending: 'Pending message reports:',
     alertWeakPw: 'Users with weak password: not checked',
     alertSchedulerLegacy: 'Scheduler API in legacy mode (missing or old discovery)',
+    alertSchedulerDown: 'StreamAutomator API unreachable: {{error}}',
     alertReadinessFailed: 'Liveness OK but readiness failed — check Postgres/Redis/S3 (GET /health/ready).',
     footerHint:
       'Use this panel to verify dependencies, audit logs, and message reports. Licenses and revenue are placeholders until commercial integration exists.',

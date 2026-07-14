@@ -388,6 +388,65 @@ a:hover {
   cursor: pointer;
 }
 
+.admin-probes-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-bottom: 0.75rem;
+}
+
+.admin-probe-card {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--nexora-border);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.admin-probe-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.admin-deps-heading {
+  margin: 0 0 0.45rem;
+}
+
+.admin-scheduler-status {
+  margin-top: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--nexora-border);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.admin-scheduler-status-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.admin-scheduler-error {
+  margin: 0.35rem 0 0;
+  color: #f87171;
+}
+
+.admin-scheduler-hint {
+  margin: 0.35rem 0 0;
+}
+
+.admin-health-footer {
+  margin: 0.55rem 0 0;
+}
+
+.admin-metrics-inline {
+  list-style: none;
+  padding-left: 0;
+}
+
 .admin-overview-columns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

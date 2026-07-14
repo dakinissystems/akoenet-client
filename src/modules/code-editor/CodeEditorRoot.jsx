@@ -277,7 +277,7 @@ export default function CodeEditorRoot() {
                   className="code-editor-outline-item"
                   onClick={() => jumpToLine(item.line)}
                 >
-                  {item.kind === 'class' ? '◆' : 'ƒ'} {item.label}:{item.line}
+                  {item.kind === 'class' ? '\u25C6' : '\u0192'} {item.label}:{item.line}
                 </button>
               </li>
             ))}

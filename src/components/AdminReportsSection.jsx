@@ -1,12 +1,7 @@
 import { Link } from 'react-router-dom'
 import {
-  AdminKpiCard as KpiCard,
-  StatusBadge,
-  Latency,
   formatNum,
-  formatUptimeMs,
-  readyStateIcon,
-  readyStateLabel,
+  SEP,
 } from './AdminOverviewHelpers'
 
 export default function AdminReportsSection(p) {
@@ -60,8 +55,8 @@ export default function AdminReportsSection(p) {
                           {r.report_action === 'dm_message_report_user'
                             ? t('admin.reportLineDm')
                             : t('admin.reportLineChannel')}{' '}
-                          ┬À #{r.id} ┬À {t('admin.reportLineMsg')}
-                          {r.target_message_id ?? t('admin.reportLineNa')} ┬À {t('admin.reportLineBy')}{' '}
+                          {SEP} #{r.id} {SEP} {t('admin.reportLineMsg')}
+                          {r.target_message_id ?? t('admin.reportLineNa')} {SEP} {t('admin.reportLineBy')}{' '}
                           {r.reporter_username || `user:${r.reporter_user_id}`}
                         </span>
                         <span>{reportStatusLabel(r.metadata)}</span>
