@@ -16,12 +16,13 @@ const SAVE_DEBOUNCE_MS = 900
  */
 export function useAddonDataSync(addonKey, { hydrate, dump, bindPersist, onHydrated }) {
   const readyRef = useRef(false)
+  const syncEnabledRef = useRef(false)
   const saveTimer = useRef(null)
   const onHydratedRef = useRef(onHydrated)
   onHydratedRef.current = onHydrated
 
   const schedulePersist = useRef((data) => {
-    if (!readyRef.current) return
+    if (!readyRef.current || !syncEnabledRef.current) return
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
       saveAddonData(addonKey, data).catch(() => {})
@@ -41,6 +42,8 @@ export function useAddonDataSync(addonKey, { hydrate, dump, bindPersist, onHydra
       try {
         const remote = await fetchAddonData(addonKey)
         if (cancelled) return
+
+        syncEnabledRef.current = Boolean(remote?.workspaceId)
 
         if (remote?.data && typeof remote.data === 'object' && remote.workspaceId) {
           hydrate(remote.data)

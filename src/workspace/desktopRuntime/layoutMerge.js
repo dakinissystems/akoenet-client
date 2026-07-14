@@ -17,6 +17,71 @@ export function mapMediaPlayerWindowId(shortId) {
   return MEDIA_PLAYER_WINDOW_MAP[shortId] || shortId;
 }
 
+/** Preset/catalog short ids → addon window registry ids */
+const ADDON_WINDOW_ALIASES = {
+  calendar: {
+    agenda: "calendar.agenda",
+    week: "calendar.week",
+    month: "calendar.month",
+    detail: "calendar.detail",
+  },
+  kanban: {
+    boards: "kanban.boards",
+    board: "kanban.board",
+    tasks: "kanban.task",
+    task: "kanban.task",
+  },
+  notes: {
+    wiki: "notes.list",
+    list: "notes.list",
+    editor: "notes.editor",
+    search: "notes.search",
+  },
+  terminal: {
+    terminal: "terminal.shell",
+    shell: "terminal.shell",
+    logs: "terminal.logs",
+    railway: "terminal.bookmarks",
+    bookmarks: "terminal.bookmarks",
+  },
+  devops: {
+    deployments: "devops.deployments",
+    logs: "devops.logs",
+    metrics: "devops.services",
+    services: "devops.services",
+  },
+  monitor: {
+    overview: "monitor.overview",
+    system: "monitor.system",
+    services: "monitor.services",
+  },
+  dashboard: {
+    widgets: "dashboard.widgets",
+    activity: "dashboard.activity",
+    quick: "dashboard.quick",
+    streams: "dashboard.widgets",
+    analytics: "dashboard.widgets",
+  },
+  "code-editor": {
+    editor: "code-editor.editor",
+    explorer: "code-editor.explorer",
+    git: "code-editor.outline",
+    outline: "code-editor.outline",
+  },
+};
+
+/**
+ * @param {string} addonId
+ * @param {string} shortId
+ */
+export function mapPresetWindowId(addonId, shortId) {
+  const s = String(shortId || "").trim();
+  if (!s) return s;
+  if (s.includes(".")) return s;
+  if (addonId === "media-player") return mapMediaPlayerWindowId(s);
+  return ADDON_WINDOW_ALIASES[addonId]?.[s] || `${addonId}.${s}`;
+}
+
 /**
  * @param {Array<{ id: string, rect?: object, visible?: boolean }>} saved
  * @param {Array<{ id: string, title?: string, defaultRect: object, defaultVisible?: boolean }>} registry
@@ -49,7 +114,7 @@ export function layoutFromProfileOpens(profile, addonId, registry) {
   const entry = opens.find((o) => o.addonId === addonId);
   if (!entry?.windows?.length) return null;
 
-  const visibleIds = new Set(entry.windows.map((w) => mapMediaPlayerWindowId(w)));
+  const visibleIds = new Set(entry.windows.map((w) => mapPresetWindowId(addonId, w)));
 
   return registry.map((desc, i) => ({
     id: desc.id,
