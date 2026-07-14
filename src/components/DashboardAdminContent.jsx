@@ -2,6 +2,7 @@ import AdminOverviewSection from './AdminOverviewSection'
 import AdminDiagnosticsSection from './AdminDiagnosticsSection'
 import AdminAuditSection from './AdminAuditSection'
 import AdminReportsSection from './AdminReportsSection'
+import AdminWorkspaceAddonsSection from './AdminWorkspaceAddonsSection'
 
 export default function DashboardAdminContent({ embedded, ...p }) {
   const props = { embedded, ...p }
@@ -22,6 +23,7 @@ export default function DashboardAdminContent({ embedded, ...p }) {
       {!loading && (
         <>
           <AdminDiagnosticsSection {...props} />
+          <AdminWorkspaceAddonsSection />
           <AdminAuditSection {...props} />
           <AdminReportsSection {...props} />
         </>

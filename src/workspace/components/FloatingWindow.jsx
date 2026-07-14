@@ -21,6 +21,7 @@ export default function FloatingWindow({
   onResizeEnd,
   resizable = true,
   minTop = 8,
+  children,
 }) {
   const dragRef = useRef(null)
   const resizeRef = useRef(null)
