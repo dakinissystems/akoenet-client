@@ -116,6 +116,32 @@ export default function ServerSettingsAssistantPanel({ serverId, canManage, t })
                         {assistantModuleDescription(mod, t)}
                       </p>
                     ) : null}
+                    {mod.key === 'streamer' && mod.enabled && canManage ? (
+                      <div className="assistant-module-card__config" style={{ marginTop: '0.65rem' }}>
+                        <label className="small" style={{ display: 'block', marginBottom: '0.35rem' }}>
+                          {t('serverAssistant.streamerChannelLabel')}
+                          <input
+                            type="text"
+                            className="input"
+                            style={{ marginTop: '0.25rem', width: '100%' }}
+                            placeholder={t('serverAssistant.streamerChannelPlaceholder')}
+                            defaultValue={mod.config?.announceChannel || ''}
+                            onBlur={(e) => {
+                              const val = e.target.value.trim()
+                              if (String(mod.config?.announceChannel || '') !== val) {
+                                assistant.saveModuleConfig(mod, {
+                                  announceChannel: val || null,
+                                  autoAnnounce: mod.config?.autoAnnounce !== false,
+                                })
+                              }
+                            }}
+                          />
+                        </label>
+                        <p className="muted small" style={{ margin: '0.35rem 0 0' }}>
+                          {t('serverAssistant.streamerChannelHint')}
+                        </p>
+                      </div>
+                    ) : null}
                   </article>
                 )
               })}

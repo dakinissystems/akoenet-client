@@ -19,6 +19,17 @@ export default function WorkspaceProviders({ children }) {
   useCommandPaletteShortcut(openCmd)
 
   useEffect(() => {
+    const onCmd = () => setCmdOpen(true)
+    const onActivity = () => setActivityOpen(true)
+    window.addEventListener('akoenet:open-command-palette', onCmd)
+    window.addEventListener('akoenet:open-activity-center', onActivity)
+    return () => {
+      window.removeEventListener('akoenet:open-command-palette', onCmd)
+      window.removeEventListener('akoenet:open-activity-center', onActivity)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!user) {
       setWorkspaceEnabledFilter(null)
       return

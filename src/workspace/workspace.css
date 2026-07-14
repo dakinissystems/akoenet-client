@@ -47,6 +47,45 @@
   font-size: 1rem;
 }
 
+.ws-cmdk-scopes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.45rem 0.65rem;
+  border-bottom: 1px solid var(--border-subtle, #334155);
+}
+
+.ws-cmdk-scope {
+  border: 1px solid var(--border-subtle, #334155);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+}
+
+.ws-cmdk-scope.is-active {
+  border-color: #7c3aed;
+  background: rgba(124, 58, 237, 0.18);
+}
+
+.ws-cmdk-item-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.ws-cmdk-snippet {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .ws-cmdk-list {
   list-style: none;
   margin: 0;
@@ -138,6 +177,29 @@
 .ws-activity-dot--live { background: #ef4444; }
 .ws-activity-dot--deploy { background: #22c55e; }
 .ws-activity-dot--ai { background: #a78bfa; }
+.ws-activity-dot--default { background: #64748b; }
+
+.ws-activity-time {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+}
+
+.ws-activity-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ws-activity-link:hover strong {
+  text-decoration: underline;
+}
 
 .ws-activity-subtitle {
   margin: 0.5rem 0;
@@ -161,7 +223,112 @@
 }
 
 .ws-desktop {
-  padding: 1rem 1.25rem 2rem;
+  padding: 1rem 1.25rem 5.5rem;
+}
+
+.ws-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 3rem);
+  position: relative;
+}
+
+.ws-shell-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border-subtle, #334155);
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.ws-shell-body {
+  flex: 1;
+  overflow: auto;
+}
+
+.ws-profile-switcher {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.ws-profile-label {
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+.ws-profile-select {
+  min-width: 10rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle, #334155);
+  background: var(--surface-elevated, #1e293b);
+  color: inherit;
+  font-size: 0.9rem;
+}
+
+.ws-profile-base {
+  font-size: 0.78rem;
+}
+
+.ws-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 0.85rem;
+  transform: translateX(-50%);
+  z-index: 880;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.14));
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  max-width: calc(100vw - 2rem);
+  overflow-x: auto;
+}
+
+.ws-dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 3.25rem;
+  padding: 0.35rem 0.45rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.ws-dock-item:hover {
+  background: rgba(124, 58, 237, 0.22);
+  transform: translateY(-2px);
+}
+
+.ws-dock-item--preview {
+  opacity: 0.72;
+}
+
+.ws-dock-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.ws-dock-label {
+  font-size: 0.62rem;
+  max-width: 4.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.88;
 }
 
 .ws-desktop-header h1 {
@@ -304,6 +471,40 @@
   padding: 0.65rem;
   overflow: auto;
   font-size: 0.85rem;
+}
+
+.ws-float-resize {
+  position: absolute;
+  z-index: 2;
+}
+
+.ws-float-resize--e {
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.ws-float-resize--s {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.ws-float-resize--se {
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+.ws-snap-hint {
+  margin: 0 0 0.35rem;
+  padding: 0 0.25rem;
 }
 
 .ws-preview-terminal {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDesktopLayout } from "../../workspace/desktopRuntime/useDesktopLayout.js";
+import { applyWindowSnap, constrainToViewport } from "../../workspace/desktopRuntime/windowSnap.js";
 import { MainWindow } from "./components/MainWindow.jsx";
 import { PlaylistWindow } from "./components/PlaylistWindow.jsx";
 import { EqualizerWindow } from "./components/EqualizerWindow.jsx";
@@ -19,7 +20,6 @@ import { PlayerProvider, usePlayerStore } from "./store/playerStore.jsx";
 import { STRINGS, windowTitle } from "./i18n/strings.js";
 import { WINDOW_REGISTRY, classicLayout } from "./windowRegistry.js";
 import {
-  applyWindowSnap,
   stackLayout,
 } from "./lib/windowSnap.js";
 import "./styles/media-player.css";
@@ -53,6 +53,7 @@ const MEDIA_PLAYER_ADDON_ID = "media-player";
 
 function MediaPlayerDesktop() {
   const navigate = useNavigate();
+  const desktopRef = useRef(null);
   const { state } = usePlayerStore();
   const playlist = usePlaylist();
   const { windows, setWindows, layoutSource, profileKey } = useDesktopLayout({
@@ -100,25 +101,33 @@ function MediaPlayerDesktop() {
     setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, rect } : w)));
   }, []);
 
-  const finishMove = useCallback((id, rect) => {
-    setWindows((prev) => {
-      const snapped = applyWindowSnap(
-        id,
-        rect,
-        prev.map((w) => (w.id === id ? { ...w, rect } : w)),
-        WINDOW_REGISTRY,
-      );
-      return prev.map((w) => (w.id === id ? { ...w, rect: snapped } : w));
-    });
-  }, []);
-
   const resizeWindow = useCallback((id, rect) => {
     setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, rect } : w)));
   }, []);
 
-  const finishResize = useCallback((id, rect) => {
-    setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, rect } : w)));
+  const getViewport = useCallback(() => {
+    const el = desktopRef.current;
+    if (!el) return { width: 1200, height: 720, topBar: 0, bottom: 0 };
+    return { width: el.clientWidth, height: el.clientHeight, topBar: 0, bottom: 0 };
   }, []);
+
+  const finishMove = useCallback((id, rect) => {
+    setWindows((prev) => {
+      const vp = getViewport();
+      const constrained = constrainToViewport(rect, vp);
+      const siblings = prev.map((w) => (w.id === id ? { ...w, rect: constrained } : w));
+      const snapped = applyWindowSnap(id, constrained, siblings, WINDOW_REGISTRY, vp);
+      return prev.map((w) => (w.id === id ? { ...w, rect: snapped } : w));
+    });
+  }, [getViewport]);
+
+  const finishResize = useCallback((id, rect) => {
+    setWindows((prev) => {
+      const vp = getViewport();
+      const next = constrainToViewport(rect, vp);
+      return prev.map((w) => (w.id === id ? { ...w, rect: next } : w));
+    });
+  }, [getViewport]);
 
   const toggleWindow = useCallback((id) => {
     setWindows((prev) =>
@@ -191,7 +200,7 @@ function MediaPlayerDesktop() {
   }
 
   return (
-    <div className="dmp-desktop">
+    <div className="dmp-desktop" ref={desktopRef}>
       <div className="dmp-toolbar">
         <button
           type="button"

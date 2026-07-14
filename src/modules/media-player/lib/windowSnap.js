@@ -1,87 +1,19 @@
-/** @typedef {{ x: number, y: number, width: number, height: number }} Rect */
-
-export const WINDOW_MIN = { width: 220, height: 120 };
-
-/** @param {Rect} rect @param {{ width?: number, height?: number }} [min] */
-export function clampRect(rect, min = WINDOW_MIN) {
-  return {
-    ...rect,
-    width: Math.max(min.width ?? WINDOW_MIN.width, rect.width),
-    height: Math.max(min.height ?? WINDOW_MIN.height, rect.height),
-  };
-}
-
-const SNAP_THRESHOLD = 24;
-
 /**
- * @param {string} movedId
- * @param {Rect} rect
- * @param {Array<{ id: string, rect: Rect }>} windows
- * @param {Array<{ id: string, snapTo?: string[] }>} registry
+ * Media Player — re-exporta snap genérico + helpers de layout local.
  */
-export function applyWindowSnap(movedId, rect, windows, registry) {
-  const desc = registry.find((d) => d.id === movedId);
-  if (!desc?.snapTo?.length) return rect;
+export {
+  WINDOW_MIN,
+  SNAP_THRESHOLD,
+  clampRect,
+  applyWindowSnap,
+  applyScreenSnap,
+  applyPairwiseSnap,
+  constrainToViewport,
+  buildAddonWindowRegistry,
+  normalizeViewport,
+} from "../../../workspace/desktopRuntime/windowSnap.js";
 
-  let snapped = { ...rect };
-
-  for (const targetId of desc.snapTo) {
-    const target = windows.find((w) => w.id === targetId);
-    if (!target) continue;
-
-    const tr = target.rect;
-
-    // Stack below (playlist under player)
-    if (
-      movedId === "player.playlist" &&
-      targetId === "player.main" &&
-      Math.abs(snapped.x - tr.x) < SNAP_THRESHOLD
-    ) {
-      snapped = {
-        ...snapped,
-        x: tr.x,
-        width: tr.width,
-        y: tr.y + tr.height - 2,
-      };
-      continue;
-    }
-
-    if (
-      movedId === "player.main" &&
-      targetId === "player.playlist" &&
-      Math.abs(snapped.x - tr.x) < SNAP_THRESHOLD
-    ) {
-      snapped = {
-        ...snapped,
-        x: tr.x,
-        width: tr.width,
-        y: tr.y - snapped.height + 2,
-      };
-      continue;
-    }
-
-    // Dock to the right (EQ beside player)
-    if (
-      (movedId === "player.eq" && targetId === "player.main") ||
-      (movedId === "player.main" && targetId === "player.eq")
-    ) {
-      const beside =
-        movedId === "player.eq"
-          ? { x: tr.x + tr.width - 2, y: tr.y, height: tr.height }
-          : { x: tr.x - snapped.width + 2, y: tr.y, height: tr.height };
-
-      if (
-        Math.abs(snapped.y - beside.y) < SNAP_THRESHOLD ||
-        Math.abs(snapped.x - (movedId === "player.eq" ? tr.x + tr.width : tr.x - snapped.width)) <
-          SNAP_THRESHOLD
-      ) {
-        snapped = { ...snapped, ...beside, width: snapped.width };
-      }
-    }
-  }
-
-  return snapped;
-}
+/** @typedef {{ x: number, y: number, width: number, height: number }} Rect */
 
 /**
  * Winamp-style vertical stack: Player → Playlist → EQ

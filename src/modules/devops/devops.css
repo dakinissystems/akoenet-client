@@ -1,0 +1,139 @@
+.devops-desktop {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: calc(100vh - 3rem);
+}
+
+.devops-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border-subtle, #334155);
+}
+
+.devops-toolbar h1 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.devops-canvas {
+  position: relative;
+  flex: 1;
+  min-height: 520px;
+  overflow: hidden;
+  background: rgba(2, 6, 23, 0.35);
+}
+
+.devops-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+  overflow: auto;
+}
+
+.devops-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.devops-deploy-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.devops-deploy-item {
+  border: 1px solid var(--border-subtle, #334155);
+  border-radius: 10px;
+  padding: 0.45rem 0.55rem;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.devops-deploy-item strong {
+  display: block;
+  font-size: 0.88rem;
+}
+
+.devops-log-scroll {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 0.45rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  background: rgba(2, 6, 23, 0.55);
+  border: 1px solid var(--border-subtle, #334155);
+  border-radius: 8px;
+  flex: 1;
+  overflow: auto;
+  max-height: 100%;
+}
+
+.devops-log-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.devops-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+}
+
+.devops-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.devops-dot--ok {
+  background: #22c55e;
+}
+
+.devops-dot--fail {
+  background: #ef4444;
+}
+
+.devops-dot--unknown {
+  background: #94a3b8;
+}
+
+.devops-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.devops-link-btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle, #334155);
+  background: rgba(30, 41, 59, 0.55);
+  color: inherit;
+  cursor: pointer;
+}
+
+.devops-link-btn:hover {
+  background: rgba(51, 65, 85, 0.65);
+}
+
+.devops-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+}

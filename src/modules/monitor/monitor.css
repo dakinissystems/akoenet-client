@@ -1,0 +1,128 @@
+.monitor-desktop {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: calc(100vh - 3rem);
+}
+
+.monitor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border-subtle, #334155);
+}
+
+.monitor-toolbar h1 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.monitor-canvas {
+  position: relative;
+  flex: 1;
+  min-height: 520px;
+  overflow: hidden;
+  background: rgba(2, 6, 23, 0.35);
+}
+
+.monitor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+  overflow: auto;
+}
+
+.monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.monitor-metric {
+  border: 1px solid var(--border-subtle, #334155);
+  border-radius: 10px;
+  padding: 0.5rem 0.6rem;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.monitor-metric strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-top: 0.15rem;
+}
+
+.monitor-metric-label {
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+
+.monitor-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(51, 65, 85, 0.6);
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+
+.monitor-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+  transition: width 0.35s ease;
+}
+
+.monitor-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.45);
+  font-size: 0.82rem;
+}
+
+.monitor-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.monitor-dot--ok {
+  background: #22c55e;
+}
+
+.monitor-dot--warn {
+  background: #eab308;
+}
+
+.monitor-dot--fail {
+  background: #ef4444;
+}
+
+.monitor-dot--unknown {
+  background: #64748b;
+}
+
+.monitor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.monitor-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 36px;
+  margin-top: 0.35rem;
+}
+
+.monitor-spark-bar {
+  flex: 1;
+  min-width: 3px;
+  background: rgba(99, 102, 241, 0.55);
+  border-radius: 2px 2px 0 0;
+}

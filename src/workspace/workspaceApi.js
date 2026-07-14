@@ -20,6 +20,53 @@ export async function fetchWorkspaceAddons(force = false) {
   }
 }
 
+export async function fetchWorkspaceActivity() {
+  try {
+    const { data } = await api.get('/workspace/activity')
+    return data
+  } catch {
+    return { items: [], stub: true }
+  }
+}
+
+export async function fetchWorkspaceDevops() {
+  try {
+    const { data } = await api.get('/workspace/devops')
+    return data
+  } catch {
+    return { deployments: [], logs: [], infra: null, links: {}, stub: true }
+  }
+}
+
+export async function fetchWorkspaceMetrics() {
+  try {
+    const { data } = await api.get('/workspace/metrics')
+    return data
+  } catch {
+    return { local: null, platform: null, stub: true }
+  }
+}
+
+/**
+ * @param {string} q
+ * @param {string} [scope='all']
+ * @param {{ signal?: AbortSignal }} [options]
+ */
+export async function fetchWorkspaceSearchHits(q, scope = 'all', options = {}) {
+  try {
+    const params = new URLSearchParams({
+      q: String(q || '').trim(),
+      scope: String(scope || 'all'),
+    })
+    const { data } = await api.get(`/workspace/search?${params}`, {
+      signal: options.signal,
+    })
+    return data?.hits || []
+  } catch {
+    return []
+  }
+}
+
 export function isAddonEnabledInWorkspace(addonId, enabledIds) {
   if (!enabledIds) return true
   return enabledIds.has(addonId)

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import AppChrome from '../components/AppChrome'
@@ -7,6 +7,11 @@ import FloatingWindow from './components/FloatingWindow.jsx'
 import { addonDescription, addonLabel } from './addonCatalog.js'
 import { getWindowPreviewBody, humanizeWindowId } from './windowContent.jsx'
 import { defaultLayoutForWindows, loadAddonLayout, persistAddonLayout } from './windowManager/layout.js'
+import {
+  applyWindowSnap,
+  buildAddonWindowRegistry,
+  constrainToViewport,
+} from './desktopRuntime/windowSnap.js'
 import './workspace.css'
 
 export default function WorkspaceAddonRuntime({ addon, servers = [] }) {
@@ -14,6 +19,8 @@ export default function WorkspaceAddonRuntime({ addon, servers = [] }) {
   const navigate = useNavigate()
   const locale = i18n.language?.startsWith('en') ? 'en' : 'es'
   const windowIds = useMemo(() => (addon.windows || []).slice(0, 8), [addon.windows])
+  const snapRegistry = useMemo(() => buildAddonWindowRegistry(windowIds), [windowIds])
+  const canvasRef = useRef(null)
 
   const [windows, setWindows] = useState(() => loadAddonLayout(addon.id, windowIds))
   const [focusedId, setFocusedId] = useState(windowIds[0] || null)
@@ -21,6 +28,19 @@ export default function WorkspaceAddonRuntime({ addon, servers = [] }) {
   useEffect(() => {
     persistAddonLayout(addon.id, windows)
   }, [addon.id, windows])
+
+  const getViewport = useCallback(() => {
+    const el = canvasRef.current
+    if (!el) {
+      return { width: 960, height: 640, topBar: 0, bottom: 0 }
+    }
+    return {
+      width: el.clientWidth,
+      height: el.clientHeight,
+      topBar: 0,
+      bottom: 0,
+    }
+  }, [])
 
   const focus = useCallback((id) => {
     setFocusedId(id)
@@ -33,6 +53,34 @@ export default function WorkspaceAddonRuntime({ addon, servers = [] }) {
   const moveWindow = useCallback((id, rect) => {
     setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, rect } : w)))
   }, [])
+
+  const finishMove = useCallback(
+    (id, rect) => {
+      setWindows((prev) => {
+        const vp = getViewport()
+        const constrained = constrainToViewport(rect, vp)
+        const siblings = prev.map((w) => (w.id === id ? { ...w, rect: constrained } : w))
+        const snapped = applyWindowSnap(id, constrained, siblings, snapRegistry, vp)
+        return prev.map((w) => (w.id === id ? { ...w, rect: snapped } : w))
+      })
+    },
+    [getViewport, snapRegistry]
+  )
+
+  const resizeWindow = useCallback((id, rect) => {
+    setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, rect } : w)))
+  }, [])
+
+  const finishResize = useCallback(
+    (id, rect) => {
+      setWindows((prev) => {
+        const vp = getViewport()
+        const next = constrainToViewport(rect, vp)
+        return prev.map((w) => (w.id === id ? { ...w, rect: next } : w))
+      })
+    },
+    [getViewport]
+  )
 
   const toggleWindow = useCallback((id) => {
     setWindows((prev) =>
@@ -91,7 +139,8 @@ export default function WorkspaceAddonRuntime({ addon, servers = [] }) {
               })}
             </div>
           ) : null}
-          <div className="ws-runtime-canvas">
+          <p className="ws-snap-hint muted small">{t('workspace.snapHint')}</p>
+          <div className="ws-runtime-canvas" ref={canvasRef}>
             {windows.map((w) => (
               <FloatingWindow
                 key={w.id}
@@ -104,6 +153,9 @@ export default function WorkspaceAddonRuntime({ addon, servers = [] }) {
                 focused={focusedId === w.id}
                 onFocus={focus}
                 onMove={moveWindow}
+                onMoveEnd={finishMove}
+                onResize={resizeWindow}
+                onResizeEnd={finishResize}
               >
                 {getWindowPreviewBody(addon, w.id, locale, t)}
               </FloatingWindow>

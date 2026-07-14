@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchAddonLayout, saveAddonLayout } from "./layoutApi.js";
 import { resolveLayoutFromApiResponse } from "./layoutMerge.js";
 import { loadPersistedLayout, persistLayout } from "../../modules/media-player/lib/windowSnap.js";
+import { loadStoredProfileKey } from "./desktopProfileUtils.js";
+import { emitWorkspaceEvent } from "./workspaceEventBus.js";
 
 const SAVE_DEBOUNCE_MS = 900;
 
@@ -24,9 +26,10 @@ export function useDesktopLayout({ addonId, registry, factoryLayout, profileKey 
   const [profileKeyActive, setProfileKeyActive] = useState(null);
   const [source, setSource] = useState("default");
   const saveTimer = useRef(null);
-  const profileKeyRef = useRef(profileKey);
+  const resolvedProfileKey = profileKey ?? loadStoredProfileKey();
+  const profileKeyRef = useRef(resolvedProfileKey);
   const profileKeyFromApiRef = useRef(null);
-  profileKeyRef.current = profileKey;
+  profileKeyRef.current = resolvedProfileKey;
 
   useEffect(() => {
     let cancelled = false;
@@ -46,6 +49,12 @@ export function useDesktopLayout({ addonId, registry, factoryLayout, profileKey 
         if (fromApi) {
           setWindows(fromApi);
           setSource(apiLayout?.windows?.length ? "api" : "api-preset");
+          emitWorkspaceEvent("layout.restored", {
+            addonId,
+            profileKey: apiLayout?.profileKey || profileKeyRef.current,
+            source: apiLayout?.windows?.length ? "api" : "api-preset",
+            windows: fromApi,
+          });
           return;
         }
 
@@ -85,19 +94,32 @@ export function useDesktopLayout({ addonId, registry, factoryLayout, profileKey 
       if (!cancelled && local) {
         setWindows(local);
         setSource("localStorage");
+        emitWorkspaceEvent("layout.restored", {
+          addonId,
+          profileKey: profileKeyRef.current,
+          source: "localStorage",
+          windows: local,
+        });
         return;
       }
 
       if (!cancelled) {
-        setWindows(factoryLayout());
+        const defaults = factoryLayout();
+        setWindows(defaults);
         setSource("default");
+        emitWorkspaceEvent("layout.restored", {
+          addonId,
+          profileKey: profileKeyRef.current,
+          source: "default",
+          windows: defaults,
+        });
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [addonId, registry, factoryLayout]);
+  }, [addonId, registry, factoryLayout, resolvedProfileKey]);
 
   const flushSave = useCallback(
     (nextWindows) => {

@@ -100,6 +100,24 @@ export function useServerAssistantModules({ serverId, canManage, open = true }) 
     }
   }
 
+  async function saveModuleConfig(mod, patch) {
+    if (!serverId || !canManage) return
+    setBusyKey(mod.key)
+    setError('')
+    try {
+      const nextConfig = { ...(mod.config || {}), ...patch }
+      await setServerAssistantModule(serverId, mod.key, { enabled: mod.enabled, config: nextConfig })
+      setModules((prev) =>
+        prev.map((m) => (m.key === mod.key ? { ...m, config: nextConfig } : m))
+      )
+      setInfo(t('serverAssistant.configSaved'))
+    } catch {
+      setError(t('serverAssistant.errToggle'))
+    } finally {
+      setBusyKey('')
+    }
+  }
+
   return {
     modules,
     groups: groupModulesByCategory(modules),
@@ -111,5 +129,6 @@ export function useServerAssistantModules({ serverId, canManage, open = true }) 
     warning,
     reload: load,
     toggleModule,
+    saveModuleConfig,
   }
 }

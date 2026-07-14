@@ -1006,6 +1006,10 @@ export default {
     on: 'Activo',
     off: 'Inactivo',
     saving: 'Guardando…',
+    configSaved: 'Configuración guardada.',
+    streamerChannelLabel: 'Canal de anuncios (ID)',
+    streamerChannelPlaceholder: 'Ej. 42 — o déjalo vacío para el canal por defecto',
+    streamerChannelHint: 'Cuando StreamAutomator detecte un directo, el Assistant publicará aquí automáticamente.',
     phaseGrowth: 'Crecimiento',
     phaseFuture: 'Próximamente',
     category: {

@@ -1000,6 +1000,10 @@ export default {
     on: 'On',
     off: 'Off',
     saving: 'Saving…',
+    configSaved: 'Settings saved.',
+    streamerChannelLabel: 'Announcement channel (ID)',
+    streamerChannelPlaceholder: 'e.g. 42 — leave empty for default channel',
+    streamerChannelHint: 'When StreamAutomator detects a live stream, Assistant posts here automatically.',
     phaseGrowth: 'Growth',
     phaseFuture: 'Coming soon',
     category: {

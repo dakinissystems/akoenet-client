@@ -12,6 +12,14 @@ const CATEGORY_I18N = {
 /** Addons with a real UI route today */
 export const IMPLEMENTED_ADDON_ROUTES = {
   'media-player': '/media',
+  notes: '/notes',
+  calendar: '/calendar',
+  kanban: '/kanban',
+  dashboard: '/dashboard',
+  terminal: '/terminal',
+  monitor: '/monitor',
+  devops: '/devops',
+  'code-editor': '/code',
 }
 
 /** @type {Set<string> | null} */
