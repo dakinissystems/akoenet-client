@@ -5,7 +5,7 @@ import {
   addonRoute,
   getAddonById,
   isAddonImplemented,
-} from '../addonCatalog.js'
+} from './addonCatalog.js'
 import { useDesktopProfile } from './desktopRuntime/DesktopProfileContext.jsx'
 import {
   isBuiltinDockItem,
