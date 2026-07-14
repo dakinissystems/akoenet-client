@@ -4,6 +4,14 @@ import api from '../services/api'
 
 const acceptAll = { validateStatus: () => true }
 
+function buildUserLookupParams(raw) {
+  const q = String(raw || '').trim()
+  if (!q) return null
+  if (q.includes('@')) return { email: q.toLowerCase() }
+  if (/^\d+$/.test(q)) return { user_id: q }
+  return { username: q }
+}
+
 export default function AdminWorkspaceAddonsSection() {
   const { t, i18n } = useTranslation()
   const locale = i18n.language?.startsWith('en') ? 'en' : 'es'
@@ -22,7 +30,8 @@ export default function AdminWorkspaceAddonsSection() {
     setLoading(true)
     setError('')
     try {
-      const params = q.includes('@') ? { email: q } : { user_id: q }
+      const params = buildUserLookupParams(q)
+      if (!params) return
       const res = await api.get('/admin/workspace/addons', { params, ...acceptAll })
       if (res.status === 404) {
         setError(t('admin.workspaceAddonsUserNotFound'))

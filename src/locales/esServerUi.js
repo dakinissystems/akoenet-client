@@ -464,7 +464,7 @@ export default {
     workspaceAddonsTitle: 'Addons Workspace por usuario',
     workspaceAddonsLead:
       'Controla qué mini-apps ve cada usuario en /workspace. Busca por email o ID AkoeNet. Requiere Internal API y migración workspace_addon_installs.',
-    workspaceAddonsEmailPh: 'Email o ID de usuario',
+    workspaceAddonsEmailPh: 'Email, username o ID de usuario',
     workspaceAddonsLoad: 'Cargar addons',
     workspaceAddonsUserNotFound: 'Usuario no encontrado',
     workspaceAddonsLoadFailed: 'No se pudieron cargar los addons',
