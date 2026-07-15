@@ -28,7 +28,7 @@ export default function TerminalRoot() {
   const [logs, setLogs] = useState(() => listOutput())
   const [bookmarks, setBookmarks] = useState(() => listBookmarks())
 
-  const { windows, setWindows, profileKey } = useDesktopLayout({
+  const { windows, setWindows, profileKey, minimizeWindow, closeWindow } = useDesktopLayout({
     addonId: ADDON_ID,
     registry: TERMINAL_WINDOW_REGISTRY,
     factoryLayout: terminalDefaultLayout,
@@ -224,6 +224,8 @@ export default function TerminalRoot() {
                 onMoveEnd={finishMove}
                 onResize={resizeWindow}
                 onResizeEnd={finishResize}
+                onMinimize={minimizeWindow}
+                onClose={closeWindow}
               >
                 {windowBodies[w.id]}
               </FloatingWindow>

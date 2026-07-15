@@ -95,7 +95,7 @@ export function mergeSavedWindows(saved, registry) {
       title: desc.title,
       rect: hit?.rect ? { ...hit.rect } : { ...desc.defaultRect },
       visible: hit?.visible ?? desc.defaultVisible ?? true,
-      minimized: false,
+      minimized: hit?.minimized ?? false,
       zIndex: i + 1,
     };
   });

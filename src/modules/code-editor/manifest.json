@@ -1,0 +1,10 @@
+{
+  "id": "code-editor",
+  "version": "1.0.0",
+  "tier": "developer",
+  "route": "/code",
+  "capabilities": [{ "id": "window-manager", "version": "1.0.0" }],
+  "permissions": ["storage", "git"],
+  "windows": ["code-editor.explorer", "code-editor.editor", "code-editor.outline"],
+  "syncData": true
+}

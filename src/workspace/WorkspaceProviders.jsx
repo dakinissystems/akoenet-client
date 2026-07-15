@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import CommandPalette, { useCommandPaletteShortcut } from './CommandPalette.jsx'
 import ActivityCenter from './ActivityCenter.jsx'
 import { fetchWorkspaceAddons } from './workspaceApi.js'
-import { setWorkspaceEnabledFilter } from './addonCatalog.js'
+import { fetchWorkspaceFeatureFlags } from './featureFlagsApi.js'
+import { setWorkspaceEnabledFilter, setWorkspaceFeatureFlags } from './addonCatalog.js'
 import './workspace.css'
 
 export default function WorkspaceProviders({ children }) {
@@ -32,12 +33,14 @@ export default function WorkspaceProviders({ children }) {
   useEffect(() => {
     if (!user) {
       setWorkspaceEnabledFilter(null)
+      setWorkspaceFeatureFlags(null)
       return
     }
     let cancelled = false
-    fetchWorkspaceAddons().then((data) => {
-      if (cancelled || !data?.enabledIds) return
-      setWorkspaceEnabledFilter(data.enabledIds)
+    Promise.all([fetchWorkspaceAddons(), fetchWorkspaceFeatureFlags()]).then(([addons, flags]) => {
+      if (cancelled) return
+      if (addons?.enabledIds) setWorkspaceEnabledFilter(addons.enabledIds)
+      if (flags?.flags) setWorkspaceFeatureFlags(flags.flags)
     })
     return () => {
       cancelled = true

@@ -15,6 +15,7 @@ export function WindowFrame({
   onResize,
   onResizeEnd,
   onClose,
+  onMinimize,
   children,
 }) {
   const dragRef = useRef(null);
@@ -23,7 +24,7 @@ export function WindowFrame({
   const onTitleMouseDown = useCallback(
     (e) => {
       if (e.button !== 0) return;
-      if (e.target.closest(".dmp-window__close")) return;
+      if (e.target.closest(".dmp-window__close, .dmp-window__minimize")) return;
       onFocus();
       const startX = e.clientX;
       const startY = e.clientY;
@@ -138,9 +139,26 @@ export function WindowFrame({
     >
       <div className="dmp-window__titlebar" onMouseDown={onTitleMouseDown}>
         <span>{title}</span>
-        <button type="button" className="dmp-window__close" onClick={onClose} aria-label="Close">
-          ×
-        </button>
+        <div className="dmp-window__chrome">
+          {onMinimize ? (
+            <button
+              type="button"
+              className="dmp-window__minimize"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMinimize();
+              }}
+              aria-label="Minimize"
+            >
+              −
+            </button>
+          ) : null}
+          {onClose ? (
+            <button type="button" className="dmp-window__close" onClick={onClose} aria-label="Close">
+              ×
+            </button>
+          ) : null}
+        </div>
       </div>
       <div className="dmp-window__body">{children}</div>
       {onResize

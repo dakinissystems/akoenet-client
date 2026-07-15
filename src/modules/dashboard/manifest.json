@@ -1,0 +1,12 @@
+{
+  "id": "dashboard",
+  "version": "1.0.0",
+  "tier": "core",
+  "route": "/dashboard",
+  "capabilities": [
+    { "id": "window-manager", "version": "1.0.0" },
+    { "id": "widget-framework", "version": "1.0.0" }
+  ],
+  "permissions": ["metrics", "notifications"],
+  "windows": ["dashboard.widgets", "dashboard.activity", "dashboard.quick"]
+}

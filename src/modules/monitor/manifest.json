@@ -1,0 +1,9 @@
+{
+  "id": "monitor",
+  "version": "1.0.0",
+  "tier": "developer",
+  "route": "/monitor",
+  "capabilities": [{ "id": "window-manager", "version": "1.0.0" }],
+  "permissions": ["metrics", "network"],
+  "windows": ["monitor.overview", "monitor.system", "monitor.services"]
+}

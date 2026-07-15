@@ -1,0 +1,10 @@
+{
+  "id": "kanban",
+  "version": "1.0.0",
+  "tier": "productivity",
+  "route": "/kanban",
+  "capabilities": [{ "id": "window-manager", "version": "1.0.0" }],
+  "permissions": ["storage", "notifications"],
+  "windows": ["kanban.boards", "kanban.board", "kanban.task"],
+  "syncData": true
+}

@@ -1,0 +1,9 @@
+{
+  "id": "devops",
+  "version": "1.0.0",
+  "tier": "developer",
+  "route": "/devops",
+  "capabilities": [{ "id": "window-manager", "version": "1.0.0" }],
+  "permissions": ["metrics"],
+  "windows": ["devops.deployments", "devops.logs", "devops.services"]
+}

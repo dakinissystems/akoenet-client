@@ -19,6 +19,8 @@ export default function FloatingWindow({
   onMoveEnd,
   onResize,
   onResizeEnd,
+  onMinimize,
+  onClose,
   resizable = true,
   minTop = 8,
   children,
@@ -140,6 +142,38 @@ export default function FloatingWindow({
         onDoubleClick={onTitleDoubleClick}
       >
         <span className="ws-float-title">{title}</span>
+        {onMinimize || onClose ? (
+          <div className="ws-float-chrome">
+            {onMinimize ? (
+              <button
+                type="button"
+                className="ws-float-btn ws-float-btn--minimize"
+                aria-label="Minimize"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMinimize(id)
+                }}
+              >
+                −
+              </button>
+            ) : null}
+            {onClose ? (
+              <button
+                type="button"
+                className="ws-float-btn ws-float-btn--close"
+                aria-label="Close"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onClose(id)
+                }}
+              >
+                ×
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </header>
       <div className="ws-float-body">{children}</div>
       {resizable && onResize

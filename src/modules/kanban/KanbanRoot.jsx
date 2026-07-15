@@ -37,7 +37,7 @@ export default function KanbanRoot() {
   const [draftDescription, setDraftDescription] = useState('')
   const [draftColumn, setDraftColumn] = useState('todo')
 
-  const { windows, setWindows, profileKey } = useDesktopLayout({
+  const { windows, setWindows, profileKey, minimizeWindow, closeWindow } = useDesktopLayout({
     addonId: ADDON_ID,
     registry: KANBAN_WINDOW_REGISTRY,
     factoryLayout: kanbanDefaultLayout,
@@ -315,6 +315,8 @@ export default function KanbanRoot() {
                 onMoveEnd={finishMove}
                 onResize={resizeWindow}
                 onResizeEnd={finishResize}
+                onMinimize={minimizeWindow}
+                onClose={closeWindow}
               >
                 {windowBodies[w.id]}
               </FloatingWindow>

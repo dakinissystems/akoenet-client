@@ -34,7 +34,7 @@ export default function CodeEditorRoot() {
   const [draftContent, setDraftContent] = useState('')
   const [draftName, setDraftName] = useState('')
 
-  const { windows, setWindows, profileKey } = useDesktopLayout({
+  const { windows, setWindows, profileKey, minimizeWindow, closeWindow } = useDesktopLayout({
     addonId: ADDON_ID,
     registry: CODE_EDITOR_WINDOW_REGISTRY,
     factoryLayout: codeEditorDefaultLayout,
@@ -319,6 +319,8 @@ export default function CodeEditorRoot() {
                 onMoveEnd={finishMove}
                 onResize={resizeWindow}
                 onResizeEnd={finishResize}
+                onMinimize={minimizeWindow}
+                onClose={closeWindow}
               >
                 {windowBodies[w.id]}
               </FloatingWindow>

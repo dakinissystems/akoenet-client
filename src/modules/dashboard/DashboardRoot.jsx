@@ -31,7 +31,7 @@ export default function DashboardRoot() {
   const metricsSummary = useMemo(() => summarizeWorkspaceMetrics(metrics), [metrics])
   const widgets = useMemo(() => listWidgets(), [])
 
-  const { windows, setWindows, profileKey } = useDesktopLayout({
+  const { windows, setWindows, profileKey, minimizeWindow, closeWindow } = useDesktopLayout({
     addonId: ADDON_ID,
     registry: DASHBOARD_WINDOW_REGISTRY,
     factoryLayout: dashboardDefaultLayout,
@@ -292,6 +292,8 @@ export default function DashboardRoot() {
                 onMoveEnd={finishMove}
                 onResize={resizeWindow}
                 onResizeEnd={finishResize}
+                onMinimize={minimizeWindow}
+                onClose={closeWindow}
               >
                 {windowBodies[w.id]}
               </FloatingWindow>

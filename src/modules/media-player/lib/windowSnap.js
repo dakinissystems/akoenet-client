@@ -49,7 +49,12 @@ const LAYOUT_KEY = "dmp_window_layout_v1";
 /** @param {Array<{ id: string, rect: Rect, visible: boolean }>} windows */
 export function persistLayout(windows) {
   try {
-    const payload = windows.map(({ id, rect, visible }) => ({ id, rect, visible }));
+    const payload = windows.map(({ id, rect, visible, minimized }) => ({
+      id,
+      rect,
+      visible,
+      minimized: Boolean(minimized),
+    }));
     localStorage.setItem(LAYOUT_KEY, JSON.stringify(payload));
   } catch {
     /* ignore */
@@ -72,7 +77,7 @@ export function loadPersistedLayout(registry) {
         title: desc.title,
         rect: hit?.rect ? { ...hit.rect } : { ...desc.defaultRect },
         visible: hit?.visible ?? desc.defaultVisible ?? true,
-        minimized: false,
+        minimized: hit?.minimized ?? false,
         zIndex: i + 1,
       };
     });

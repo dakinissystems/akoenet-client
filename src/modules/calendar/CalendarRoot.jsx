@@ -59,7 +59,7 @@ export default function CalendarRoot() {
   const [draftAllDay, setDraftAllDay] = useState(false)
   const [draftDescription, setDraftDescription] = useState('')
 
-  const { windows, setWindows, profileKey } = useDesktopLayout({
+  const { windows, setWindows, profileKey, minimizeWindow, closeWindow } = useDesktopLayout({
     addonId: ADDON_ID,
     registry: CALENDAR_WINDOW_REGISTRY,
     factoryLayout: calendarDefaultLayout,
@@ -362,6 +362,8 @@ export default function CalendarRoot() {
                 onMoveEnd={finishMove}
                 onResize={resizeWindow}
                 onResizeEnd={finishResize}
+                onMinimize={minimizeWindow}
+                onClose={closeWindow}
               >
                 {windowBodies[w.id]}
               </FloatingWindow>

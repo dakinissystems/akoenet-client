@@ -90,7 +90,7 @@ export default function MonitorRoot() {
   const [latencyHistory, setLatencyHistory] = useState([])
   const [memHistory, setMemHistory] = useState([])
 
-  const { windows, setWindows, profileKey } = useDesktopLayout({
+  const { windows, setWindows, profileKey, minimizeWindow, closeWindow } = useDesktopLayout({
     addonId: ADDON_ID,
     registry: MONITOR_WINDOW_REGISTRY,
     factoryLayout: monitorDefaultLayout,
@@ -342,6 +342,8 @@ export default function MonitorRoot() {
                 onMoveEnd={finishMove}
                 onResize={resizeWindow}
                 onResizeEnd={finishResize}
+                onMinimize={minimizeWindow}
+                onClose={closeWindow}
               >
                 {windowBodies[w.id]}
               </FloatingWindow>

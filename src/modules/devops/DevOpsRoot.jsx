@@ -55,7 +55,7 @@ export default function DevOpsRoot() {
   const [snapshot, setSnapshot] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const { windows, setWindows, profileKey } = useDesktopLayout({
+  const { windows, setWindows, profileKey, minimizeWindow, closeWindow } = useDesktopLayout({
     addonId: ADDON_ID,
     registry: DEVOPS_WINDOW_REGISTRY,
     factoryLayout: devopsDefaultLayout,
@@ -326,6 +326,8 @@ export default function DevOpsRoot() {
                 onMoveEnd={finishMove}
                 onResize={resizeWindow}
                 onResizeEnd={finishResize}
+                onMinimize={minimizeWindow}
+                onClose={closeWindow}
               >
                 {windowBodies[w.id]}
               </FloatingWindow>

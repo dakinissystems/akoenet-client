@@ -3,12 +3,21 @@ import { fetchAddonLayout, saveAddonLayout } from "./layoutApi.js";
 import { resolveLayoutFromApiResponse } from "./layoutMerge.js";
 import { loadPersistedLayout, persistLayout } from "../../modules/media-player/lib/windowSnap.js";
 import { loadStoredProfileKey } from "./desktopProfileUtils.js";
-import { emitWorkspaceEvent } from "./workspaceEventBus.js";
+import { onWorkspaceEvent, emitWorkspaceEvent } from "./workspaceEventBus.js";
 
 const SAVE_DEBOUNCE_MS = 900;
 
 function windowsToPayload(rows) {
-  return rows.map(({ id, rect, visible }) => ({ id, rect, visible }));
+  return rows.map(({ id, rect, visible, minimized }) => ({
+    id,
+    rect,
+    visible,
+    minimized: Boolean(minimized),
+  }));
+}
+
+function isAddonFullyHidden(rows) {
+  return rows.length > 0 && rows.every((w) => !w.visible || w.minimized);
 }
 
 /**
@@ -166,10 +175,57 @@ export function useDesktopLayout({ addonId, registry, factoryLayout, profileKey 
     [scheduleSave],
   );
 
+  const minimizeWindow = useCallback(
+    (windowId) => {
+      setWindowsPersisted((prev) => {
+        const next = prev.map((w) => (w.id === windowId ? { ...w, minimized: true } : w));
+        if (isAddonFullyHidden(next)) {
+          emitWorkspaceEvent("window.minimized", { addonId });
+        }
+        return next;
+      });
+    },
+    [addonId, setWindowsPersisted],
+  );
+
+  const closeWindow = useCallback(
+    (windowId) => {
+      setWindowsPersisted((prev) => {
+        const next = prev.map((w) =>
+          w.id === windowId ? { ...w, visible: false, minimized: false } : w,
+        );
+        if (isAddonFullyHidden(next)) {
+          emitWorkspaceEvent("window.minimized", { addonId });
+        }
+        return next;
+      });
+    },
+    [addonId, setWindowsPersisted],
+  );
+
+  const restoreWindows = useCallback(() => {
+    setWindowsPersisted((prev) => {
+      if (!prev.some((w) => w.minimized)) return prev;
+      const next = prev.map((w) => (w.minimized ? { ...w, minimized: false } : w));
+      emitWorkspaceEvent("window.restored", { addonId });
+      return next;
+    });
+  }, [addonId, setWindowsPersisted]);
+
+  useEffect(() => {
+    return onWorkspaceEvent("window.restore", (detail) => {
+      if (detail?.addonId !== addonId) return;
+      restoreWindows();
+    });
+  }, [addonId, restoreWindows]);
+
   return {
     windows,
     setWindows: setWindowsPersisted,
     profileKey: profileKeyActive,
     layoutSource: source,
+    minimizeWindow,
+    closeWindow,
+    restoreWindows,
   };
 }

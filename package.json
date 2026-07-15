@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/verify-versions.mjs && node scripts/verify-invite-links.mjs",
+    "prebuild": "node scripts/verify-versions.mjs && node scripts/verify-invite-links.mjs && node scripts/validate-addon-manifests.mjs",
     "build": "vite build && node scripts/publish-release-assets.mjs && node scripts/verify-dist-installer.mjs",
     "build:app": "vite build",
     "build:ci": "vite build && node scripts/publish-release-assets.mjs",
@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "sync-versions": "node scripts/sync-all-versions.mjs",
     "verify-versions": "node scripts/verify-versions.mjs",
+    "validate:addons": "node scripts/validate-addon-manifests.mjs",
     "preversion": "node scripts/verify-versions.mjs",
     "version": "node scripts/sync-all-versions.mjs",
     "postversion": "node scripts/verify-versions.mjs",

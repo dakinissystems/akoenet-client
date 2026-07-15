@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -12,6 +13,7 @@ import {
   pickPrimaryOpenRoute,
   resolveProfileLayout,
 } from './desktopRuntime/desktopProfileUtils.js'
+import { emitWorkspaceEvent, onWorkspaceEvent } from './desktopRuntime/workspaceEventBus.js'
 
 const DOCK_ICONS = {
   'media-player': '▶',
@@ -38,6 +40,28 @@ export default function DesktopShell({ onOpenCommandPalette, onOpenActivity, chi
   const navigate = useNavigate()
   const locale = i18n.language?.startsWith('en') ? 'en' : 'es'
   const { profiles, activeKey, activeProfile, dockPins, loading, switchProfile } = useDesktopProfile()
+  const [minimizedAddons, setMinimizedAddons] = useState(() => new Set())
+
+  useEffect(() => {
+    const offMin = onWorkspaceEvent('window.minimized', (detail) => {
+      const id = detail?.addonId
+      if (!id) return
+      setMinimizedAddons((prev) => new Set(prev).add(id))
+    })
+    const offRest = onWorkspaceEvent('window.restored', (detail) => {
+      const id = detail?.addonId
+      if (!id) return
+      setMinimizedAddons((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+    })
+    return () => {
+      offMin()
+      offRest()
+    }
+  }, [])
 
   function activateDockItem(addonId) {
     if (addonId === 'command-palette') {
@@ -49,6 +73,9 @@ export default function DesktopShell({ onOpenCommandPalette, onOpenActivity, chi
       onOpenActivity?.()
       window.dispatchEvent(new CustomEvent('akoenet:open-activity-center'))
       return
+    }
+    if (minimizedAddons.has(addonId)) {
+      emitWorkspaceEvent('window.restore', { addonId })
     }
     navigate(addonRoute(addonId))
   }
@@ -110,11 +137,12 @@ export default function DesktopShell({ onOpenCommandPalette, onOpenActivity, chi
                 : addonId
           const icon = DOCK_ICONS[addonId] || (addon ? '◆' : '·')
           const live = isAddonImplemented(addonId) || isBuiltinDockItem(addonId)
+          const minimized = minimizedAddons.has(addonId)
           return (
             <button
               key={addonId}
               type="button"
-              className={`ws-dock-item${live ? '' : ' ws-dock-item--preview'}`}
+              className={`ws-dock-item${live ? '' : ' ws-dock-item--preview'}${minimized ? ' ws-dock-item--minimized' : ''}`}
               title={label}
               onClick={() => activateDockItem(addonId)}
             >

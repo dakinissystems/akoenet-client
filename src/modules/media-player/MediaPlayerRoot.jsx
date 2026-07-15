@@ -56,7 +56,7 @@ function MediaPlayerDesktop() {
   const desktopRef = useRef(null);
   const { state } = usePlayerStore();
   const playlist = usePlaylist();
-  const { windows, setWindows, layoutSource, profileKey } = useDesktopLayout({
+  const { windows, setWindows, layoutSource, profileKey, minimizeWindow, closeWindow } = useDesktopLayout({
     addonId: MEDIA_PLAYER_ADDON_ID,
     registry: WINDOW_REGISTRY,
     factoryLayout: classicLayout,
@@ -251,7 +251,8 @@ function MediaPlayerDesktop() {
             onMoveEnd={(r) => finishMove(w.id, r)}
             onResize={(r) => resizeWindow(w.id, r)}
             onResizeEnd={(r) => finishResize(w.id, r)}
-            onClose={() => toggleWindow(w.id)}
+            onClose={() => closeWindow(w.id)}
+            onMinimize={() => minimizeWindow(w.id)}
           >
             {renderWindow[w.id]}
           </WindowFrame>

@@ -19,6 +19,7 @@ import { isTauri } from './lib/isTauri'
 import { reportError } from './lib/reportError'
 import { getAccessToken } from './services/session-store'
 import WorkspaceProviders from './workspace/WorkspaceProviders.jsx'
+import { buildWorkspaceAddonRoutes } from './workspace/AddonRoutes.jsx'
 
 const pushTokenInFlight = new Set()
 const pushTokenSent = new Set()
@@ -35,16 +36,7 @@ const DmcaPage = lazy(() => import('./pages/DmcaPage'))
 const DpoPage = lazy(() => import('./pages/DpoPage'))
 const SystemStatus = lazy(() => import('./pages/SystemStatus'))
 const WorkspaceDesktop = lazy(() => import('./pages/WorkspaceDesktop.jsx'))
-const NotesRoot = lazy(() => import('./modules/notes/NotesRoot.jsx'))
-const CalendarRoot = lazy(() => import('./modules/calendar/CalendarRoot.jsx'))
-const KanbanRoot = lazy(() => import('./modules/kanban/KanbanRoot.jsx'))
-const DashboardRoot = lazy(() => import('./modules/dashboard/DashboardRoot.jsx'))
-const TerminalRoot = lazy(() => import('./modules/terminal/TerminalRoot.jsx'))
-const MonitorRoot = lazy(() => import('./modules/monitor/MonitorRoot.jsx'))
-const DevOpsRoot = lazy(() => import('./modules/devops/DevOpsRoot.jsx'))
-const CodeEditorRoot = lazy(() => import('./modules/code-editor/CodeEditorRoot.jsx'))
 const WorkspaceAddonPage = lazy(() => import('./pages/WorkspaceAddonPage.jsx'))
-const MediaPlayerRoot = lazy(() => import('./modules/media-player/MediaPlayerRoot.jsx'))
 const DevSentryErrorButton = lazy(() => import('./components/DevSentryErrorButton.jsx'))
 
 function PageFallback() {
@@ -231,78 +223,7 @@ export default function App() {
               </AuthGateRoute>
             }
           />
-          <Route
-            path="/notes/*"
-            element={
-              <AuthGateRoute>
-                <NotesRoot />
-              </AuthGateRoute>
-            }
-          />
-          <Route
-            path="/calendar/*"
-            element={
-              <AuthGateRoute>
-                <CalendarRoot />
-              </AuthGateRoute>
-            }
-          />
-          <Route
-            path="/kanban/*"
-            element={
-              <AuthGateRoute>
-                <KanbanRoot />
-              </AuthGateRoute>
-            }
-          />
-          <Route
-            path="/dashboard/*"
-            element={
-              <AuthGateRoute>
-                <DashboardRoot />
-              </AuthGateRoute>
-            }
-          />
-          <Route
-            path="/terminal/*"
-            element={
-              <AuthGateRoute>
-                <TerminalRoot />
-              </AuthGateRoute>
-            }
-          />
-          <Route
-            path="/monitor/*"
-            element={
-              <AuthGateRoute>
-                <MonitorRoot />
-              </AuthGateRoute>
-            }
-          />
-          <Route
-            path="/devops/*"
-            element={
-              <AuthGateRoute>
-                <DevOpsRoot />
-              </AuthGateRoute>
-            }
-          />
-          <Route
-            path="/code/*"
-            element={
-              <AuthGateRoute>
-                <CodeEditorRoot />
-              </AuthGateRoute>
-            }
-          />
-          <Route
-            path="/media/*"
-            element={
-              <AuthGateRoute>
-                <MediaPlayerRoot />
-              </AuthGateRoute>
-            }
-          />
+          {buildWorkspaceAddonRoutes(AuthGateRoute)}
           <Route
             path="/admin"
             element={

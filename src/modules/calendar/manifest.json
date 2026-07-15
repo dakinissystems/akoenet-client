@@ -1,0 +1,10 @@
+{
+  "id": "calendar",
+  "version": "1.0.0",
+  "tier": "productivity",
+  "route": "/calendar",
+  "capabilities": [{ "id": "window-manager", "version": "1.0.0" }],
+  "permissions": ["events", "notifications"],
+  "windows": ["calendar.agenda", "calendar.week", "calendar.detail"],
+  "syncData": true
+}

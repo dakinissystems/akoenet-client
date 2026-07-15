@@ -1,0 +1,10 @@
+{
+  "id": "notes",
+  "version": "1.0.0",
+  "tier": "productivity",
+  "route": "/notes",
+  "capabilities": [{ "id": "window-manager", "version": "1.0.0" }],
+  "permissions": ["storage", "ai", "knowledge", "search"],
+  "windows": ["notes.list", "notes.editor", "notes.search"],
+  "syncData": true
+}

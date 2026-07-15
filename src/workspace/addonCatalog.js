@@ -1,4 +1,5 @@
 import catalog from './catalog.json'
+import { ADDON_ID_TO_FLAG } from './featureFlagKeys.js'
 
 const CATEGORY_I18N = {
   system: { en: 'System', es: 'Sistema' },
@@ -9,21 +10,14 @@ const CATEGORY_I18N = {
   entertainment: { en: 'Entertainment', es: 'Entretenimiento' },
 }
 
-/** Addons with a real UI route today */
-export const IMPLEMENTED_ADDON_ROUTES = {
-  'media-player': '/media',
-  notes: '/notes',
-  calendar: '/calendar',
-  kanban: '/kanban',
-  dashboard: '/dashboard',
-  terminal: '/terminal',
-  monitor: '/monitor',
-  devops: '/devops',
-  'code-editor': '/code',
-}
+/** Addons with a real UI route — auto from manifest.json via addonLoader */
+export { IMPLEMENTED_ADDON_ROUTES } from './addonLoader.js'
 
 /** @type {Set<string> | null} */
 let enabledFilter = null
+
+/** @type {Record<string, boolean> | null} */
+let featureFlags = null
 
 export function setWorkspaceEnabledFilter(ids) {
   if (!ids) {
@@ -33,10 +27,20 @@ export function setWorkspaceEnabledFilter(ids) {
   enabledFilter = ids instanceof Set ? ids : new Set(ids)
 }
 
+export function setWorkspaceFeatureFlags(flags) {
+  featureFlags = flags && typeof flags === 'object' ? flags : null
+}
+
 export function listCatalogAddons() {
   const all = [...(catalog.addons || [])].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999))
-  if (!enabledFilter) return all
-  return all.filter((a) => enabledFilter.has(a.id))
+  return all.filter((addon) => {
+    if (enabledFilter && !enabledFilter.has(addon.id)) return false
+    if (featureFlags) {
+      const flagKey = ADDON_ID_TO_FLAG[addon.id] || `workspace.addon.${addon.id}`
+      if (flagKey in featureFlags && !featureFlags[flagKey]) return false
+    }
+    return true
+  })
 }
 
 export function getAddonById(id) {

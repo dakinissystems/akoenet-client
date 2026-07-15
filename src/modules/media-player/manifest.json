@@ -1,0 +1,16 @@
+{
+  "id": "media-player",
+  "version": "1.0.0",
+  "tier": "media",
+  "route": "/media",
+  "capabilities": [{ "id": "window-manager", "version": "1.0.0" }],
+  "permissions": ["storage", "realtime"],
+  "windows": [
+    "player.main",
+    "player.playlist",
+    "player.eq",
+    "player.library",
+    "player.visualizer",
+    "player.friends"
+  ]
+}
