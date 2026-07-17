@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "AkoeNet",
-  "version": "1.5.32",
+  "version": "1.5.33",
   "identifier": "com.dakinis.akoenet",
   "build": {
     "frontendDist": "../dist",
