@@ -34,6 +34,7 @@
     "tauri:sync-version": "node scripts/sync-tauri-version.mjs",
     "tauri:build": "node scripts/sync-tauri-version.mjs && node scripts/verify-versions.mjs && node scripts/tauri-with-cargo-path.mjs build",
     "release:desktop": "node scripts/release-desktop-to-public.mjs",
+    "release:desktop:bump": "node scripts/bump-and-prepare-desktop-release.mjs",
     "release:android": "npm run mobile:bundle:release",
     "updater:pubkey": "node scripts/print-updater-pubkey-for-tauri-conf.mjs",
     "updater:manifest": "node scripts/generate-desktop-updater-manifest.mjs",

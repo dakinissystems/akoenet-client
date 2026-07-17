@@ -47,11 +47,18 @@ Tras subir la versión en `package.json`, ejecuta `npm run sync-versions` y comm
 
 ## Auto-actualización escritorio (Tauri)
 
-1. Generar claves: `npm run tauri signer generate -- -w src-tauri/akoenet-signer.key`
-2. Extraer pubkey: `npm run updater:pubkey -- src-tauri/akoenet-signer.key` → guardar en `src-tauri/updater.pubkey`
-3. `npm run sync-versions` (activa `plugins.updater` si hay pubkey)
-4. Build firmado: `TAURI_SIGNING_PRIVATE_KEY="$(cat src-tauri/akoenet-signer.key)" npm run release:desktop`
-5. Se publica `public/releases/desktop/latest.json` junto al `.exe` firmado
+1. Secret en GitHub: `TAURI_SIGNING_PRIVATE_KEY` (ver [`docs/DESKTOP-UPDATER.md`](./docs/DESKTOP-UPDATER.md))
+2. Bump: `npm run release:desktop:bump` → commit → `git tag vX.Y.Z && git push origin vX.Y.Z`
+3. Actions **Desktop updater release** firma el instalador, escribe `latest.json` y lo publica en `main`
+4. Railway sirve `https://akoenet.dakinissystems.com/releases/desktop/latest.json`
+5. La app de escritorio comprueba actualizaciones al arrancar e instala sola
+
+Manual (local):
+
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY = Get-Content src-tauri/akoenet-signer.key -Raw
+npm run release:desktop
+```
 
 ## Variables de entorno
 
