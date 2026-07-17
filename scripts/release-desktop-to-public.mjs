@@ -3,7 +3,7 @@
  * Requires Rust toolchain: https://rustup.rs/
  */
 import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import process from 'node:process'
 import { readPackageVersion } from './lib/version.mjs'
@@ -14,8 +14,16 @@ if (!existsSync('src-tauri')) {
 }
 
 const version = readPackageVersion()
-const targetRoot = process.env.CARGO_TARGET_DIR || join('src-tauri', 'target')
-const bundleRoot = join(targetRoot, 'release', 'bundle')
+// Must be absolute: cargo/tauri cwd is src-tauri/, so a relative
+// "src-tauri/target" becomes src-tauri/src-tauri/target (CI failure).
+const targetRoot = process.env.CARGO_TARGET_DIR
+  ? resolve(process.env.CARGO_TARGET_DIR)
+  : resolve('src-tauri', 'target')
+const bundleCandidates = [
+  join(targetRoot, 'release', 'bundle'),
+  // Legacy/misconfigured relative CARGO_TARGET_DIR nested path
+  resolve('src-tauri', 'src-tauri', 'target', 'release', 'bundle'),
+]
 
 function run(cmd, args, env = undefined) {
   const r = spawnSync(cmd, args, {
@@ -28,6 +36,7 @@ function run(cmd, args, env = undefined) {
 
 run('node', ['scripts/sync-all-versions.mjs'])
 run('node', ['scripts/verify-versions.mjs'])
+console.log('[release:desktop] CARGO_TARGET_DIR=', targetRoot)
 run('npm', ['run', 'tauri:build'], { CARGO_TARGET_DIR: targetRoot })
 
 const outDir = join('releases', 'desktop', version)
@@ -61,11 +70,18 @@ function copyArtifacts(dir) {
   }
 }
 
-copyArtifacts(bundleRoot)
+const foundBundleRoots = bundleCandidates.filter((d) => existsSync(d))
+for (const bundleRoot of foundBundleRoots) {
+  console.log('[release:desktop] scanning', bundleRoot)
+  copyArtifacts(bundleRoot)
+}
 
-const hasInstaller = readdirSync(outDir).some((n) => /\.(msi|exe)$/i.test(n))
+const hasInstaller = existsSync(outDir) && readdirSync(outDir).some((n) => /\.(msi|exe)$/i.test(n))
 if (!hasInstaller) {
-  console.error(`[release:desktop] No ${version} installer found under ${bundleRoot}`)
+  console.error(
+    `[release:desktop] No ${version} installer found under:\n` +
+      bundleCandidates.map((p) => `  - ${p}`).join('\n'),
+  )
   process.exit(1)
 }
 
