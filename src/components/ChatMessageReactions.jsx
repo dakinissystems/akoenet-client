@@ -1,5 +1,6 @@
 import EmojiText from './EmojiText'
 import { emitToggleReaction } from '../lib/chatReactions'
+import api from '../services/api'
 
 export default function ChatMessageReactions({
   message,
@@ -9,7 +10,30 @@ export default function ChatMessageReactions({
   reactionPickerId,
   reactionPickerWrapRef,
   setReactionPickerId,
+  serverId = null,
+  currentUserId = null,
 }) {
+  const canThank =
+    serverId &&
+    currentUserId &&
+    message?.user_id &&
+    Number(message.user_id) !== Number(currentUserId) &&
+    !message._optimistic &&
+    editingMessageId !== message.id
+
+  const thankAuthor = async () => {
+    if (!canThank) return
+    try {
+      await api.post(`/servers/${serverId}/levels/reputation`, {
+        toUserId: Number(message.user_id),
+        messageId: Number(message.id),
+        reason: 'helpful',
+      })
+    } catch {
+      /* module may be disabled */
+    }
+  }
+
   return (
     <div className="reaction-row" ref={reactionPickerId === message.id ? reactionPickerWrapRef : undefined}>
       {!message._optimistic &&
@@ -24,6 +48,16 @@ export default function ChatMessageReactions({
             <EmojiText text={r.key} emojis={emojiMap} /> <span>{r.count}</span>
           </button>
         ))}
+      {canThank ? (
+        <button
+          type="button"
+          className="reaction-chip"
+          title="Marcar como útil (reputación)"
+          onClick={thankAuthor}
+        >
+          ✔️
+        </button>
+      ) : null}
       {!message._optimistic && editingMessageId !== message.id && reactionPickerId === message.id && (
         <div className="reaction-picker-inline">
           {['👍', '❤️', '🔥', '😂'].map((k) => (

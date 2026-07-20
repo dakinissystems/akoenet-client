@@ -2,6 +2,7 @@ import ChatPinnedStrip from './ChatPinnedStrip'
 import ChatMessageItem from './ChatMessageItem'
 
 export default function ChatMessageList({
+  serverId = null,
   pinnedMessages,
   jumpToMessage,
   typingLine,
@@ -64,6 +65,7 @@ export default function ChatMessageList({
         {messages.map((m) => (
           <ChatMessageItem
             key={m.id}
+            serverId={serverId}
             message={m}
             user={user}
             emojis={emojis}

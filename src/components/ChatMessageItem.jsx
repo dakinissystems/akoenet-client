@@ -7,6 +7,7 @@ import ChatMessageActions from './ChatMessageActions'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 
 export default function ChatMessageItem({
+  serverId = null,
   message,
   user,
   emojis,
@@ -131,6 +132,8 @@ export default function ChatMessageItem({
           reactionPickerId={reactionPickerId}
           reactionPickerWrapRef={reactionPickerWrapRef}
           setReactionPickerId={setReactionPickerId}
+          serverId={serverId}
+          currentUserId={user?.id}
         />
         <ChatMessageActions
           message={message}

@@ -11,6 +11,7 @@ const EMPTY_MEMBERS = []
 const EMPTY_EMOJIS = []
 
 export default function Chat({
+  serverId = null,
   channelId,
   channelName,
   channelType = 'text',
@@ -131,6 +132,7 @@ export default function Chat({
       )}
 
       <ChatMessageList
+        serverId={serverId}
         pinnedMessages={pinnedMessages}
         jumpToMessage={jumpToMessage}
         typingLine={typingLine}

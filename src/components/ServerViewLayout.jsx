@@ -101,6 +101,7 @@ export default function ServerViewLayout(props) {
             }
           />
           <Chat
+            serverId={id}
             channelId={activeChannelId}
             channelName={activeChannel?.name}
             channelType={activeChannel?.type}
