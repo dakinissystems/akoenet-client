@@ -31,7 +31,7 @@ export function useServerSettingsModal({
   const [canManageMemberRoles, setCanManageMemberRoles] = useState(false)
   const [serverBans, setServerBans] = useState([])
   const [activeSection, setActiveSection] = useState(
-    /** @type {'servertag' | 'invites' | 'emojis' | 'roles' | 'commands' | 'assistant' | 'events' | 'announcements' | 'bans'} */ ('invites')
+    /** @type {'servertag' | 'invites' | 'emojis' | 'roles' | 'commands' | 'assistant' | 'levels' | 'events' | 'announcements' | 'bans'} */ ('invites')
   )
   const [tagDraft, setTagDraft] = useState('')
   const [tagBusy, setTagBusy] = useState(false)

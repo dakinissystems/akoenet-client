@@ -7,6 +7,7 @@ import ServerSettingsTagPanel from './ServerSettingsTagPanel'
 import ServerSettingsInvitesPanel from './ServerSettingsInvitesPanel'
 import ServerSettingsBansPanel from './ServerSettingsBansPanel'
 import ServerSettingsAssistantPanel from './ServerSettingsAssistantPanel.jsx'
+import ServerLevelsPanel from './ServerLevelsPanel.jsx'
 import { useServerSettingsModal } from '../hooks/useServerSettingsModal'
 
 const EMPTY_MEMBERS = []
@@ -63,6 +64,7 @@ export default function ServerSettingsModal({
           {navBtn('roles', t('serverModal.navRoles'))}
           {navBtn('commands', t('serverModal.navCommands'))}
           {navBtn('assistant', t('serverModal.navAssistant'))}
+          {navBtn('levels', t('serverModal.navLevels'))}
           {navBtn('events', t('serverModal.navEvents'))}
           {navBtn('announcements', t('serverModal.navAnnouncements'))}
           {navBtn('bans', t('serverModal.navBans'))}
@@ -142,6 +144,16 @@ export default function ServerSettingsModal({
               canManage={settings.canManageServer}
               t={t}
             />
+          ) : null}
+
+          {settings.activeSection === 'levels' && serverId ? (
+            <div className="server-settings-tab-pane">
+              <h2 className="server-settings-panel-title">{t('levels.title')}</h2>
+              <p className="muted small" style={{ margin: '0 0 0.75rem' }}>
+                {t('levels.lead')}
+              </p>
+              <ServerLevelsPanel serverId={serverId} t={t} />
+            </div>
           ) : null}
 
           {settings.activeSection === 'bans' && serverId ? (
