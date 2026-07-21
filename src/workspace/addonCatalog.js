@@ -1,5 +1,6 @@
 import catalog from './catalog.json'
 import { ADDON_ID_TO_FLAG } from './featureFlagKeys.js'
+import { IMPLEMENTED_ADDON_ROUTES } from './addonLoader.js'
 
 const CATEGORY_I18N = {
   system: { en: 'System', es: 'Sistema' },
@@ -11,7 +12,7 @@ const CATEGORY_I18N = {
 }
 
 /** Addons with a real UI route — auto from manifest.json via addonLoader */
-export { IMPLEMENTED_ADDON_ROUTES } from './addonLoader.js'
+export { IMPLEMENTED_ADDON_ROUTES }
 
 /** @type {Set<string> | null} */
 let enabledFilter = null
