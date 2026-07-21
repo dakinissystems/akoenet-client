@@ -113,6 +113,7 @@ export default function ServerSettingsModal({
                 serverId={Number(serverId)}
                 emojis={settings.emojiList}
                 onReload={settings.loadEmojis}
+                canManage={settings.canManageServer}
               />
             </div>
           ) : null}

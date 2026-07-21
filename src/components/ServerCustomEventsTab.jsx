@@ -1,6 +1,7 @@
 export default function ServerCustomEventsTab({
   serverId,
   canManage,
+  canCreateEvents = false,
   events,
   busy,
   evTitle,
@@ -16,7 +17,9 @@ export default function ServerCustomEventsTab({
   t,
   sectionClass,
   sid,
+  unlockAt = 15,
 }) {
+  const canAdd = Boolean(canManage || canCreateEvents)
   return (
     <section className={sectionClass} aria-labelledby={`srv-settings-events-${sid}`}>
       <h2 id={`srv-settings-events-${sid}`} className="server-settings-panel-title">
@@ -49,7 +52,7 @@ export default function ServerCustomEventsTab({
           ))}
         </ul>
       )}
-      {canManage ? (
+      {canAdd ? (
         <form className="form-stack server-custom-form" onSubmit={addEvent}>
           <label htmlFor={`srv-ev-title-${serverId}`}>{t('serverAutomations.titleLabel')}</label>
           <input
@@ -89,9 +92,12 @@ export default function ServerCustomEventsTab({
           <button type="submit" className="btn primary small" disabled={busy}>
             {t('serverAutomations.addEvent')}
           </button>
+          {!canManage && canCreateEvents ? (
+            <p className="muted small">{t('serverAutomations.eventsUnlockHint', { level: unlockAt })}</p>
+          ) : null}
         </form>
       ) : (
-        <p className="muted small">{t('serverAutomations.eventsReadOnly')}</p>
+        <p className="muted small">{t('serverAutomations.eventsReadOnly', { level: unlockAt })}</p>
       )}
     </section>
   )

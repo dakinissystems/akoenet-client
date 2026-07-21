@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../services/api'
+import { useServerLevelUnlocks } from '../hooks/useServerLevelUnlocks'
 import ServerCustomCommandsTab from './ServerCustomCommandsTab'
 import ServerCustomEventsTab from './ServerCustomEventsTab'
 import ServerCustomAnnouncementsTab from './ServerCustomAnnouncementsTab'
@@ -14,6 +15,8 @@ function fromDatetimeLocalValue(s) {
 
 export default function ServerCustomContentSettings({ serverId, canManage, tab }) {
   const { t } = useTranslation()
+  const { unlocked, unlockAt } = useServerLevelUnlocks(serverId)
+  const canCreateEvents = Boolean(unlocked.create_events)
   const [commands, setCommands] = useState([])
   const [events, setEvents] = useState([])
   const [announcements, setAnnouncements] = useState([])
@@ -104,7 +107,7 @@ export default function ServerCustomContentSettings({ serverId, canManage, tab }
 
   async function addEvent(e) {
     e.preventDefault()
-    if (!canManage) return
+    if (!canManage && !canCreateEvents) return
     const starts = fromDatetimeLocalValue(evStart)
     if (!starts) {
       setLocalError(t('serverAutomations.errEventStart'))
@@ -134,8 +137,11 @@ export default function ServerCustomContentSettings({ serverId, canManage, tab }
       setEvEnd('')
       await loadAll()
     } catch (err) {
-      if (err.response?.data?.error === 'blocked_content') setLocalError(t('serverAutomations.errBlocked'))
-      else setLocalError(t('serverAutomations.errSaveEvent'))
+      const data = err.response?.data
+      if (data?.error === 'blocked_content') setLocalError(t('serverAutomations.errBlocked'))
+      else if (data?.reason === 'unlock_or_manage_required' || data?.unlock === 'create_events') {
+        setLocalError(t('serverAutomations.eventsReadOnly', { level: data?.unlockAt || unlockAt.create_events || 15 }))
+      } else setLocalError(t('serverAutomations.errSaveEvent'))
     } finally {
       setBusy(false)
     }
@@ -247,6 +253,8 @@ export default function ServerCustomContentSettings({ serverId, canManage, tab }
         <ServerCustomEventsTab
           serverId={serverId}
           canManage={canManage}
+          canCreateEvents={canCreateEvents}
+          unlockAt={unlockAt.create_events || 15}
           events={events}
           busy={busy}
           evTitle={evTitle}
