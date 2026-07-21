@@ -142,6 +142,31 @@ export default function ServerSettingsAssistantPanel({ serverId, canManage, t })
                         </p>
                       </div>
                     ) : null}
+                    {mod.key === 'welcome' && mod.enabled && canManage ? (
+                      <div className="assistant-module-card__config" style={{ marginTop: '0.65rem' }}>
+                        <label className="small" style={{ display: 'block', marginBottom: '0.35rem' }}>
+                          {t('serverAssistant.welcomeChannelLabel')}
+                          <input
+                            type="text"
+                            className="input"
+                            style={{ marginTop: '0.25rem', width: '100%' }}
+                            placeholder={t('serverAssistant.welcomeChannelPlaceholder')}
+                            defaultValue={mod.config?.channelId || ''}
+                            onBlur={(e) => {
+                              const val = e.target.value.trim()
+                              if (String(mod.config?.channelId || '') !== val) {
+                                assistant.saveModuleConfig(mod, {
+                                  channelId: val || null,
+                                })
+                              }
+                            }}
+                          />
+                        </label>
+                        <p className="muted small" style={{ margin: '0.35rem 0 0' }}>
+                          {t('serverAssistant.welcomeChannelHint')}
+                        </p>
+                      </div>
+                    ) : null}
                   </article>
                 )
               })}

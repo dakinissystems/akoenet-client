@@ -1024,6 +1024,9 @@ export default {
     streamerChannelLabel: 'Canal de anuncios (ID)',
     streamerChannelPlaceholder: 'Ej. 42 — o déjalo vacío para el canal por defecto',
     streamerChannelHint: 'Cuando StreamAutomator detecte un directo, el Assistant publicará aquí automáticamente.',
+    welcomeChannelLabel: 'Canal de bienvenida (ID)',
+    welcomeChannelPlaceholder: 'Ej. 12 — o vacío para #general / primer canal de texto',
+    welcomeChannelHint: 'Al unirse un miembro con Bienvenida activa, el Assistant publica el saludo aquí.',
     phaseGrowth: 'Crecimiento',
     phaseFuture: 'Próximamente',
     category: {

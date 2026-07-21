@@ -1018,6 +1018,9 @@ export default {
     streamerChannelLabel: 'Announcement channel (ID)',
     streamerChannelPlaceholder: 'e.g. 42 — leave empty for default channel',
     streamerChannelHint: 'When StreamAutomator detects a live stream, Assistant posts here automatically.',
+    welcomeChannelLabel: 'Welcome channel (ID)',
+    welcomeChannelPlaceholder: 'e.g. 12 — leave empty for #general / first text channel',
+    welcomeChannelHint: 'When a member joins and Welcome is on, Assistant posts the greeting here.',
     phaseGrowth: 'Growth',
     phaseFuture: 'Coming soon',
     category: {
