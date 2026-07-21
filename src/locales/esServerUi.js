@@ -310,6 +310,8 @@ export default {
       avatarPreviewAlt: 'vista previa del avatar',
       urlPlaceholder: 'https://…',
       accentHexPlaceholder: '#7c3aed',
+      unlockAccent: 'Se desbloquea en el nivel {{level}} del servidor (módulo Niveles).',
+      unlockBanner: 'Se desbloquea en el nivel {{level}} del servidor (módulo Niveles).',
     },
     appearance: {
       intro:

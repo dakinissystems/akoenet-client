@@ -308,6 +308,8 @@ export default {
       avatarPreviewAlt: 'avatar preview',
       urlPlaceholder: 'https://…',
       accentHexPlaceholder: '#7c3aed',
+      unlockAccent: 'Unlocks at server level {{level}} (Levels module).',
+      unlockBanner: 'Unlocks at server level {{level}} (Levels module).',
     },
     appearance: {
       intro:

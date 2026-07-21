@@ -65,6 +65,7 @@ export function useUserSettingsModal({ open, onClose, initialSection = 'profile'
   const [twitchStatusRetryToken, setTwitchStatusRetryToken] = useState(0)
   const [uiTheme, setUiTheme] = useState(() => sanitizeFull({}))
   const [themeReady, setThemeReady] = useState(false)
+  const [levelUnlocks, setLevelUnlocks] = useState(null)
   const streamRef = useRef(null)
   const audioCtxRef = useRef(null)
   const analyserRef = useRef(null)
@@ -135,6 +136,22 @@ export function useUserSettingsModal({ open, onClose, initialSection = 'profile'
   useEffect(() => {
     if (!open) return
     let cancelled = false
+    api
+      .get('/auth/me/level-unlocks')
+      .then((r) => {
+        if (!cancelled) setLevelUnlocks(r.data || null)
+      })
+      .catch(() => {
+        if (!cancelled) setLevelUnlocks(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open, user?.id])
+
+  useEffect(() => {
+    if (!open) return
+    let cancelled = false
     const ac = new AbortController()
     setTwitchGate('loading')
     api
@@ -150,6 +167,14 @@ export function useUserSettingsModal({ open, onClose, initialSection = 'profile'
       ac.abort()
     }
   }, [open, twitchStatusRetryToken])
+
+  const canEditAccent = Boolean(
+    user?.is_admin || levelUnlocks == null || levelUnlocks?.unlocked?.profile_color
+  )
+  const canEditBanner = Boolean(
+    user?.is_admin || levelUnlocks == null || levelUnlocks?.unlocked?.profile_banner
+  )
+  const unlockAt = levelUnlocks?.unlockAt || { profile_color: 5, profile_banner: 10 }
 
   useEffect(() => {
     if (!open) return
@@ -333,8 +358,8 @@ export function useUserSettingsModal({ open, onClose, initialSection = 'profile'
       await api.patch('/auth/me', {
         username: username.trim(),
         avatar_url: toNullable(avatarUrl),
-        banner_url: toNullable(bannerUrl),
-        accent_color: toNullable(accentColor),
+        banner_url: canEditBanner ? toNullable(bannerUrl) : undefined,
+        accent_color: canEditAccent ? toNullable(accentColor) : undefined,
         bio: toNullable(bio),
         presence_status: presenceStatus,
         custom_status: toNullable(customStatus),
@@ -347,12 +372,23 @@ export function useUserSettingsModal({ open, onClose, initialSection = 'profile'
       setNewPassword('')
       setInfo(t('userSettings.errors.settingsSaved'))
     } catch (err) {
-      const code = err.response?.data?.error
-      setError(
-        code === 'blocked_content'
-          ? err.response?.data?.message || t('userSettings.errors.notAllowed')
-          : err.response?.data?.error || t('userSettings.errors.saveFailed')
-      )
+      const data = err.response?.data
+      const code = data?.error
+      if (code === 'unlock_required') {
+        const level = data?.unlockAt
+        const unlock = data?.unlock
+        setError(
+          unlock === 'profile_banner'
+            ? t('userSettings.profile.unlockBanner', { level: level || 10 })
+            : t('userSettings.profile.unlockAccent', { level: level || 5 })
+        )
+      } else {
+        setError(
+          code === 'blocked_content'
+            ? data?.message || t('userSettings.errors.notAllowed')
+            : data?.error || t('userSettings.errors.saveFailed')
+        )
+      }
     } finally {
       setSaving(false)
     }
@@ -447,6 +483,9 @@ export function useUserSettingsModal({ open, onClose, initialSection = 'profile'
     setBannerUrl,
     accentColor,
     setAccentColor,
+    canEditAccent,
+    canEditBanner,
+    unlockAt,
     bio,
     setBio,
     presenceStatus,

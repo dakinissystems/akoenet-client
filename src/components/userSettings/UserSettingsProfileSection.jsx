@@ -25,6 +25,9 @@ export default function UserSettingsProfileSection(props) {
     previewStyle,
     saveUserSettings,
     saving,
+    canEditAccent = true,
+    canEditBanner = true,
+    unlockAt = { profile_color: 5, profile_banner: 10 },
   } = props
 
   return (
@@ -69,14 +72,47 @@ export default function UserSettingsProfileSection(props) {
       </label>
       <label>
         {t('userSettings.profile.bannerUrl')}
-        <input id="settings-banner-url" name="banner_url" value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} placeholder={t('userSettings.profile.urlPlaceholder')} />
+        <input
+          id="settings-banner-url"
+          name="banner_url"
+          value={bannerUrl}
+          onChange={(e) => setBannerUrl(e.target.value)}
+          placeholder={t('userSettings.profile.urlPlaceholder')}
+          disabled={!canEditBanner}
+        />
+        {!canEditBanner && (
+          <span className="muted small" style={{ display: 'block', marginTop: 4 }}>
+            {t('userSettings.profile.unlockBanner', { level: unlockAt.profile_banner || 10 })}
+          </span>
+        )}
       </label>
       <label>
         {t('userSettings.profile.accentColor')}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <input id="settings-accent-color-picker" name="accent_color_picker" type="color" value={/^#([0-9a-fA-F]{6})$/.test(accentColor || '') ? accentColor : '#7c3aed'} onChange={(e) => setAccentColor(e.target.value)} style={{ width: 48, height: 34, padding: 2 }} />
-          <input id="settings-accent-color-text" name="accent_color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} placeholder={t('userSettings.profile.accentHexPlaceholder')} maxLength={7} />
+          <input
+            id="settings-accent-color-picker"
+            name="accent_color_picker"
+            type="color"
+            value={/^#([0-9a-fA-F]{6})$/.test(accentColor || '') ? accentColor : '#7c3aed'}
+            onChange={(e) => setAccentColor(e.target.value)}
+            style={{ width: 48, height: 34, padding: 2 }}
+            disabled={!canEditAccent}
+          />
+          <input
+            id="settings-accent-color-text"
+            name="accent_color"
+            value={accentColor}
+            onChange={(e) => setAccentColor(e.target.value)}
+            placeholder={t('userSettings.profile.accentHexPlaceholder')}
+            maxLength={7}
+            disabled={!canEditAccent}
+          />
         </div>
+        {!canEditAccent && (
+          <span className="muted small" style={{ display: 'block', marginTop: 4 }}>
+            {t('userSettings.profile.unlockAccent', { level: unlockAt.profile_color || 5 })}
+          </span>
+        )}
       </label>
       <label>
         {t('userSettings.profile.presence')}
