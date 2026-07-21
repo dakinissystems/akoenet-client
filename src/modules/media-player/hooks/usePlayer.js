@@ -1,117 +1,89 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getAudioEngine } from "../services/audioEngine.js";
+import {
+  ensurePlaybackSessionEngineHooks,
+  getPlaybackSession,
+  getSessionPositionMs,
+  patchPlaybackSession,
+  playSessionTrack,
+  stopSession,
+  subscribePlaybackSession,
+  toggleSessionPlay,
+} from "../services/playbackSession.js";
 import { usePlayerStore } from "../store/playerStore.jsx";
 
 const POSITION_TICK_MS = 250;
 
-export function usePlayer({ tracks = [], onNeedNextTrack } = {}) {
+export function usePlayer({ tracks = [] } = {}) {
   const { state, dispatch } = usePlayerStore();
-  const engineRef = useRef(getAudioEngine());
-  const playGenRef = useRef(0);
-  const mountedRef = useRef(true);
+  const audioEngine = getAudioEngine();
+  const [tick, setTick] = useState(0);
 
-  const [currentTrack, setCurrentTrack] = useState(null);
-  const [buffer, setBuffer] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [positionMs, setPositionMs] = useState(0);
+  useEffect(() => {
+    ensurePlaybackSessionEngineHooks();
+    return subscribePlaybackSession(() => setTick((n) => n + 1));
+  }, []);
+
+  // Keep playlist / shuffle / repeat on the session so auto-next works off-route.
+  useEffect(() => {
+    patchPlaybackSession({
+      ...(tracks.length ? { tracks } : {}),
+      shuffle: state.shuffle,
+      repeat: state.repeat,
+      volume: state.volume,
+    });
+    audioEngine.setVolume(state.volume);
+  }, [audioEngine, tracks, state.shuffle, state.repeat, state.volume]);
+
+  const session = getPlaybackSession();
+  const currentTrack = session.track;
+  const isPlaying = session.isPlaying;
+  const buffer = session.buffer;
+
+  const [positionMs, setPositionMs] = useState(() => getSessionPositionMs());
   const [loading, setLoading] = useState(false);
 
-  const audioEngine = engineRef.current;
-  const currentTrackRef = useRef(null);
-  currentTrackRef.current = currentTrack;
-
+  // Rehydrate position when returning to /media while audio still runs.
   useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      playGenRef.current += 1;
-      audioEngine.onEnded = null;
-      audioEngine.stop();
-    };
-  }, [audioEngine]);
-
-  useEffect(() => {
-    audioEngine.setVolume(state.volume);
-  }, [audioEngine, state.volume]);
-
-  useEffect(() => {
-    audioEngine.onEnded = () => {
-      if (!mountedRef.current) return;
-      setIsPlaying(false);
-      onNeedNextTrack?.(currentTrackRef.current);
-    };
-    return () => {
-      audioEngine.onEnded = null;
-    };
-  }, [audioEngine, onNeedNextTrack]);
+    setPositionMs(getSessionPositionMs());
+  }, [tick, currentTrack?.id]);
 
   useEffect(() => {
     if (!isPlaying) return undefined;
     const id = setInterval(() => {
-      setPositionMs(Math.floor(audioEngine.getCurrentTime() * 1000));
+      setPositionMs(getSessionPositionMs());
     }, POSITION_TICK_MS);
     return () => clearInterval(id);
-  }, [audioEngine, isPlaying]);
+  }, [isPlaying]);
 
-  const play = useCallback(
-    async (track, seekSec = 0) => {
-      if (!track?.sourceRef) return;
-      const gen = ++playGenRef.current;
-      audioEngine.stop();
-      setIsPlaying(false);
-      setLoading(true);
-      try {
-        await audioEngine.ensureContext();
-        if (gen !== playGenRef.current || !mountedRef.current) return;
-
-        const reuseBuffer =
-          track.sourceRef && buffer && currentTrack?.id === track.id && seekSec === 0;
-        const decoded = reuseBuffer ? buffer : await audioEngine.loadUrl(track.sourceRef);
-        if (gen !== playGenRef.current || !mountedRef.current) return;
-
-        setBuffer(decoded);
-        setCurrentTrack(track);
-        audioEngine.playBuffer(decoded, seekSec);
-        setIsPlaying(true);
-        setPositionMs(Math.floor(seekSec * 1000));
-      } catch (err) {
-        if (gen === playGenRef.current) {
-          console.error("[dmp] play failed", err);
-        }
-      } finally {
-        if (gen === playGenRef.current) {
-          setLoading(false);
-        }
-      }
-    },
-    [audioEngine, buffer, currentTrack?.id],
-  );
+  const play = useCallback(async (track, seekSec = 0) => {
+    if (!track?.sourceRef) return;
+    setLoading(true);
+    try {
+      await playSessionTrack(track, seekSec);
+      setPositionMs(Math.floor(seekSec * 1000));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const togglePlay = useCallback(() => {
     if (!buffer || !currentTrack) return;
-    if (isPlaying) {
-      audioEngine.pause();
-      setIsPlaying(false);
-    } else {
-      audioEngine.playBuffer(buffer, positionMs / 1000);
-      setIsPlaying(true);
-    }
-  }, [audioEngine, buffer, currentTrack, isPlaying, positionMs]);
+    toggleSessionPlay();
+  }, [buffer, currentTrack]);
 
   const stop = useCallback(() => {
-    playGenRef.current += 1;
-    audioEngine.stop();
-    setIsPlaying(false);
+    stopSession();
     setPositionMs(0);
-  }, [audioEngine]);
+  }, []);
 
   const seek = useCallback(
     (ms) => {
       if (!buffer || !currentTrack) return;
       const sec = Math.max(0, ms / 1000);
       audioEngine.playBuffer(buffer, sec);
+      patchPlaybackSession({ isPlaying: true });
       setPositionMs(Math.floor(sec * 1000));
-      setIsPlaying(true);
     },
     [audioEngine, buffer, currentTrack],
   );

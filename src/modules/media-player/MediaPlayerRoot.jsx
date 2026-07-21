@@ -16,7 +16,7 @@ import { usePlayer } from "./hooks/usePlayer.js";
 import { usePlaylist } from "./hooks/usePlaylist.js";
 import { useEqualizer } from "./hooks/useEqualizer.js";
 import { useVisualizer } from "./hooks/useVisualizer.js";
-import { PlayerProvider, usePlayerStore } from "./store/playerStore.jsx";
+import { PlayerProvider } from "./store/playerStore.jsx";
 import { STRINGS, windowTitle } from "./i18n/strings.js";
 import { WINDOW_REGISTRY, classicLayout } from "./windowRegistry.js";
 import {
@@ -34,27 +34,11 @@ export default function MediaPlayerRoot() {
   );
 }
 
-function pickNextTrack(tracks, current, { shuffle, repeat }) {
-  if (!tracks.length) return null;
-  if (repeat === "one" && current) return current;
-  if (shuffle) {
-    const pool = tracks.filter((t) => t.id !== current?.id);
-    const list = pool.length ? pool : tracks;
-    return list[Math.floor(Math.random() * list.length)];
-  }
-  if (!current) return tracks[0];
-  const idx = tracks.findIndex((t) => t.id === current.id);
-  if (idx < 0) return tracks[0];
-  if (idx + 1 < tracks.length) return tracks[idx + 1];
-  return repeat === "all" ? tracks[0] : null;
-}
-
 const MEDIA_PLAYER_ADDON_ID = "media-player";
 
 function MediaPlayerDesktop() {
   const navigate = useNavigate();
   const desktopRef = useRef(null);
-  const { state } = usePlayerStore();
   const playlist = usePlaylist();
   const { windows, setWindows, layoutSource, profileKey, minimizeWindow, closeWindow } = useDesktopLayout({
     addonId: MEDIA_PLAYER_ADDON_ID,
@@ -69,18 +53,7 @@ function MediaPlayerDesktop() {
     [windows],
   );
 
-  const playFnRef = useRef(null);
-
-  const handleNeedNextTrack = useCallback(
-    (current) => {
-      const next = pickNextTrack(playlist.tracks, current, state);
-      if (next) playFnRef.current?.(next, 0);
-    },
-    [playlist.tracks, state],
-  );
-
-  const player = usePlayer({ tracks: playlist.tracks, onNeedNextTrack: handleNeedNextTrack });
-  playFnRef.current = player.play;
+  const player = usePlayer({ tracks: playlist.tracks });
 
   const equalizer = useEqualizer(player.audioEngine);
   const visualizer = useVisualizer(player.audioEngine, visualizerOpen && player.isPlaying);
@@ -206,7 +179,6 @@ function MediaPlayerDesktop() {
           type="button"
           className="dmp-toolbar__btn dmp-toolbar__back"
           onClick={() => {
-            player.stop();
             navigate("/");
           }}
         >

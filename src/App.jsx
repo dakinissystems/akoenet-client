@@ -20,6 +20,7 @@ import { reportError } from './lib/reportError'
 import { getAccessToken } from './services/session-store'
 import WorkspaceProviders from './workspace/WorkspaceProviders.jsx'
 import { buildWorkspaceAddonRoutes } from './workspace/AddonRoutes.jsx'
+import { GlobalMediaMiniPlayer } from './modules/media-player/components/GlobalMediaMiniPlayer.jsx'
 
 const pushTokenInFlight = new Set()
 const pushTokenSent = new Set()
@@ -235,6 +236,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      <GlobalMediaMiniPlayer />
       <CookieConsentBanner />
       <Suspense fallback={null}>
         <DevSentryErrorButton />

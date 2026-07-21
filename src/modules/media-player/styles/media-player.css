@@ -909,3 +909,24 @@
 .dmp-mini__meta small {
   color: #888;
 }
+
+.dmp-global-mini {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 12000;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  max-width: min(420px, calc(100vw - 32px));
+}
+
+.dmp-global-mini .dmp-mini {
+  flex: 1;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+.dmp-global-mini__stop {
+  align-self: stretch;
+  min-width: 36px;
+}
