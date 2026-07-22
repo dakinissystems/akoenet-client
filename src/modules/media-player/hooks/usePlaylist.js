@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { isMediaApiEnabled, mediaApi } from "../services/mediaApi.js";
 
-/** Same-origin demo assets (public/media/demo/) — avoids CORS in prod */
+/** Same-origin demo assets (public/media/demo/) — web/desktop only; omitted from Android AAB. */
 const DEMO_TRACKS = [
   {
     id: "demo-track-1",
@@ -21,10 +22,20 @@ const DEMO_TRACKS = [
   },
 ];
 
-export function usePlaylist() {
-  const [tracks, setTracks] = useState(DEMO_TRACKS);
-  const [playlistName, setPlaylistName] = useState("Dakinis Classics");
+function initialTracks() {
+  try {
+    if (Capacitor?.isNativePlatform?.()) return [];
+  } catch {
+    /* web */
+  }
+  return DEMO_TRACKS;
+}
 
+export function usePlaylist() {
+  const [tracks, setTracks] = useState(initialTracks);
+  const [playlistName, setPlaylistName] = useState(
+    Capacitor?.isNativePlatform?.() ? "Library" : "Dakinis Classics",
+  );
   const loadDemo = useCallback(async () => {
     if (!isMediaApiEnabled()) return;
     try {

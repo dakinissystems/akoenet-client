@@ -66,6 +66,17 @@ Luego Play Console → producción / prueba interna → subir el `.aab`.
 
 Tras subir el AAB: **Versiones** → revisar que no haya avisos de firma o compatibilidad. En **Prueba interna / Alpha**, confirma que el tester está en la lista y que la versión ya está **publicada** (no solo “borrador”).
 
+## 7. Aviso Play: “artefacto aumenta el tamaño de los APK”
+
+Causa habitual en AkoeNet: **MP3 demo** (`public/media/demo/`, ~18 MB) empaquetados en `android/.../assets` vía Capacitor.
+
+Mitigación (en repo):
+- `VITE_MOBILE_BUILD=1` omite `public/media` al copiar a `dist/`
+- `cap-sync-android-mobile.mjs` borra `dist/media` antes de `cap sync`
+- En nativo, el Media Player arranca sin demos (importar archivos locales)
+
+Tras subir un AAB nuevo, el aviso debería desaparecer o bajar mucho el tamaño de descarga.
+
 ## Checklist rápido
 
 1. `node scripts/verify-release-aab-signing-key.mjs` → OK  
@@ -73,4 +84,5 @@ Tras subir el AAB: **Versiones** → revisar que no haya avisos de firma o compa
 3. `applicationId` del AAB = ficha Play (`com.akoenet.app`)  
 4. `versionCode` nuevo  
 5. `targetSdkVersion` ≥ 36 (updates tras 31 ago 2026)  
-6. En el móvil con error: desinstalar → instalar desde Play  
+6. AAB sin `media/demo` (~18 MB menos)  
+7. En el móvil con error: desinstalar → instalar desde Play  
