@@ -43,7 +43,26 @@ No se puede cambiar el `applicationId` en la misma ficha de Play. Son **dos apps
 
 Cada subida debe llevar `versionCode` **mayor** que la publicada (p. ej. 10515 → 10516). El script `sync-mobile-version.mjs` lo toma de `package.json`.
 
-## 5. Pista en Play Console
+## 5. Target API level (Play Console)
+
+Google Play exige un `targetSdkVersion` reciente:
+
+| Fecha | Apps existentes (visibilidad) | Nuevas apps / **updates** |
+|-------|------------------------------|---------------------------|
+| Desde 31 ago 2025 | — | API **35** |
+| Desde **31 ago 2026** | Debe ser ≥ **35** o deja de mostrarse a usuarios en Android más nuevo | Debe ser ≥ **36** |
+
+En el repo: `android/variables.gradle` → `compileSdkVersion` / `targetSdkVersion` (**36**).
+
+Si Play avisa “orientada a una versión antigua”, la ficha publicada aún tiene un AAB viejo: genera y sube un release nuevo:
+
+```bash
+npm run mobile:bundle:release
+```
+
+Luego Play Console → producción / prueba interna → subir el `.aab`.
+
+## 6. Pista en Play Console
 
 Tras subir el AAB: **Versiones** → revisar que no haya avisos de firma o compatibilidad. En **Prueba interna / Alpha**, confirma que el tester está en la lista y que la versión ya está **publicada** (no solo “borrador”).
 
@@ -53,4 +72,5 @@ Tras subir el AAB: **Versiones** → revisar que no haya avisos de firma o compa
 2. Play → Integridad → SHA-1 de subida = keystore  
 3. `applicationId` del AAB = ficha Play (`com.akoenet.app`)  
 4. `versionCode` nuevo  
-5. En el móvil con error: desinstalar → instalar desde Play  
+5. `targetSdkVersion` ≥ 36 (updates tras 31 ago 2026)  
+6. En el móvil con error: desinstalar → instalar desde Play  
