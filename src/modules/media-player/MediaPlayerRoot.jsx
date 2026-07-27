@@ -46,7 +46,47 @@ function MediaPlayerDesktop() {
     factoryLayout: classicLayout,
   });
   const [compact, setCompact] = useState(false);
+  const [narrow, setNarrow] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 768px)").matches : false,
+  );
   const [focusedId, setFocusedId] = useState("player.main");
+  const narrowStackApplied = useRef(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const applyNarrow = (isNarrow) => {
+      setNarrow(isNarrow);
+      // Mobile stays in full stacked UI with toolbar — compact is opt-in only.
+      if (!isNarrow) {
+        narrowStackApplied.current = false;
+        return;
+      }
+      if (narrowStackApplied.current) return;
+      narrowStackApplied.current = true;
+      setCompact(false);
+      setWindows((prevWindows) => {
+        const stacked = stackLayout(WINDOW_REGISTRY).map((w) => {
+          const keep =
+            w.id === "player.main" || w.id === "player.playlist" || w.id === "player.library";
+          return {
+            ...w,
+            visible: keep,
+            minimized: false,
+            rect: { ...w.rect, x: 0, width: Math.min(w.rect.width, 420) },
+          };
+        });
+        return stacked.map((w) => {
+          const prior = prevWindows.find((p) => p.id === w.id);
+          return prior ? { ...w, zIndex: prior.zIndex || w.zIndex } : w;
+        });
+      });
+      setFocusedId("player.main");
+    };
+    applyNarrow(mq.matches);
+    const onChange = (e) => applyNarrow(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [setWindows]);
 
   const visualizerOpen = useMemo(
     () => windows.some((w) => w.id === "player.visualizer" && w.visible && !w.minimized),
@@ -166,14 +206,29 @@ function MediaPlayerDesktop() {
 
   if (compact) {
     return (
-      <div className="dmp-desktop dmp-desktop--compact">
+      <div className={`dmp-desktop dmp-desktop--compact${narrow ? " dmp-desktop--narrow" : ""}`}>
+        <div className="dmp-toolbar">
+          <button
+            type="button"
+            className="dmp-toolbar__btn dmp-toolbar__back"
+            onClick={() => navigate("/")}
+          >
+            ← {STRINGS.back}
+          </button>
+          <div className="dmp-toolbar__brand-block">
+            <span className="dmp-toolbar__brand">{STRINGS.appName}</span>
+          </div>
+          <button type="button" className="dmp-toolbar__btn" onClick={() => setCompact(false)} title={STRINGS.expand}>
+            {STRINGS.expand}
+          </button>
+        </div>
         <MiniPlayer player={player} onExpand={() => setCompact(false)} />
       </div>
     );
   }
 
   return (
-    <div className="dmp-desktop" ref={desktopRef}>
+    <div className={`dmp-desktop${narrow ? " dmp-desktop--narrow" : ""}`} ref={desktopRef}>
       <div className="dmp-toolbar">
         <button
           type="button"
@@ -194,12 +249,20 @@ function MediaPlayerDesktop() {
           ) : null}
         </div>
         <SkinPicker />
-        <button type="button" className="dmp-toolbar__btn" onClick={applyStackLayout} title={STRINGS.layoutStack}>
-          ⊟ {STRINGS.layoutStack}
-        </button>
-        <button type="button" className="dmp-toolbar__btn" onClick={resetLayout} title={STRINGS.layoutGrid}>
-          ⊞ {STRINGS.layoutGrid}
-        </button>
+        {!narrow ? (
+          <>
+            <button type="button" className="dmp-toolbar__btn" onClick={applyStackLayout} title={STRINGS.layoutStack}>
+              ⊟ {STRINGS.layoutStack}
+            </button>
+            <button type="button" className="dmp-toolbar__btn" onClick={resetLayout} title={STRINGS.layoutGrid}>
+              ⊞ {STRINGS.layoutGrid}
+            </button>
+          </>
+        ) : (
+          <button type="button" className="dmp-toolbar__btn" onClick={() => setCompact(true)} title={STRINGS.miniPlayer}>
+            {STRINGS.miniPlayer}
+          </button>
+        )}
         {WINDOW_REGISTRY.map((w) => (
           <button key={w.id} type="button" className="dmp-toolbar__btn" onClick={() => toggleWindow(w.id)}>
             {windowTitle(w.id)}
@@ -218,6 +281,7 @@ function MediaPlayerDesktop() {
             rect={w.rect}
             zIndex={w.zIndex}
             focused={focusedId === w.id}
+            interactionLocked={narrow}
             onFocus={() => focus(w.id)}
             onMove={(r) => moveWindow(w.id, r)}
             onMoveEnd={(r) => finishMove(w.id, r)}

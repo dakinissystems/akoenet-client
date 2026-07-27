@@ -16,6 +16,7 @@ export function WindowFrame({
   onResizeEnd,
   onClose,
   onMinimize,
+  interactionLocked = false,
   children,
 }) {
   const dragRef = useRef(null);
@@ -23,6 +24,7 @@ export function WindowFrame({
 
   const onTitleMouseDown = useCallback(
     (e) => {
+      if (interactionLocked) return;
       if (e.button !== 0) return;
       if (e.target.closest(".dmp-window__close, .dmp-window__minimize")) return;
       onFocus();
@@ -64,11 +66,12 @@ export function WindowFrame({
       window.addEventListener("mousemove", onMoveEvt);
       window.addEventListener("mouseup", onUp);
     },
-    [onFocus, onMove, onMoveEnd, rect],
+    [interactionLocked, onFocus, onMove, onMoveEnd, rect],
   );
 
   const onResizeMouseDown = useCallback(
     (e, axis) => {
+      if (interactionLocked) return;
       if (e.button !== 0) return;
       e.preventDefault();
       e.stopPropagation();
@@ -122,22 +125,30 @@ export function WindowFrame({
       window.addEventListener("mousemove", onMoveEvt);
       window.addEventListener("mouseup", onUp);
     },
-    [onFocus, onResize, onResizeEnd, rect],
+    [interactionLocked, onFocus, onResize, onResizeEnd, rect],
   );
 
   return (
     <div
-      className={`dmp-window${focused ? " is-focused" : ""}`}
+      className={`dmp-window${focused ? " is-focused" : ""}${interactionLocked ? " dmp-window--locked" : ""}`}
       data-window-id={id}
-      style={{
-        left: rect.x,
-        top: rect.y,
-        width: rect.width,
-        height: rect.height,
-        zIndex,
-      }}
+      style={
+        interactionLocked
+          ? { width: "100%", height: "auto", zIndex }
+          : {
+              left: rect.x,
+              top: rect.y,
+              width: rect.width,
+              height: rect.height,
+              zIndex,
+            }
+      }
     >
-      <div className="dmp-window__titlebar" onMouseDown={onTitleMouseDown}>
+      <div
+        className="dmp-window__titlebar"
+        onMouseDown={onTitleMouseDown}
+        style={interactionLocked ? { cursor: "default" } : undefined}
+      >
         <span>{title}</span>
         <div className="dmp-window__chrome">
           {onMinimize ? (
@@ -161,7 +172,7 @@ export function WindowFrame({
         </div>
       </div>
       <div className="dmp-window__body">{children}</div>
-      {onResize
+      {onResize && !interactionLocked
         ? RESIZE_HANDLES.map((axis) => (
             <div
               key={axis}
