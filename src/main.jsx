@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, HashRouter } from 'react-router-dom'
 import './i18n.js'
@@ -88,18 +88,44 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   })
 }
 
+function ChunkLoadFallback({ error, resetError }) {
+  const msg = String(error?.message || error || '')
+  const isChunk =
+    /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk [\d]+ failed/i.test(
+      msg
+    )
+
+  useEffect(() => {
+    if (!isChunk) return
+    const key = 'akoenet_chunk_reload'
+    const last = Number(sessionStorage.getItem(key) || 0)
+    if (Date.now() - last < 15_000) return
+    sessionStorage.setItem(key, String(Date.now()))
+    window.location.reload()
+  }, [isChunk])
+
+  return (
+    <div style={{ padding: '2rem', fontFamily: 'system-ui,sans-serif' }}>
+      <h1>Error inesperado</h1>
+      <p>
+        {isChunk
+          ? 'Hay una versión nueva de la app. Recargando…'
+          : 'Recarga la página. Si persiste, contacta soporte.'}
+      </p>
+      {!isChunk ? (
+        <button type="button" onClick={resetError}>
+          Reintentar
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
 function mountReactApp() {
   akoenetInitSentryBrowser()
   createRoot(document.getElementById('root')).render(
     <StrictMode>
-      <Sentry.ErrorBoundary
-        fallback={
-          <div style={{ padding: '2rem', fontFamily: 'system-ui,sans-serif' }}>
-            <h1>Error inesperado</h1>
-            <p>Recarga la página. Si persiste, contacta soporte.</p>
-          </div>
-        }
-      >
+      <Sentry.ErrorBoundary fallback={ChunkLoadFallback}>
         <AppRouter>
           <LandingLocaleProvider>
             <AuthProvider>

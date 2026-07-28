@@ -38,7 +38,11 @@ const DpoPage = lazy(() => import('./pages/DpoPage'))
 const SystemStatus = lazy(() => import('./pages/SystemStatus'))
 const WorkspaceDesktop = lazy(() => import('./pages/WorkspaceDesktop.jsx'))
 const WorkspaceAddonPage = lazy(() => import('./pages/WorkspaceAddonPage.jsx'))
-const DevSentryErrorButton = lazy(() => import('./components/DevSentryErrorButton.jsx'))
+const DevSentryErrorButton =
+  import.meta.env.DEV ||
+  String(import.meta.env.VITE_SENTRY_TEST_BUTTON || '').toLowerCase() === 'true'
+    ? lazy(() => import('./components/DevSentryErrorButton.jsx'))
+    : null
 
 function PageFallback() {
   const { t } = useTranslation()
@@ -238,9 +242,11 @@ export default function App() {
       </Suspense>
       <GlobalMediaMiniPlayer />
       <CookieConsentBanner />
-      <Suspense fallback={null}>
-        <DevSentryErrorButton />
-      </Suspense>
+      {DevSentryErrorButton ? (
+        <Suspense fallback={null}>
+          <DevSentryErrorButton />
+        </Suspense>
+      ) : null}
     </WorkspaceProviders>
   )
 }
