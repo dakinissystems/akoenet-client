@@ -1,0 +1,16 @@
+{
+  "name": "@dakinis/shared-theme",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Dakinis Theme Engine — dark/light/HC/system, product accents, persistence, Tailwind bridge",
+  "exports": {
+    ".": "./src/index.js",
+    "./tokens.css": "./src/tokens.css",
+    "./themes": "./src/themes.js",
+    "./theme-engine": "./src/theme-engine.js",
+    "./product-accents": "./src/product-accents.js",
+    "./tailwind-preset": "./src/tailwind-preset.js",
+    "./tailwind-preset.cjs": "./src/tailwind-preset.cjs"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@dakinis/shared-foundation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dakinis Foundation — spacing, typography, radius, motion, surfaces, elevation (no product accents)",
+  "exports": {
+    ".": "./src/index.js",
+    "./tokens.css": "./src/tokens.css",
+    "./spacing": "./src/spacing.js",
+    "./radius": "./src/radius.js",
+    "./motion": "./src/motion.js",
+    "./typography": "./src/typography.js",
+    "./elevation": "./src/elevation.js",
+    "./shadow": "./src/shadow.js",
+    "./zindex": "./src/zindex.js",
+    "./surfaces": "./src/surfaces.js",
+    "./layout": "./src/layout.js",
+    "./semantic-colors": "./src/semantic-colors.js",
+    "./accessibility": "./src/accessibility.js",
+    "./responsive": "./src/responsive.js"
+  }
+}

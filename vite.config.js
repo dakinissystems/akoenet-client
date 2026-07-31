@@ -37,8 +37,8 @@ export default defineConfig(({ mode }) => {
   resolve: {
     dedupe: ['@capacitor/core', '@capacitor/app', '@capacitor/preferences'],
     alias: {
-      '@dakinis/shared-foundation': path.resolve(__dirname, '../../../packages/shared-foundation/src'),
-      '@dakinis/shared-theme': path.resolve(__dirname, '../../../packages/shared-theme/src'),
+      '@dakinis/shared-foundation': path.resolve(__dirname, 'packages/shared-foundation/src'),
+      '@dakinis/shared-theme': path.resolve(__dirname, 'packages/shared-theme/src'),
     },
   },
   build: {
@@ -71,7 +71,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     fs: {
-      allow: [__dirname, path.join(__dirname, '..')],
+      allow: [__dirname, path.join(__dirname, 'packages'), path.join(__dirname, '..')],
     },
   },
   preview: {

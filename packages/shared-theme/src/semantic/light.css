@@ -1,0 +1,25 @@
+:root[data-theme="light"] {
+  --dakinis-surface-0: #f8fafc;
+  --dakinis-surface-1: #ffffff;
+  --dakinis-surface-2: #ffffff;
+  --dakinis-surface-3: #f1f5f9;
+  --dakinis-surface-4: #e2e8f0;
+  --dakinis-bg: var(--dakinis-surface-0);
+  --dakinis-surface: var(--dakinis-surface-1);
+  --dakinis-panel: var(--dakinis-surface-2);
+  --dakinis-text: #0f172a;
+  --dakinis-muted: #64748b;
+  --dakinis-line: #cbd5e1;
+  --dakinis-shadow-card: 0 8px 32px rgba(15, 23, 42, 0.08);
+  --dakinis-elevation-1: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --dakinis-elevation-2: 0 8px 32px rgba(15, 23, 42, 0.08);
+  --dakinis-elevation-3: 0 16px 48px rgba(15, 23, 42, 0.12);
+  --dakinis-accent-soft: rgba(20, 184, 166, 0.12);
+  --surface: var(--dakinis-surface-1);
+  --surface-0: var(--dakinis-surface-0);
+  --surface-1: var(--dakinis-surface-1);
+  --surface-2: var(--dakinis-surface-2);
+  --text: var(--dakinis-text);
+  --text-secondary: var(--dakinis-muted);
+  --border: var(--dakinis-line);
+}

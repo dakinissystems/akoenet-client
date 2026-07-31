@@ -1,0 +1,7 @@
+/**
+ * @dakinis/shared-theme — Layer 2
+ * Themes + product accents only. Depends conceptually on Foundation CSS loaded first.
+ */
+@import "./semantic/light.css";
+@import "./semantic/high-contrast.css";
+@import "./products/accents.css";

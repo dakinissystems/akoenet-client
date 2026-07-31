@@ -1,0 +1,130 @@
+/**
+ * Dakinis Experience System — foundation tokens (dark default).
+ * Product accents live in products/accents.css. Themes in semantic/.
+ */
+:root,
+:root[data-theme="dark"] {
+  /* Surface 0–4 */
+  --dakinis-surface-0: #08111d;
+  --dakinis-on-accent: #042a24;
+  --dakinis-on-accent-inverse: #ffffff;
+  --dakinis-surface-1: #122840;
+  --dakinis-surface-2: #17344e;
+  --dakinis-surface-3: #1e4060;
+  --dakinis-surface-4: #254b6e;
+
+  /* Legacy aliases */
+  --dakinis-bg: var(--dakinis-surface-0);
+  --dakinis-surface: var(--dakinis-surface-1);
+  --dakinis-panel: var(--dakinis-surface-2);
+  --dakinis-text: #f0f4f9;
+  --dakinis-muted: #b8c6d9;
+  --dakinis-line: #23415f;
+
+  /* Semánticos de estado */
+  --dakinis-primary: #2dd4bf;
+  --dakinis-primary-dark: #14b8a6;
+  --dakinis-secondary: #64748b;
+  --dakinis-success: #22c55e;
+  --dakinis-warning: #f59e0b;
+  --dakinis-danger: #ef4444;
+  --dakinis-info: #3b82f6;
+  --dakinis-neutral: #94a3b8;
+
+  /* Marca Hub / Core (default accent) */
+  --dakinis-brand: var(--dakinis-primary);
+  --dakinis-brand-dark: var(--dakinis-primary-dark);
+  --dakinis-accent: var(--dakinis-brand);
+  --dakinis-accent-dark: var(--dakinis-brand-dark);
+  --dakinis-accent-hover: var(--dakinis-accent-dark);
+  --dakinis-accent-soft: rgba(45, 212, 191, 0.18);
+
+  /* IA — mismo color en todo el ecosistema */
+  --dakinis-ai: #7c3aed;
+  --dakinis-ai-soft: #a855f7;
+  --dakinis-ai-glow: rgba(124, 58, 237, 0.22);
+  --dakinis-ai-border: rgba(168, 85, 247, 0.45);
+
+  /* Espaciado oficial (px) */
+  --dakinis-space-xs: 4px;
+  --dakinis-space-sm: 8px;
+  --dakinis-space-md: 12px;
+  --dakinis-space-base: 16px;
+  --dakinis-space-lg: 24px;
+  --dakinis-space-xl: 32px;
+  --dakinis-space-2xl: 48px;
+  --dakinis-space-3xl: 64px;
+
+  /* Radius — solo escala oficial */
+  --dakinis-radius-sm: 8px;
+  --dakinis-radius-md: 12px;
+  --dakinis-radius-lg: 16px;
+  --dakinis-radius-card: 16px;
+
+  /* Elevación / sombras */
+  --dakinis-elevation-0: none;
+  --dakinis-elevation-1: 0 4px 16px rgba(0, 0, 0, 0.18);
+  --dakinis-elevation-2: 0 8px 32px rgba(0, 0, 0, 0.28);
+  --dakinis-elevation-3: 0 16px 48px rgba(0, 0, 0, 0.35);
+  --dakinis-shadow-card: var(--dakinis-elevation-2);
+  --dakinis-shadow-ai: 0 0 24px rgba(124, 58, 237, 0.25);
+  --dakinis-shadow-xs: var(--dakinis-elevation-0);
+  --dakinis-shadow-sm: var(--dakinis-elevation-1);
+  --dakinis-shadow-md: var(--dakinis-elevation-2);
+  --dakinis-shadow-lg: var(--dakinis-elevation-3);
+
+  /* Motion */
+  --dakinis-motion-hover: 150ms;
+  --dakinis-motion-dropdown: 200ms;
+  --dakinis-motion-modal: 250ms;
+  --dakinis-motion-navigation: 300ms;
+  --dakinis-motion-sidebar: 250ms;
+  --dakinis-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dakinis-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --dakinis-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --dakinis-hover-scale: 1.02;
+  --dakinis-duration: var(--dakinis-motion-hover);
+  --dakinis-duration-fast: var(--dakinis-motion-hover);
+  --dakinis-duration-slow: var(--dakinis-motion-modal);
+  --transition-fast: var(--dakinis-motion-hover);
+  --transition-normal: var(--dakinis-motion-dropdown);
+  --transition-slow: var(--dakinis-motion-modal);
+
+  /* Tipografía */
+  --dakinis-font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --dakinis-font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  /* Icon sizes */
+  --dakinis-icon-xs: 16px;
+  --dakinis-icon-sm: 20px;
+  --dakinis-icon-md: 24px;
+  --dakinis-icon-lg: 32px;
+  --dakinis-icon-xl: 48px;
+
+  /* Layout sizes (AppShell contract) */
+  --dakinis-header-height: 56px;
+  --dakinis-sidebar-width: 16rem;
+  --dakinis-sidebar-width-collapsed: 4.5rem;
+  --dakinis-card-padding: var(--dakinis-space-base);
+  --dakinis-dialog-width: 28rem;
+  --dakinis-content-max: 1100px;
+
+  /* A11y */
+  --dakinis-focus-ring: 0 0 0 3px rgba(45, 212, 191, 0.45);
+  --dakinis-focus-ring-ai: 0 0 0 3px rgba(124, 58, 237, 0.45);
+
+  /* Semantic shortcuts (components should prefer these) */
+  --accent: var(--dakinis-accent);
+  --accent-hover: var(--dakinis-accent-hover);
+  --accent-soft: var(--dakinis-accent-soft);
+  --surface: var(--dakinis-surface-1);
+  --surface-0: var(--dakinis-surface-0);
+  --surface-1: var(--dakinis-surface-1);
+  --surface-2: var(--dakinis-surface-2);
+  --text: var(--dakinis-text);
+  --text-secondary: var(--dakinis-muted);
+  --border: var(--dakinis-line);
+  --success: var(--dakinis-success);
+  --warning: var(--dakinis-warning);
+  --danger: var(--dakinis-danger);
+}

@@ -1,0 +1,57 @@
+:root[data-theme="high-contrast"] {
+  --dakinis-surface-0: #000000;
+  --dakinis-surface-1: #0a0a0a;
+  --dakinis-surface-2: #141414;
+  --dakinis-surface-3: #1a1a1a;
+  --dakinis-surface-4: #222222;
+  --dakinis-bg: var(--dakinis-surface-0);
+  --dakinis-surface: var(--dakinis-surface-1);
+  --dakinis-panel: var(--dakinis-surface-2);
+  --dakinis-text: #ffffff;
+  --dakinis-muted: #f1f5f9;
+  --dakinis-line: #ffffff;
+  --dakinis-primary: #5eead4;
+  --dakinis-accent: #5eead4;
+  --dakinis-accent-hover: #99f6e4;
+  --dakinis-accent-soft: rgba(94, 234, 212, 0.28);
+  --dakinis-accent-dark: #99f6e4;
+  --dakinis-success: #4ade80;
+  --dakinis-warning: #fbbf24;
+  --dakinis-danger: #f87171;
+  --dakinis-info: #60a5fa;
+  --dakinis-ai: #c4b5fd;
+  --dakinis-ai-soft: #ddd6fe;
+  --dakinis-ai-border: #a78bfa;
+  --dakinis-ai-glow: rgba(167, 139, 250, 0.35);
+  --dakinis-focus-ring: 0 0 0 3px #ffffff;
+  --dakinis-focus-ring-ai: 0 0 0 3px #c4b5fd;
+  --dakinis-shadow-card: none;
+  --dakinis-elevation-0: none;
+  --dakinis-elevation-1: none;
+  --dakinis-elevation-2: none;
+  --dakinis-elevation-3: none;
+  --dakinis-shadow-sm: none;
+  --dakinis-shadow-md: none;
+  --dakinis-shadow-lg: none;
+  --accent: var(--dakinis-accent);
+  --accent-hover: var(--dakinis-accent-hover);
+  --accent-soft: var(--dakinis-accent-soft);
+  --surface: var(--dakinis-surface-1);
+  --surface-0: var(--dakinis-surface-0);
+  --surface-1: var(--dakinis-surface-1);
+  --surface-2: var(--dakinis-surface-2);
+  --text: var(--dakinis-text);
+  --text-secondary: var(--dakinis-muted);
+  --border: var(--dakinis-line);
+  --success: var(--dakinis-success);
+  --warning: var(--dakinis-warning);
+  --danger: var(--dakinis-danger);
+}
+
+/* Preferencia OS — refuerzo tipográfico; el tema HC completo se activa vía data-theme */
+@media (prefers-contrast: more) {
+  :root:not([data-theme="high-contrast"]) {
+    --dakinis-line: color-mix(in srgb, var(--dakinis-line) 70%, #fff);
+    --dakinis-muted: color-mix(in srgb, var(--dakinis-muted) 40%, var(--dakinis-text));
+  }
+}

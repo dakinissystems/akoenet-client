@@ -1,0 +1,75 @@
+/**
+ * Product accents only — everything else comes from foundation.
+ * LifeFlow = mint (D1 · jul 2026): matches live app + emails.
+ */
+:root[data-product="core"],
+:root[data-product="hub"] {
+  --dakinis-accent: #2dd4bf;
+  --dakinis-accent-dark: #14b8a6;
+  --dakinis-accent-hover: #14b8a6;
+  --dakinis-accent-soft: rgba(45, 212, 191, 0.18);
+  --accent: var(--dakinis-accent);
+  --accent-hover: var(--dakinis-accent-hover);
+  --accent-soft: var(--dakinis-accent-soft);
+}
+
+:root[data-product="lifeflow"] {
+  --dakinis-accent: #3dd6c6;
+  --dakinis-accent-dark: #2a9d8f;
+  --dakinis-accent-hover: #2a9d8f;
+  --dakinis-accent-soft: rgba(61, 214, 198, 0.2);
+  --accent: var(--dakinis-accent);
+  --accent-hover: var(--dakinis-accent-hover);
+  --accent-soft: var(--dakinis-accent-soft);
+}
+
+:root[data-product="landing"] {
+  --dakinis-accent: #22d3ee;
+  --dakinis-accent-dark: #06b6d4;
+  --dakinis-accent-hover: #06b6d4;
+  --dakinis-accent-soft: rgba(34, 211, 238, 0.18);
+  --accent: var(--dakinis-accent);
+  --accent-hover: var(--dakinis-accent-hover);
+  --accent-soft: var(--dakinis-accent-soft);
+}
+
+:root[data-product="streamautomator"] {
+  --dakinis-accent: #3b82f6;
+  --dakinis-accent-dark: #2563eb;
+  --dakinis-accent-hover: #2563eb;
+  --dakinis-accent-soft: rgba(59, 130, 246, 0.18);
+  --accent: var(--dakinis-accent);
+  --accent-hover: var(--dakinis-accent-hover);
+  --accent-soft: var(--dakinis-accent-soft);
+}
+
+:root[data-product="akoenet"] {
+  --dakinis-accent: #7c3aed;
+  --dakinis-accent-dark: #6d28d9;
+  --dakinis-accent-hover: #6d28d9;
+  --dakinis-accent-soft: rgba(124, 58, 237, 0.2);
+  --accent: var(--dakinis-accent);
+  --accent-hover: var(--dakinis-accent-hover);
+  --accent-soft: var(--dakinis-accent-soft);
+}
+
+:root[data-product="tabletop"],
+:root[data-product="dnd"] {
+  --dakinis-accent: #c9a227;
+  --dakinis-accent-dark: #a8841f;
+  --dakinis-accent-hover: #a8841f;
+  --dakinis-accent-soft: rgba(201, 162, 39, 0.2);
+  --accent: var(--dakinis-accent);
+  --accent-hover: var(--dakinis-accent-hover);
+  --accent-soft: var(--dakinis-accent-soft);
+}
+
+:root[data-product="fitness"] {
+  --dakinis-accent: #059669;
+  --dakinis-accent-dark: #047857;
+  --dakinis-accent-hover: #047857;
+  --dakinis-accent-soft: rgba(5, 150, 105, 0.18);
+  --accent: var(--dakinis-accent);
+  --accent-hover: var(--dakinis-accent-hover);
+  --accent-soft: var(--dakinis-accent-soft);
+}
