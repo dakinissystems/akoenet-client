@@ -31,7 +31,7 @@ export default function Messages() {
 
   return (
     <AppChrome>
-    <div className="app-shell dashboard-shell">
+    <div className="app-shell dashboard-shell dakinis-shell">
       <ServerSidebar
         servers={servers}
         activeServerId={null}

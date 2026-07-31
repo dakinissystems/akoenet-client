@@ -21,7 +21,7 @@ function WorkspaceDesktopContent() {
 
   return (
     <AppChrome>
-      <div className="app-shell dashboard-shell">
+      <div className="app-shell dashboard-shell dakinis-shell">
         <ServerSidebar
           servers={[]}
           activeServerId={null}

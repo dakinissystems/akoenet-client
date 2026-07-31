@@ -1,4 +1,6 @@
 /** Dark palette (default app look). */
+import { syncAkoeNetModeToDes } from './desThemeBridge.js'
+
 export const DARK_THEME = {
   bg: '#0f172a',
   panel: '#111827',
@@ -204,6 +206,8 @@ export function applyTheme(theme, opts = {}) {
   root.style.setProperty('--dc-border', isLight ? 'rgba(15, 23, 42, 0.14)' : '#14191f')
   root.style.setProperty('--dc-popover-bg', isLight ? '#ffffff' : '#111214')
   root.style.setProperty('--dc-embed-bg', isLight ? '#f8fafc' : '#14191f')
+
+  syncAkoeNetModeToDes(full)
 }
 
 function resetStoredTheme(userId) {

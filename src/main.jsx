@@ -2,8 +2,11 @@ import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, HashRouter } from 'react-router-dom'
 import './i18n.js'
+import '@dakinis/shared-foundation/tokens.css'
+import '@dakinis/shared-theme/tokens.css'
 import './index.css'
 import { applyTheme, loadTheme } from './lib/themePreferences.js'
+import { applyDesTheme } from '@dakinis/shared-theme/themes'
 import { isTauri } from './lib/isTauri.js'
 import { consumeTauriDeepLinksOnBootstrap } from './services/desktop-integrations.js'
 import { runDesktopUpdateCheck } from './lib/desktopUpdates.js'
@@ -59,6 +62,7 @@ function consumeTwitchOAuthFromUrl() {
 /** Apply saved UI theme before React paints (reduces flash; accent syncs after /auth/me). */
 function bootstrapThemeEarly() {
   try {
+    applyDesTheme({ product: 'akoenet', theme: 'dark' })
     const uid = localStorage.getItem('akoenet_ui_theme_active_uid')
     applyTheme(loadTheme(uid || undefined), { accentColor: null })
   } catch {
@@ -113,7 +117,7 @@ function ChunkLoadFallback({ error, resetError }) {
           : 'Recarga la página. Si persiste, contacta soporte.'}
       </p>
       {!isChunk ? (
-        <button type="button" onClick={resetError}>
+        <button type="button" className="dakinis-btn dakinis-btn--primary dakinis-btn--md" onClick={resetError}>
           Reintentar
         </button>
       ) : null}

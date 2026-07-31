@@ -5,11 +5,11 @@
   --nexora-border: rgba(255, 255, 255, 0.06);
   --nexora-text: #d1d5db;
   --nexora-muted: #9ca3af;
-  --nexora-accent: #7c3aed;
+  --nexora-accent: var(--dakinis-accent, #7c3aed);
   --echonet: #3b82f6;
   --echonet-glow: rgba(59, 130, 246, 0.35);
-  --danger: #f87171;
-  --font: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --danger: var(--dakinis-danger, #f87171);
+  --font: var(--dakinis-font-sans, Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   /* Semantic tokens (overridden by themePreferences.applyTheme) */
   --nexora-strong: #e5e7eb;
   --nexora-input-bg: rgba(0, 0, 0, 0.25);
@@ -8275,4 +8275,24 @@ dialog.welcome-onboarding-overlay::backdrop {
 .password-field__toggle:focus-visible {
   outline: 2px solid var(--nexora-accent);
   outline-offset: 2px;
+}
+
+/* DES button primitives (Nexora skin uses --dakinis-accent) */
+.dakinis-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-radius: var(--dakinis-radius-sm, 8px);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--dakinis-font-sans, inherit);
+}
+.dakinis-btn--md { font-size: 0.875rem; padding: 0.5rem 0.9rem; }
+.dakinis-btn--primary {
+  background: var(--dakinis-accent, var(--nexora-accent, #7c3aed));
+  color: #fff;
+}
+.dakinis-btn--primary:hover {
+  filter: brightness(1.08);
 }

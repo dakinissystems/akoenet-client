@@ -95,7 +95,7 @@ export default function WorkspaceAddonRuntime({ addon, servers = [] }) {
 
   return (
     <AppChrome>
-      <div className="app-shell dashboard-shell">
+      <div className="app-shell dashboard-shell dakinis-shell">
         <ServerSidebar
           servers={servers}
           activeServerId={null}

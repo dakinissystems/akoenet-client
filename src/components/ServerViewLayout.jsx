@@ -58,7 +58,7 @@ export default function ServerViewLayout(props) {
   return (
     <AppChrome>
       <>
-        <div className="app-shell app-shell--server">
+        <div className="app-shell app-shell--server dakinis-shell">
           <ServerSidebar
             servers={servers}
             activeServerId={id}

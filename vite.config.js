@@ -36,6 +36,10 @@ export default defineConfig(({ mode }) => {
   ],
   resolve: {
     dedupe: ['@capacitor/core', '@capacitor/app', '@capacitor/preferences'],
+    alias: {
+      '@dakinis/shared-foundation': path.resolve(__dirname, '../../../packages/shared-foundation/src'),
+      '@dakinis/shared-theme': path.resolve(__dirname, '../../../packages/shared-theme/src'),
+    },
   },
   build: {
     copyPublicDir: false,
