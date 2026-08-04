@@ -22,7 +22,10 @@ export default function SiteFooter({ className = '' }) {
   const secondaryLinks = [
     { to: '/legal/proteccion', label: f.legal },
     { to: '/legal/dmca', label: f.dmca },
-    { to: '/legal/dpo', label: f.dpo },
+    {
+      to: locale === 'es' ? '/legal/privacidad-solicitudes' : '/legal/privacy-requests',
+      label: f.dpo,
+    },
     { to: '/legal/cookies', label: f.cookies },
     { to: '/legal/moderacion', label: f.moderation },
     { to: '/legal/seguridad', label: f.security },

@@ -35,7 +35,7 @@ export default function DpoPage() {
         const { data } = await api.get('/dpo/contact')
         if (!cancelled) setContact(data)
       } catch {
-        if (!cancelled) setLoadError('Could not load DPO contact details.')
+        if (!cancelled) setLoadError('Could not load privacy contact details.')
       }
     })()
     return () => {
@@ -94,10 +94,10 @@ export default function DpoPage() {
         <p className="muted small" style={{ marginBottom: '0.75rem' }}>
           <Link to="/">← Home</Link>
         </p>
-        <h1>Data protection contact</h1>
+        <h1>Privacy requests</h1>
         <p className="muted small">
-          For GDPR-related requests and privacy questions about this service. This form records your message for our
-          records; we do not use it for marketing.
+          GDPR / privacy requests for this service. We do not appoint a DPO; this is our privacy contact channel. This
+          form is not used for marketing.
         </p>
 
         {loadError && <div className="error-banner inline">{loadError}</div>}
