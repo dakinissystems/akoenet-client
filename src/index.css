@@ -2679,6 +2679,12 @@ textarea {
   padding: 1rem 1.25rem 1.5rem;
 }
 
+/* Skip layout/paint for off-screen messages (long channels). */
+.message-list > .message-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 72px;
+}
+
 .empty-chat-tip {
   border: 1px solid rgba(148, 163, 184, 0.12);
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(124, 58, 237, 0.06));
