@@ -7197,9 +7197,109 @@ input.theme-color-hex:disabled {
   }
 }
 
+.landing-logo--link {
+  text-decoration: none;
+  color: inherit;
+}
+
 /* Landing: install PWA / device-specific copy */
 .landing-app {
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.55), transparent);
+}
+
+.landing-app--teaser {
+  padding-top: 1.25rem;
+  padding-bottom: 1.75rem;
+  background: transparent;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.landing-app-teaser {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.landing-app-teaser-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.landing-app-teaser-lead {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--nexora-muted);
+}
+
+.landing-app-teaser-meta {
+  margin: 0.45rem 0 0;
+}
+
+.landing-app-teaser-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+  min-width: min(100%, 14rem);
+}
+
+.landing-app-teaser-actions .landing-app-native-download {
+  margin-top: 0;
+  text-align: center;
+}
+
+.landing-app-teaser-all {
+  font-size: 0.85rem;
+  text-align: center;
+  color: #7dd3fc;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.landing-app-teaser-all:hover {
+  color: #bae6fd;
+}
+
+.download-page .download-hero {
+  padding-bottom: 0.5rem;
+}
+
+.download-web-first {
+  margin: 0.75rem 0 0;
+  max-width: 40rem;
+}
+
+.download-platforms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.download-platform-card .landing-app-native-download {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.download-optional-note {
+  margin-top: 0.65rem;
+}
+
+.download-version-ahead,
+.download-install-steps {
+  margin-top: 0.55rem;
+}
+
+.download-back-strip {
+  padding-top: 0.5rem;
 }
 
 .landing-app-inner {

@@ -36,6 +36,7 @@ const LegalDocPage = lazy(() => import('./pages/LegalDocPage'))
 const DmcaPage = lazy(() => import('./pages/DmcaPage'))
 const DpoPage = lazy(() => import('./pages/DpoPage'))
 const SystemStatus = lazy(() => import('./pages/SystemStatus'))
+const DownloadPage = lazy(() => import('./pages/DownloadPage'))
 const WorkspaceDesktop = lazy(() => import('./pages/WorkspaceDesktop.jsx'))
 const WorkspaceAddonPage = lazy(() => import('./pages/WorkspaceAddonPage.jsx'))
 const DevSentryErrorButton =
@@ -196,6 +197,8 @@ export default function App() {
           <Route path="/legal/:slug" element={<LegalDocPage />} />
           <Route path="/invite/:token" element={<InvitePage />} />
           <Route path="/status" element={<SystemStatus />} />
+          <Route path="/download" element={<DownloadPage />} />
+          <Route path="/descargas" element={<Navigate to="/download" replace />} />
           <Route path="/" element={<Home />} />
           <Route
             path="/messages"

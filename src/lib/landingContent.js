@@ -8,7 +8,7 @@ export const landingContent = {
   en: {
     nav: {
       features: 'Features',
-      app: 'App',
+      downloads: 'Downloads',
       faq: 'FAQ',
       terms: 'Terms',
       privacy: 'Privacy',
@@ -66,7 +66,7 @@ export const landingContent = {
       },
       {
         q: 'Do I need to install anything?',
-        a: 'You can use AkoeNet in the browser without installing anything. On Windows, download the desktop app from the “App” section. On Android, install from Google Play once listed (not a Chrome extension). You need an account and, for voice, microphone permission (and camera if you use it).',
+        a: 'No — chat, voice, invites, and StreamAutomator work in the browser. The Windows desktop app is optional: use it for local game detection and a native window. Download it from Downloads. On Android, install from Google Play once listed (not a Chrome extension).',
       },
       {
         q: 'How do voice channels work?',
@@ -97,44 +97,63 @@ export const landingContent = {
       button: 'Continue',
       error: 'Paste a link or invite code.',
     },
-    appSection: {
-      title: 'Download the app',
+    appTeaser: {
+      title: 'Prefer the desktop app?',
       lead:
-        'On Windows, download the desktop installer. On Android, get the app from Google Play once approved — or download the APK when we publish it. This is not a Chrome or Edge extension.',
-      notExtensionLead:
-        'AkoeNet is a standalone app (desktop or store install). We do not offer a browser extension.',
-      webFallback: 'You can also use AkoeNet in this browser — sign in above with no install.',
+        'Optional on Windows for a native window and local game detection. Everything else works in the browser.',
+      windowsCta: 'Download for Windows',
+      allPlatforms: 'All platforms & install help',
+      versionLabel: 'Desktop v{{v}}',
+      updatedLabel: 'Updated {{d}}',
+    },
+    downloadPage: {
+      documentTitle: 'Downloads — AkoeNet',
+      eyebrow: 'Apps',
+      title: 'Download AkoeNet',
+      lead:
+        'Install the desktop or mobile client when you want them. Core community features stay available in the browser.',
+      webFirst:
+        'Chat, voice, invites, StreamAutomator, and Steam-linked presence work on the web. The Windows app adds local game detection and a dedicated window.',
+      platformsLabel: 'Platforms',
+      backHome: '← Back to home',
+      otherDesktopTitle: 'macOS & Linux',
+      otherDesktopBody: 'Native builds are not available yet. Use AkoeNet in your browser for now.',
       desktop: {
-        nativeTitle: 'Windows desktop app',
+        nativeTitle: 'Windows',
         nativeBodyHosted:
-          'Download the installer for Windows 10/11 (64-bit). Native window with Twitch sign-in and game presence — not a browser extension.',
-        notExtensionNote: 'Not a Chrome extension, not an Edge add-on, and not from a browser store.',
+          'Installer for Windows 10/11 (64-bit). Native window, Twitch sign-in, and optional local game detection.',
+        optionalNote:
+          'Required only if you want desktop game detection. Twitch sign-in and communities also work in the browser.',
+        notExtensionNote: 'Not a Chrome extension, Edge add-on, or browser-store app.',
         nativeDownloadCta: 'Download for Windows (x64)',
         installerVersionHint: 'Version {{v}}',
+        installerUpdatedHint: 'updated {{d}}',
+        webAheadHint:
+          'The website is on {{web}}. This installer may be older until the next desktop release; installed apps can auto-update when a newer signed build is published.',
         smartscreenHint:
-          'Windows may show SmartScreen for new publishers. Choose “More info” → “Run anyway” if you trust this site.',
-        nonWindowsHint: 'This installer is for Windows. On macOS or Linux, use the web app in your browser for now.',
+          'Windows SmartScreen may warn about an unknown publisher until we ship an Authenticode-signed build. Choose “More info” → “Run anyway” if you trust this site.',
+        installSteps:
+          'After download: run the .exe → if SmartScreen appears, use More info → Run anyway → finish the installer → sign in. Prefer the web app if you are unsure.',
+        unavailable: 'Installer temporarily unavailable. Use the web app or try again later.',
       },
       mobile: {
-        androidTitle: 'Android app',
+        androidTitle: 'Android',
         androidBodyPending:
-          'The AkoeNet Android app is in Google Play review. When approved, you will be able to install it from the store or download the APK here. Not a browser extension.',
+          'The Android app is in Google Play review. When approved, install from the store or download the APK here.',
         androidBodyApproved:
-          'Install AkoeNet from Google Play or download the APK below. Full-screen app with push notifications — not a Chrome extension.',
+          'Install from Google Play or download the APK. Full-screen app with push notifications.',
         playStoreCta: 'Get it on Google Play',
         apkCta: 'Download APK',
         notExtensionNote: 'Not a Chrome extension or browser add-on.',
         iosTitle: 'iPhone & iPad',
-        iosBody: 'The iOS app will be listed on the App Store when available. Until then, use AkoeNet in Safari in your browser.',
-        otherTitle: 'Mobile browser',
-        otherBody: 'Use AkoeNet in your browser, or switch to Android when the store listing is live.',
+        iosBody: 'App Store listing coming later. Until then, use AkoeNet in Safari.',
       },
     },
   },
   es: {
     nav: {
       features: 'Funciones',
-      app: 'App',
+      downloads: 'Descargas',
       faq: 'FAQ',
       terms: 'Términos',
       privacy: 'Privacidad',
@@ -192,7 +211,7 @@ export const landingContent = {
       },
       {
         q: '¿Necesito instalar algo?',
-        a: 'Puedes usar AkoeNet en el navegador sin instalar nada. En Windows, descarga la app de escritorio en la sección “App”. En Android, instálala desde Google Play cuando esté publicada (no es una extensión de Chrome). Necesitas cuenta y, para voz, permiso de micrófono (y cámara si la usas).',
+        a: 'No — chat, voz, invitaciones y StreamAutomator funcionan en el navegador. La app de escritorio Windows es opcional: úsala para detección local de juegos y ventana nativa. Descárgala en Descargas. En Android, instálala desde Google Play cuando esté publicada (no es una extensión de Chrome).',
       },
       {
         q: '¿Cómo funcionan los canales de voz?',
@@ -223,37 +242,56 @@ export const landingContent = {
       button: 'Continuar',
       error: 'Pega un enlace o un código de invitación.',
     },
-    appSection: {
-      title: 'Descargar la app',
+    appTeaser: {
+      title: '¿Prefieres la app de escritorio?',
       lead:
-        'En Windows, descarga el instalador de escritorio. En Android, instálala desde Google Play cuando esté aprobada — o descarga el APK cuando lo publiquemos. No es una extensión de Chrome ni de Edge.',
-      notExtensionLead:
-        'AkoeNet es una aplicación independiente (escritorio o tienda). No ofrecemos extensión de navegador.',
-      webFallback: 'También puedes usar AkoeNet en este navegador — entra arriba sin instalar nada.',
+        'Opcional en Windows para ventana nativa y detección local de juegos. El resto funciona en el navegador.',
+      windowsCta: 'Descargar para Windows',
+      allPlatforms: 'Todas las plataformas e instalación',
+      versionLabel: 'Escritorio v{{v}}',
+      updatedLabel: 'Actualizado {{d}}',
+    },
+    downloadPage: {
+      documentTitle: 'Descargas — AkoeNet',
+      eyebrow: 'Apps',
+      title: 'Descargar AkoeNet',
+      lead:
+        'Instala el cliente de escritorio o móvil cuando lo necesites. Las funciones principales de comunidad siguen en el navegador.',
+      webFirst:
+        'Chat, voz, invitaciones, StreamAutomator y presencia vía Steam funcionan en la web. La app Windows añade detección local de juegos y una ventana dedicada.',
+      platformsLabel: 'Plataformas',
+      backHome: '← Volver al inicio',
+      otherDesktopTitle: 'macOS y Linux',
+      otherDesktopBody: 'Aún no hay builds nativos. Usa AkoeNet en el navegador por ahora.',
       desktop: {
-        nativeTitle: 'App de escritorio para Windows',
+        nativeTitle: 'Windows',
         nativeBodyHosted:
-          'Descarga el instalador para Windows 10/11 (64 bits). Ventana nativa con inicio de sesión Twitch y presencia de juego — no es una extensión del navegador.',
+          'Instalador para Windows 10/11 (64 bits). Ventana nativa, inicio con Twitch y detección local de juegos opcional.',
+        optionalNote:
+          'Solo es necesaria si quieres detección de juegos en el escritorio. Twitch y las comunidades también funcionan en el navegador.',
         notExtensionNote: 'No es extensión de Chrome, ni complemento de Edge, ni de la tienda del navegador.',
         nativeDownloadCta: 'Descargar para Windows (x64)',
         installerVersionHint: 'Versión {{v}}',
+        installerUpdatedHint: 'actualizado {{d}}',
+        webAheadHint:
+          'La web está en {{web}}. Este instalador puede ser anterior hasta el próximo release de escritorio; las apps instaladas pueden autoactualizarse cuando haya un build firmado más nuevo.',
         smartscreenHint:
-          'Windows puede mostrar SmartScreen con editores nuevos. Elige “Más información” → “Ejecutar de todas formas” si confías en este sitio.',
-        nonWindowsHint: 'Este instalador es para Windows. En macOS o Linux, usa la web en el navegador por ahora.',
+          'Windows SmartScreen puede avisar de “editor desconocido” hasta que firmemos el instalador con Authenticode. Elige “Más información” → “Ejecutar de todas formas” si confías en este sitio.',
+        installSteps:
+          'Tras descargar: ejecuta el .exe → si aparece SmartScreen, Más información → Ejecutar de todas formas → termina el instalador → inicia sesión. Si dudas, usa la web.',
+        unavailable: 'Instalador no disponible temporalmente. Usa la web o inténtalo más tarde.',
       },
       mobile: {
-        androidTitle: 'App para Android',
+        androidTitle: 'Android',
         androidBodyPending:
-          'La app de AkoeNet está en revisión en Google Play. Cuando se apruebe, podrás instalarla desde la tienda o descargar el APK aquí. No es una extensión del navegador.',
+          'La app está en revisión en Google Play. Cuando se apruebe, instálala desde la tienda o descarga el APK aquí.',
         androidBodyApproved:
-          'Instala AkoeNet desde Google Play o descarga el APK abajo. App a pantalla completa con notificaciones — no es extensión de Chrome.',
+          'Instala desde Google Play o descarga el APK. App a pantalla completa con notificaciones.',
         playStoreCta: 'Disponible en Google Play',
         apkCta: 'Descargar APK',
         notExtensionNote: 'No es extensión ni complemento del navegador.',
         iosTitle: 'iPhone e iPad',
-        iosBody: 'La app para iOS estará en la App Store cuando esté disponible. Mientras tanto, usa AkoeNet en Safari.',
-        otherTitle: 'Móvil en el navegador',
-        otherBody: 'Usa AkoeNet en el navegador, o cambia a Android cuando la ficha en la tienda esté activa.',
+        iosBody: 'La ficha en App Store llegará más adelante. Mientras tanto, usa AkoeNet en Safari.',
       },
     },
   },
@@ -262,6 +300,7 @@ export const landingContent = {
 export const footerContent = {
   en: {
     versionTitle: 'Web client version',
+    downloads: 'Downloads',
     legalNav: 'Legal links',
     legalGroupPrimary: 'Account & safety',
     legalGroupSecondary: 'Legal & compliance',
@@ -287,6 +326,7 @@ export const footerContent = {
   },
   es: {
     versionTitle: 'Versión del cliente web',
+    downloads: 'Descargas',
     legalNav: 'Enlaces legales',
     legalGroupPrimary: 'Cuenta y seguridad',
     legalGroupSecondary: 'Legal y cumplimiento',

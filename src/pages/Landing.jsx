@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import SiteFooter from '../components/SiteFooter'
+import LandingMarketingNav from '../components/LandingMarketingNav'
 import { useLandingLocale } from '../hooks/useLandingLocale'
 import { landingContent } from '../lib/landingContent'
 import LandingAppSection from '../components/LandingAppSection'
-import LanguageSwitcher from '../components/LanguageSwitcher'
 import { inviteLandingPath, parseInviteTokenFromInput } from '../lib/invites'
 
 const FEATURE_ICONS = ['💬', '🎙️', '🛡️', '✉️']
@@ -70,28 +70,7 @@ export default function Landing({ apiUnreachable = false, onRetryApi }) {
           )}
         </div>
       )}
-      <header className="landing-nav">
-        <div className="landing-nav-inner">
-          <span className="landing-logo">
-            <span className="landing-logo-text">AkoeNet</span>
-            <img src="/Akoenet.png" alt="" className="landing-logo-mark" aria-hidden="true" />
-          </span>
-          <nav className="landing-nav-links" aria-label={locale === 'es' ? 'Principal' : 'Primary'}>
-            <LanguageSwitcher ariaLabel={t.nav.langLabel} />
-            <a href="#features">{t.nav.features}</a>
-            <a href="#app">{t.nav.app}</a>
-            <a href="#faq">{t.nav.faq}</a>
-            <Link to="/legal/terminos">{t.nav.terms}</Link>
-            <Link to="/legal/privacidad">{t.nav.privacy}</Link>
-            <Link to="/login" className="btn ghost small landing-nav-cta">
-              {t.nav.signIn}
-            </Link>
-            <Link to="/register" className="btn primary small">
-              {t.nav.signUp}
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <LandingMarketingNav t={t} locale={locale} />
 
       <main>
         <section className="landing-hero">
@@ -127,8 +106,6 @@ export default function Landing({ apiUnreachable = false, onRetryApi }) {
 
         <LandingInviteStrip t={t} />
 
-        <LandingAppSection t={t} />
-
         <section id="features" className="landing-section landing-features">
           <div className="landing-section-inner">
             <h2 className="landing-section-title">{t.featuresTitle}</h2>
@@ -159,6 +136,8 @@ export default function Landing({ apiUnreachable = false, onRetryApi }) {
             </div>
           </div>
         </section>
+
+        <LandingAppSection t={t} />
       </main>
 
       <SiteFooter />

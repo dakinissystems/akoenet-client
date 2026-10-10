@@ -13,6 +13,7 @@ export default function SiteFooter({ className = '' }) {
   const { year: copyrightYear, holder: copyrightHolder, suffix: copyrightSuffix } =
     clientCopyrightLineParts(locale)
   const primaryLinks = [
+    { to: '/download', label: f.downloads },
     { to: '/legal/terminos', label: f.terms },
     { to: '/legal/privacidad', label: f.privacy },
     { to: '/legal/account-deletion', label: f.accountDeletion },
