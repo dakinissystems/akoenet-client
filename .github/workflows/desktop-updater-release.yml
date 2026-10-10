@@ -72,10 +72,27 @@ jobs:
             exit 1
           fi
 
+      # Tauri decodes TAURI_SIGNING_PRIVATE_KEY as base64. Newlines from the GitHub
+      # secret UI (char 10) cause: "Invalid character 10, offset …". Strip them and
+      # pass a file path (supported) so Windows/bash env quoting cannot reintroduce LFs.
+      - name: Normalize signing key
+        shell: bash
+        env:
+          RAW_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          KEY=$(printf '%s' "$RAW_KEY" | tr -d '\r\n')
+          if [ "${#KEY}" -lt 32 ]; then
+            echo "::error::TAURI_SIGNING_PRIVATE_KEY looks empty/too short after stripping newlines"
+            exit 1
+          fi
+          printf '%s' "$KEY" > src-tauri/akoenet-signer.key
+          echo "TAURI_SIGNING_PRIVATE_KEY=${PWD}/src-tauri/akoenet-signer.key" >> "$GITHUB_ENV"
+          echo "signing_key_bytes=$(wc -c < src-tauri/akoenet-signer.key | tr -d ' ')"
+
       - name: Build signed desktop + updater manifest
         shell: bash
         env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           VITE_PUBLIC_ORIGIN: https://akoenet.dakinissystems.com
         run: npm run release:desktop

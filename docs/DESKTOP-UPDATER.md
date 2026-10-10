@@ -22,20 +22,22 @@ After `main` gets the artifacts, Railway redeploys the web app and the updater e
 
 ### One-time: add the signing secret
 
-1. Locally (if you already have the key):
+1. Locally the private key is a **single-line base64** string (no line wraps):
 
 ```powershell
-Get-Content src-tauri/akoenet-signer.key -Raw
+(Get-Content src-tauri/akoenet-signer.key -Raw).Trim()
 ```
 
 2. GitHub → **akoenet-client** → Settings → Secrets and variables → Actions → New repository secret:
 
 | Name | Value |
 |------|--------|
-| `TAURI_SIGNING_PRIVATE_KEY` | Full contents of `akoenet-signer.key` |
+| `TAURI_SIGNING_PRIVATE_KEY` | That **one line** (paste without wrapping). CI also strips `\n`/`\r` if the UI inserted them. |
 | `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Only if the key is password-protected |
 
 Use the **same** key that matches `src-tauri/updater.pubkey` / `tauri.conf.json` `plugins.updater.pubkey`. Regenerating the key breaks updates for users on old builds.
+
+If CI fails with `failed to decode base64 secret key: Invalid character 10`, the secret had a newline — re-paste as one line or re-run after the normalize step in the workflow.
 
 ### Release a new auto-update
 
