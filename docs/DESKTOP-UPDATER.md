@@ -51,9 +51,19 @@ Or: Actions → **Desktop updater release** → Run workflow (after bumping vers
 
 ### Verify
 
-1. Open `https://akoenet.dakinissystems.com/releases/desktop/latest.json` — `version` matches.  
-2. Installer URL in the JSON returns HTTP 200.  
-3. Launch an older desktop build → should notify and install.
+1. Open `https://akoenet.dakinissystems.com/releases/desktop/latest.json` — response is **JSON** (not the SPA HTML shell) and `version` matches `package.json`.  
+2. `platforms.windows-x86_64.url` returns HTTP 200 for the `.exe`.  
+3. `platforms.windows-x86_64.signature` matches the contents of the matching `.sig` from the release.  
+4. Launch an older desktop build signed with the **same** pubkey → should notify and install.
+
+`tauri.conf.json` must set `bundle.createUpdaterArtifacts: true` or the build produces installers without `.sig` and CI will fail when generating `latest.json`.
+
+### Bad release / recovery
+
+- Failed Actions run: fix `main`, then **Run workflow** (workflow_dispatch) on latest `main`. You do not need a new tag if the version is unchanged.  
+- Bad artifacts already on `main`: revert or replace `public/releases/desktop/*` with a good build, push, wait for Railway.  
+- Failed mid-install on a client: reinstall from the Downloads page / GitHub Release `.exe`. Auto-update does not replace a full reinstall if the local install is corrupted.  
+- Key compromise: rotate with `npm run updater:setup`, update the GitHub secret, and ship a new signed build; old clients cannot verify updates until they install a build signed with the new key.
 
 ---
 
