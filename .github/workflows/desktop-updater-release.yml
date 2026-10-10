@@ -31,10 +31,10 @@ jobs:
       tag: ${{ steps.ver.outputs.tag }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
@@ -119,7 +119,7 @@ jobs:
           cat public/releases/desktop/latest.json
 
       - name: Upload updater artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: desktop-updater-${{ steps.ver.outputs.version }}
           path: |
@@ -133,16 +133,16 @@ jobs:
 
   publish:
     needs: build-windows
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: desktop-updater-${{ needs.build-windows.outputs.version }}
           path: _desktop_out
@@ -186,7 +186,7 @@ jobs:
 
       - name: Create GitHub Release
         if: ${{ github.event_name == 'push' || inputs.publish_github_release }}
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.build-windows.outputs.tag }}
           name: AkoeNet ${{ needs.build-windows.outputs.version }}
