@@ -86,5 +86,15 @@ if (!hasInstaller) {
 }
 
 run('node', ['scripts/verify-desktop-installer-size.mjs'])
-run('node', ['scripts/generate-desktop-updater-manifest.mjs'])
+run('node', ['scripts/generate-desktop-updater-manifest.mjs'], {
+  REQUIRE_UPDATER_MANIFEST: '1',
+})
+const latestJson = join(publicDesktop, 'latest.json')
+if (!existsSync(latestJson)) {
+  console.error(
+    `[release:desktop] Missing ${latestJson}. Ensure tauri.conf.json has bundle.createUpdaterArtifacts=true ` +
+      'and TAURI_SIGNING_PRIVATE_KEY is set so .sig files are produced.',
+  )
+  process.exit(1)
+}
 console.log('[release:desktop] done — artifacts in', outDir)

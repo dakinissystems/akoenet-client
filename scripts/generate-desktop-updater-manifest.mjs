@@ -48,9 +48,17 @@ for (const { key, artifact, sig } of PLATFORM_PATTERNS) {
 }
 
 if (!Object.keys(platforms).length) {
-  console.warn(
-    `[generate-desktop-updater-manifest] No signed artifacts in ${desktopDir} — skip latest.json (build desktop with TAURI_SIGNING_PRIVATE_KEY)`
-  )
+  const requireManifest =
+    String(process.env.REQUIRE_UPDATER_MANIFEST || '').trim() === '1' ||
+    String(process.env.CI || '').trim() === 'true'
+  const msg =
+    `[generate-desktop-updater-manifest] No signed artifacts in ${desktopDir} — ` +
+    'need .exe/.msi + matching .sig (set bundle.createUpdaterArtifacts=true and TAURI_SIGNING_PRIVATE_KEY)'
+  if (requireManifest) {
+    console.error(msg)
+    process.exit(1)
+  }
+  console.warn(`${msg} — skip latest.json`)
   process.exit(0)
 }
 

@@ -57,7 +57,7 @@ jobs:
         if: github.event_name == 'push'
         shell: bash
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=$(node --input-type=commonjs -p "JSON.parse(require('node:fs').readFileSync('package.json','utf8')).version")
           EXPECTED="v${VERSION}"
           if [ "${GITHUB_REF_NAME}" != "$EXPECTED" ]; then
             echo "::error::Tag ${GITHUB_REF_NAME} != package.json ${EXPECTED}. Bump version, commit, then tag."
@@ -84,10 +84,16 @@ jobs:
         id: ver
         shell: bash
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          set -euo pipefail
+          VERSION=$(node --input-type=commonjs -p "JSON.parse(require('node:fs').readFileSync('package.json','utf8')).version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          test -f public/releases/desktop/latest.json
+          if [ ! -f public/releases/desktop/latest.json ]; then
+            echo "::error::public/releases/desktop/latest.json missing after release:desktop (no updater .sig / createUpdaterArtifacts?)"
+            ls -la public/releases/desktop/ || true
+            ls -la "releases/desktop/${VERSION}/" || true
+            exit 1
+          fi
           cat public/releases/desktop/latest.json
 
       - name: Upload updater artifacts
