@@ -72,30 +72,35 @@ jobs:
             exit 1
           fi
 
-      # Tauri decodes TAURI_SIGNING_PRIVATE_KEY as base64. Newlines from the GitHub
-      # secret UI (char 10) cause: "Invalid character 10, offset …". Strip them and
-      # pass a file path (supported) so Windows/bash env quoting cannot reintroduce LFs.
-      - name: Normalize signing key
+      # Tauri decodes TAURI_SIGNING_PRIVATE_KEY as base64.
+      # - Newlines from the GitHub secret UI → "Invalid character 10".
+      # - Do NOT pass a Git-Bash path (/d/a/...) as the key: the Windows tauri.exe
+      #   treats a missing path as key material → "incorrect updater private key password".
+      # Export stripped key content in this same step (not via GITHUB_ENV file path).
+      - name: Build signed desktop + updater manifest
         shell: bash
         env:
           RAW_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          RAW_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          VITE_PUBLIC_ORIGIN: https://akoenet.dakinissystems.com
         run: |
           set -euo pipefail
-          KEY=$(printf '%s' "$RAW_KEY" | tr -d '\r\n')
+          KEY=$(printf '%s' "$RAW_KEY" | tr -d '\r\n' | tr -d ' ')
           if [ "${#KEY}" -lt 32 ]; then
             echo "::error::TAURI_SIGNING_PRIVATE_KEY looks empty/too short after stripping newlines"
             exit 1
           fi
-          printf '%s' "$KEY" > src-tauri/akoenet-signer.key
-          echo "TAURI_SIGNING_PRIVATE_KEY=${PWD}/src-tauri/akoenet-signer.key" >> "$GITHUB_ENV"
-          echo "signing_key_bytes=$(wc -c < src-tauri/akoenet-signer.key | tr -d ' ')"
-
-      - name: Build signed desktop + updater manifest
-        shell: bash
-        env:
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          VITE_PUBLIC_ORIGIN: https://akoenet.dakinissystems.com
-        run: npm run release:desktop
+          export TAURI_SIGNING_PRIVATE_KEY="$KEY"
+          echo "signing_key_chars=${#KEY}"
+          # Only set password when the secret is non-empty (omit for unencrypted keys).
+          if [ -n "${RAW_KEY_PASSWORD:-}" ]; then
+            export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$RAW_KEY_PASSWORD"
+            echo "signing_key_password=set"
+          else
+            unset TAURI_SIGNING_PRIVATE_KEY_PASSWORD || true
+            echo "signing_key_password=unset"
+          fi
+          npm run release:desktop
 
       - name: Read version
         id: ver

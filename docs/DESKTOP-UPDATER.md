@@ -37,7 +37,12 @@ After `main` gets the artifacts, Railway redeploys the web app and the updater e
 
 Use the **same** key that matches `src-tauri/updater.pubkey` / `tauri.conf.json` `plugins.updater.pubkey`. Regenerating the key breaks updates for users on old builds.
 
-If CI fails with `failed to decode base64 secret key: Invalid character 10`, the secret had a newline — re-paste as one line or re-run after the normalize step in the workflow.
+CI strips `\r`/`\n`/spaces and exports the key as env content (not a file path). On Windows runners, a Git-Bash path like `/d/a/...` is not opened by `tauri.exe` and shows up as `incorrect updater private key password`.
+
+| CI error | Fix |
+|----------|-----|
+| `Invalid character 10` | Secret had newlines — re-paste as one line (workflow also strips them). |
+| `incorrect updater private key password` / `failed to fill whole buffer` | Wrong or extra `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, or key does not match `updater.pubkey`. If the key has no password, **delete** that secret. Re-paste the private key from `akoenet-signer.key` that matches the committed pubkey. |
 
 ### Release a new auto-update
 
