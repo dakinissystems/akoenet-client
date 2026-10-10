@@ -1,0 +1,11 @@
+{
+  "version": "1.5.36",
+  "notes": "AkoeNet 1.5.36",
+  "pub_date": "2026-10-10T17:38:19.846Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSV3l5RHdRdndTelQrNjVucmFaYk9lTm1mQjNGU0tGNHIxMml1WmQwU0lCcWlMVDBicDd1VjFVRkhxdTMvUkk3YktocmpYa1hFcWNrOW9hcDNLSUVENENqREdtWDl4WWdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkxNjUzODk5CWZpbGU6QWtvZU5ldF8xLjUuMzZfeDY0LXNldHVwLmV4ZQppZ0F5K09YRm9VVE00dlQxR1JKVzkzSWZRNGM0aFhRSlhNREVmUjdLZU5HNDUwSFZ3cEl3eWdMamwrTUJrQWNFTjJwWEZUVlZ0M1lQRE81T2NGOS9BUT09Cg==",
+      "url": "https://akoenet.dakinissystems.com/releases/desktop/AkoeNet_1.5.36_x64-setup.exe"
+    }
+  }
+}
