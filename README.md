@@ -2,7 +2,7 @@
 
 **AkoeNet** is a digital communities platform with real-time chat, voice channels, direct messages, and integrations with Twitch and [StreamAutomator](https://streamautomator.com). It is a product of **[Dakinis Systems](https://dakinissystems.com)**.
 
-This repository is the **client**: web app, Android (Capacitor), and Windows desktop (Tauri). The API lives in [`akoenet-backend`](https://github.com/dakinissystems/akoenet-backend). Cross-cutting architecture, ops, and security docs stay in [`dakinis-systems/docs`](https://github.com/dakinissystems/dakinis-systems/tree/main/docs) — this README does not duplicate them.
+This repository is the **client**: web app, Android (Capacitor), and Windows desktop (Tauri). The API is not a public repository; production is [api.akoenet.dakinissystems.com](https://api.akoenet.dakinissystems.com). Cross-cutting architecture, ops, and security docs stay in [`dakinis-systems/docs`](https://github.com/dakinissystems/dakinis-systems/tree/main/docs). Legal copies in `docs/legal/` follow [`dakinis-systems/docs/legal`](https://github.com/dakinissystems/dakinis-systems/tree/main/docs/legal).
 
 | Platform | Status |
 |----------|--------|
