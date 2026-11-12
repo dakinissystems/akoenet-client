@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
-import { exchangePlatformToken } from '../services/idp-auth'
+import { exchangePlatformToken, setIdpAccessToken } from '../services/idp-auth'
 
 const HASH_TOKEN_KEY = 'platform_token'
 
@@ -38,6 +38,7 @@ export default function HubSsoPage() {
 
     ;(async () => {
       try {
+        setIdpAccessToken(platformToken)
         const data = await exchangePlatformToken(api, platformToken)
         await loginWithToken(data.token, data.refresh_token)
         if (typeof window !== 'undefined' && window.history.replaceState) {

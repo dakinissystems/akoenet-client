@@ -1,7 +1,7 @@
 import { startSessionKeepAlive, stopSessionKeepAlive } from '../services/api'
 import { connectAkoeNet, disconnectAkoeNet } from '../services/socket'
 import { setAccessToken, setRefreshToken } from '../services/session-store'
-import { setIdpRefreshToken } from '../services/idp-auth'
+import { setIdpAccessToken, setIdpRefreshToken } from '../services/idp-auth'
 
 const SESSION_NOTICE_KEY = 'akoenet_session_notice'
 
@@ -43,6 +43,7 @@ export function storeLoginTokens(data) {
 
 export function clearIdpRefreshToken() {
   setIdpRefreshToken(null)
+  setIdpAccessToken(null)
 }
 
 export function disconnectLiveSession() {

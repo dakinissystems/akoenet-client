@@ -12,7 +12,7 @@ import LoginCredentialsForm, { LoginTwoFactorForm } from '../components/LoginFor
 import { consumeSessionNotice, PENDING_INVITE_KEY, readPendingInviteFromSession } from '../components/loginConstants'
 import { AKOENET_LS_TWITCH_OAUTH_ERROR } from '../lib/storageKeys'
 import { clearPlatformTokenFromUrl, readPlatformTokenFromLocation } from '../lib/platformAuth'
-import { exchangePlatformToken } from '../services/idp-auth'
+import { exchangePlatformToken, setIdpAccessToken } from '../services/idp-auth'
 import { storeLoginTokens } from '../lib/authSession'
 import { useExternalPoll } from '../hooks/useExternalPoll'
 
@@ -87,6 +87,7 @@ export default function Login() {
     const platformToken = readPlatformTokenFromLocation()
     if (!platformToken || loading || user) return
     setBusy(true)
+    setIdpAccessToken(platformToken)
     void exchangePlatformToken(api, platformToken)
       .then((data) => {
         storeLoginTokens(data)

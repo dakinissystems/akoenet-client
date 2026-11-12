@@ -8,6 +8,7 @@ import {
   setAccessToken,
   setRefreshToken,
 } from './session-store'
+import { getIdpAccessToken, setIdpAccessToken } from './idp-auth'
 
 const SESSION_NOTICE_KEY = 'akoenet_session_notice'
 
@@ -24,6 +25,7 @@ function notifyApiSessionLost({ noticeExpired = false } = {}) {
   }
   stopSessionKeepAlive()
   clearSessionTokens()
+  setIdpAccessToken(null)
   disconnectAkoeNet()
   window.dispatchEvent(new CustomEvent('akoenet:session-lost'))
 }
@@ -128,6 +130,10 @@ api.interceptors.request.use((config) => {
   const token = getAccessToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+  }
+  const idp = getIdpAccessToken()
+  if (idp && idp.split('.').length === 3) {
+    config.headers['X-Dakinis-Actor'] = idp
   }
   return config
 })

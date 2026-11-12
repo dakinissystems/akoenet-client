@@ -14,8 +14,10 @@ import {
   getIdpAuthUrl,
   getIdpRefreshToken,
   isIdpAuthEnabled,
+  ensureIdpAccessToken,
   loginViaIdp,
   registerViaIdp,
+  setIdpAccessToken,
   setIdpRefreshToken,
 } from '../services/idp-auth'
 import { dakinisPerformClientLogout, dakinisRevokeIdpRefreshToken } from '../lib/dakinis-client-logout.js'
@@ -159,6 +161,12 @@ export function useAuthBootstrap() {
   }, [refreshUser])
 
   useEffect(() => {
+    if (!user || !isIdpAuthEnabled()) return undefined
+    ensureIdpAccessToken().catch((err) => reportError('auth.ensureIdpAccess', err))
+    return undefined
+  }, [user])
+
+  useEffect(() => {
     if (!user) return undefined
     const onVis = () => {
       if (document.visibilityState === 'visible') {
@@ -251,6 +259,7 @@ export function useAuthBootstrap() {
       try {
         const idp = await loginViaIdp(email, password)
         if (idp.refreshToken) setIdpRefreshToken(idp.refreshToken)
+        setIdpAccessToken(idp.token || idp.accessToken)
         const data = await exchangePlatformToken(api, idp.token)
         storeLoginTokens(data)
         setUser(data.user)

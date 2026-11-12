@@ -3,6 +3,7 @@
  */
 
 const IDP_REFRESH_KEY = 'idp_refresh_token'
+const IDP_ACCESS_KEY = 'idp_access_token'
 
 export function getIdpAuthUrl() {
   const raw =
@@ -31,6 +32,24 @@ export function setIdpRefreshToken(token) {
   try {
     if (token) localStorage.setItem(IDP_REFRESH_KEY, token)
     else localStorage.removeItem(IDP_REFRESH_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
+export function getIdpAccessToken() {
+  try {
+    return sessionStorage.getItem(IDP_ACCESS_KEY) || ''
+  } catch {
+    return ''
+  }
+}
+
+export function setIdpAccessToken(token) {
+  try {
+    const value = String(token || '').trim()
+    if (value && value.split('.').length === 3) sessionStorage.setItem(IDP_ACCESS_KEY, value)
+    else sessionStorage.removeItem(IDP_ACCESS_KEY)
   } catch {
     /* ignore */
   }
@@ -86,6 +105,30 @@ async function refreshIdpToken(refreshToken) {
     throw err
   }
   return data
+}
+
+function idpAccessStillValid(token) {
+  const parts = String(token || '').split('.')
+  if (parts.length !== 3) return false
+  try {
+    const json = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return typeof json.exp !== 'number' || json.exp * 1000 > Date.now() + 30_000
+  } catch {
+    return false
+  }
+}
+
+/** Recupera el access token de Auth para reenviarlo. No crea uno nuevo. */
+export async function ensureIdpAccessToken() {
+  const current = getIdpAccessToken()
+  if (idpAccessStillValid(current)) return current
+  const refreshToken = getIdpRefreshToken()
+  if (!refreshToken) return ''
+  const data = await refreshIdpToken(refreshToken)
+  if (data.refreshToken) setIdpRefreshToken(data.refreshToken)
+  const next = data.token || data.accessToken || ''
+  setIdpAccessToken(next)
+  return getIdpAccessToken()
 }
 
 export async function exchangePlatformToken(api, platformAccessToken) {
