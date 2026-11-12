@@ -8,7 +8,7 @@
     "prebuild": "node scripts/verify-versions.mjs && node scripts/verify-invite-links.mjs && node scripts/validate-addon-manifests.mjs",
     "build": "vite build && node scripts/publish-release-assets.mjs && node scripts/verify-dist-installer.mjs",
     "build:app": "vite build",
-    "build:ci": "vite build && node scripts/publish-release-assets.mjs",
+    "build:ci": "node scripts/ensure-linux-native-bindings.mjs && vite build && node scripts/publish-release-assets.mjs",
     "build:deploy": "npm run build",
     "start": "node scripts/serve-production.mjs",
     "lint": "eslint .",
