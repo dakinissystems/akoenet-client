@@ -24,10 +24,9 @@ function pruneDir(dir, keepPattern) {
   return removed
 }
 
-const token = version.replace(/\./g, '\\.')
-const keepDesktop = new RegExp(`_${token}_`, 'i')
-const keepAndroid = new RegExp(`akoenet-${token}\\.aab$`, 'i')
+const desktopMarker = `_${version}_`.toLowerCase()
+const androidName = `akoenet-${version}.aab`.toLowerCase()
 
-const n1 = pruneDir(join(publicRoot, 'desktop'), (n) => keepDesktop.test(n))
-const n2 = pruneDir(join(publicRoot, 'android'), (n) => keepAndroid.test(n))
+const n1 = pruneDir(join(publicRoot, 'desktop'), (n) => n.toLowerCase().includes(desktopMarker))
+const n2 = pruneDir(join(publicRoot, 'android'), (n) => n.toLowerCase() === androidName)
 console.log(`[prune-public-releases] done — removed ${n1 + n2} stale file(s), keeping ${version}`)

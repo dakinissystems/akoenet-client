@@ -2,7 +2,7 @@
  * Ensure the Windows installer referenced in .env.production exists in dist/
  * and is a real PE binary (not index.html from SPA fallback).
  */
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { readPackageVersion } from './lib/version.mjs'
@@ -46,7 +46,11 @@ if (!rel) {
 }
 
 const distPath = join('dist', rel)
-if (!existsSync(distPath)) {
+let buf
+try {
+  buf = readFileSync(distPath)
+} catch (err) {
+  if (!err || err.code !== 'ENOENT') throw err
   console.error(
     `[verify-dist-installer] Missing ${distPath}\n` +
       '  Deploy would serve index.html instead of the installer (broken ~950 byte download).\n' +
@@ -55,8 +59,7 @@ if (!existsSync(distPath)) {
   process.exit(1)
 }
 
-const size = statSync(distPath).size
-const buf = readFileSync(distPath)
+const size = buf.length
 if (size < minBytes || isHtmlPayload(buf) || !isPeExecutable(buf)) {
   console.error(
     `[verify-dist-installer] Invalid installer at ${distPath} (${size} bytes).\n` +

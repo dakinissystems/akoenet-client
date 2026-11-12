@@ -33,7 +33,7 @@ export default function UserSettingsProfileSection(props) {
   return (
     <form onSubmit={(e) => { e.preventDefault(); saveUserSettings() }} className="form-stack">
       <div style={previewStyle}>
-        <div style={{ height: 86, backgroundImage: bannerUrl ? `url("${resolveImageUrl(bannerUrl).replace(/"/g, '\\"')}")` : 'linear-gradient(120deg, #1f2937, #0f172a)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        <div style={{ height: 86, backgroundImage: bannerUrl ? `url("${resolveImageUrl(bannerUrl).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}")` : 'linear-gradient(120deg, #1f2937, #0f172a)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.65rem 0.75rem' }}>
           {avatarUrl && !avatarPreviewFailed ? (
             <img
