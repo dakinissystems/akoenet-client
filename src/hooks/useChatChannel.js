@@ -399,6 +399,18 @@ export function useChatChannel({
           dispatchChannelUi({ type: 'set-reply', reply: savedReply })
           return
         }
+        if (ack?.error === 'account_safety_lock') {
+          setSendError(t('chat.errAccountSafetyLock'))
+          setText(toSend)
+          dispatchChannelUi({ type: 'set-reply', reply: savedReply })
+          return
+        }
+        if (ack?.error === 'invalid_image_url') {
+          setSendError(t('chat.errInvalidImageUrl'))
+          setText(toSend)
+          dispatchChannelUi({ type: 'set-reply', reply: savedReply })
+          return
+        }
         if (ack?.error === 'blocked_content') {
           setSendError(t('chat.errBlocked'))
           setText(toSend)
@@ -603,7 +615,13 @@ export function useChatChannel({
         body: form,
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'upload')
+      if (!res.ok) {
+        if (data?.error === 'account_safety_lock') {
+          setSendError(t('chat.errAccountSafetyLock'))
+          return
+        }
+        throw new Error(data.error || 'upload')
+      }
       const s = getSocket()
       s.emit(
         'send_message',
@@ -616,6 +634,12 @@ export function useChatChannel({
         (ack) => {
           if (ack?.error === 'rate_limited') {
             setSendError(t('chat.errRateLimited'))
+          }
+          if (ack?.error === 'account_safety_lock') {
+            setSendError(t('chat.errAccountSafetyLock'))
+          }
+          if (ack?.error === 'invalid_image_url') {
+            setSendError(t('chat.errInvalidImageUrl'))
           }
           if (ack?.error === 'blocked_content') {
             setSendError(t('chat.errBlocked'))

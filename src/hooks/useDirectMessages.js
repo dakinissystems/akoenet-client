@@ -533,6 +533,18 @@ export function useDirectMessages(user) {
             dispatchConvUi({ type: 'set-reply', reply: savedDmReply })
             return
           }
+          if (ack?.error === 'account_safety_lock') {
+            setError(t('dm.errAccountSafetyLock'))
+            setText(content)
+            dispatchConvUi({ type: 'set-reply', reply: savedDmReply })
+            return
+          }
+          if (ack?.error === 'invalid_image_url') {
+            setError(t('dm.errInvalidImageUrl'))
+            setText(content)
+            dispatchConvUi({ type: 'set-reply', reply: savedDmReply })
+            return
+          }
           if (ack?.error === 'blocked_content') {
             setError(t('dm.errBlocked'))
             setText(content)
@@ -569,6 +581,14 @@ export function useDirectMessages(user) {
       setText(content)
       dispatchConvUi({ type: 'set-reply', reply: savedDmReply })
       const code = err?.response?.data?.error
+      if (code === 'account_safety_lock') {
+        setError(err?.response?.data?.message || t('dm.errAccountSafetyLock'))
+        return
+      }
+      if (code === 'invalid_image_url') {
+        setError(t('dm.errInvalidImageUrl'))
+        return
+      }
       setError(
         code === 'blocked_content'
           ? err?.response?.data?.message || t('dm.errSendBlocked')
@@ -596,7 +616,13 @@ export function useDirectMessages(user) {
         body: form,
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'upload')
+      if (!res.ok) {
+        if (data?.error === 'account_safety_lock') {
+          setError(data.message || t('dm.errAccountSafetyLock'))
+          return
+        }
+        throw new Error(data.error || 'upload')
+      }
       const socket = getSocket()
       if (socket) {
         socket.emit(
@@ -609,6 +635,12 @@ export function useDirectMessages(user) {
           (ack) => {
             if (ack?.error === 'rate_limited') {
               setError(t('dm.errDmTooFast'))
+            }
+            if (ack?.error === 'account_safety_lock') {
+              setError(t('dm.errAccountSafetyLock'))
+            }
+            if (ack?.error === 'invalid_image_url') {
+              setError(t('dm.errInvalidImageUrl'))
             }
             if (ack?.error === 'blocked_content') {
               setError(t('dm.errBlocked'))
@@ -625,8 +657,15 @@ export function useDirectMessages(user) {
         )
         setMessages((prev) => [...prev, message])
       }
-    } catch {
-      setError(t('dm.errUploadSend'))
+    } catch (err) {
+      const code = err?.response?.data?.error
+      if (code === 'account_safety_lock') {
+        setError(err?.response?.data?.message || t('dm.errAccountSafetyLock'))
+      } else if (code === 'invalid_image_url') {
+        setError(t('dm.errInvalidImageUrl'))
+      } else {
+        setError(t('dm.errUploadSend'))
+      }
     } finally {
       setUploading(false)
     }

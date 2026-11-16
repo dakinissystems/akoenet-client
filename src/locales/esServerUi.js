@@ -215,6 +215,9 @@ export default {
     historyMatch: 'Coincidencia del historial',
     editHistoryTitle: 'Historial de ediciones del mensaje',
     errRateLimited: 'Vas un poco rápido — envías demasiado seguido.',
+    errAccountSafetyLock:
+      'Envío pausado por seguridad de la cuenta (posible acceso no autorizado). Cierra sesiones y cambia la contraseña.',
+    errInvalidImageUrl: 'Solo se pueden enviar imágenes subidas en AkoeNet.',
     errBlocked: 'Ese mensaje contiene lenguaje no permitido.',
     errDuplicate: 'Mensaje duplicado; espera un momento antes de enviar de nuevo.',
     errSaveFailed: 'No se pudo guardar el mensaje. Inténtalo de nuevo.',
@@ -250,6 +253,9 @@ export default {
     errEditSaveBlocked: 'Ese mensaje contiene lenguaje no permitido.',
     errEditSave: 'No se pudo guardar la edición',
     errDmTooFast: 'Estás enviando mensajes directos demasiado rápido',
+    errAccountSafetyLock:
+      'Envío pausado por seguridad de la cuenta (posible acceso no autorizado). Cierra sesiones y cambia la contraseña.',
+    errInvalidImageUrl: 'Solo se pueden enviar imágenes subidas en AkoeNet.',
     errSaveFailed: 'No se pudo guardar el mensaje. Inténtalo de nuevo.',
     errSendBlocked: 'Ese mensaje contiene lenguaje no permitido.',
     errSend: 'No se pudo enviar el mensaje',

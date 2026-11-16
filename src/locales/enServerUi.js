@@ -213,6 +213,9 @@ export default {
     historyMatch: 'History match',
     editHistoryTitle: 'Message edit history',
     errRateLimited: 'Slow down a little — you are sending a bit too fast.',
+    errAccountSafetyLock:
+      'Sending paused for account safety (possible unauthorized access). Sign out other sessions and change your password.',
+    errInvalidImageUrl: 'Only images uploaded through AkoeNet can be sent.',
     errBlocked: 'That message contains prohibited language.',
     errDuplicate: 'Duplicate message; wait a moment before sending again.',
     errSaveFailed: 'Message could not be saved. Try again.',
@@ -248,6 +251,9 @@ export default {
     errEditSaveBlocked: 'That message contains prohibited language.',
     errEditSave: 'Could not save edit',
     errDmTooFast: 'You are sending direct messages too fast',
+    errAccountSafetyLock:
+      'Sending paused for account safety (possible unauthorized access). Sign out other sessions and change your password.',
+    errInvalidImageUrl: 'Only images uploaded through AkoeNet can be sent.',
     errSaveFailed: 'Message could not be saved. Try again.',
     errSendBlocked: 'That message contains prohibited language.',
     errSend: 'Could not send message',
