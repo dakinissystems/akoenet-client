@@ -165,3 +165,7 @@ android/build/
 android/.gradle/
 src-tauri/target/
 src-tauri/src-tauri/
+
+.env.production
+.env.local
+
