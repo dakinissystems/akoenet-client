@@ -27,6 +27,14 @@ function pruneDir(dir, keepPattern) {
 const desktopMarker = `_${version}_`.toLowerCase()
 const androidName = `akoenet-${version}.aab`.toLowerCase()
 
-const n1 = pruneDir(join(publicRoot, 'desktop'), (n) => n.toLowerCase().includes(desktopMarker))
+// Keep latest.json — Tauri updater endpoint. Marker match alone would delete it
+// (name has no _version_ token) and Railway would SPA-fallback HTML for the URL.
+const n1 = pruneDir(
+  join(publicRoot, 'desktop'),
+  (n) => {
+    const lower = n.toLowerCase()
+    return lower === 'latest.json' || lower.includes(desktopMarker)
+  }
+)
 const n2 = pruneDir(join(publicRoot, 'android'), (n) => n.toLowerCase() === androidName)
 console.log(`[prune-public-releases] done — removed ${n1 + n2} stale file(s), keeping ${version}`)
