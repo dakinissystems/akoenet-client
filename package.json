@@ -44,6 +44,7 @@
     "prune:releases": "node scripts/prune-public-releases.mjs"
   },
   "dependencies": {
+    "@dakinissystems/shared-brand": "1.0.1",
     "@capacitor/android": "^7.4.3",
     "@capacitor/app": "^7.1.1",
     "@capacitor/camera": "^7.0.2",

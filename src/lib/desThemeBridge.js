@@ -1,6 +1,6 @@
 /**
  * Bridge: AkoeNet theme preferences → DES theme-engine API.
- * Canonical engine: @dakinis/shared-brand/theme-engine
+ * Theme tokens/themes from @dakinissystems/shared-brand; bootstrap helpers stay local.
  * AkoeNet keeps local palettes (Nexora); this syncs data-theme for DES consumers.
  */
 import { applyDesColorMode, resolveAppearance, sanitizeColorMode } from "./desThemeEngine.local.js";
