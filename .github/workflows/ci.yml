@@ -7,27 +7,57 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
-          cache: npm
-      - run: npm ci
+          registry-url: https://npm.pkg.github.com
+          scope: "@dakinissystems"
+      - name: Ensure npm with edgesOut fix
+        run: npm install -g npm@11.6.2
+      - name: Install from GitHub Packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN != '' && secrets.NODE_AUTH_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> "$NPM_CONFIG_USERCONFIG"
+          npm install --no-audit --no-fund || install_rc=$?
+          if [ "${install_rc:-0}" -ne 0 ]; then
+            echo "::error::npm install failed."
+            echo "Set repo secret NODE_AUTH_TOKEN (PAT read:packages) or grant Actions Read on shared-brand."
+            exit "${install_rc}"
+          fi
       - run: node scripts/verify-versions.mjs
       - run: npm run build:ci
 
   security-audit:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
-          cache: npm
-      - run: npm ci --omit=dev
+          registry-url: https://npm.pkg.github.com
+          scope: "@dakinissystems"
+      - name: Ensure npm with edgesOut fix
+        run: npm install -g npm@11.6.2
+      - name: Install (omit dev)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN != '' && secrets.NODE_AUTH_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> "$NPM_CONFIG_USERCONFIG"
+          npm install --omit=dev --no-audit --no-fund
       - run: npm audit --omit=dev --audit-level=high
